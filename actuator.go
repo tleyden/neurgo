@@ -27,3 +27,6 @@ func (actuator *Actuator) Run() {
 	actuator.OutputChannel <- 99.0
 }
 
+func (actuator *Actuator) ReadOutput() float32 {
+	return <- actuator.OutputChannel
+}

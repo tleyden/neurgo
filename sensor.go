@@ -21,9 +21,12 @@ func (sensor *Sensor) DoSomething() {
 
 }
 
-
 // Methods
 
 func (sensor *Sensor) Run() {
 
+}
+
+func (sensor *Sensor) SendInput(input []float32) {
+	sensor.InputChannel <- input
 }

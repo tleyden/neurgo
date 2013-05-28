@@ -6,14 +6,10 @@ import "github.com/tleyden/neurgo"
 
 func main() {
 
-	// create testing channels
-	sensor_input_chan := make(chan []float32)
-	actuator_output_chan := make(chan float32)
-
 	// create network nodes
 	neuron := &neurgo.Neuron{Bias: 10, ActivationFunction: identity_activation}
-	sensor := &neurgo.Sensor{InputChannel: sensor_input_chan}
-	actuator := &neurgo.Actuator{OutputChannel: actuator_output_chan}
+	sensor := &neurgo.Sensor{InputChannel: make(chan []float32)}
+	actuator := &neurgo.Actuator{OutputChannel: make(chan float32)}
 
 	// connect nodes together
 	sensor.Connect_with_weights(neuron, []float32{20,20,20,20,20})
@@ -24,15 +20,12 @@ func main() {
 	go sensor.Run()
 	go actuator.Run()
 
-	// get the result channel from the actuator
-	
-
-	// get the test_input channel from the sensor
-
 	// push test value into sensor input channel
+	// sensor.SendInput([]float32{1,1,1,1,1})
 
 	// read value from actuator output channel
-	result := <- actuator_output_chan
+	result := actuator.ReadOutput()
+
 	fmt.Printf("result: %f\n", result)
 
 	// make sure it's the expected value
