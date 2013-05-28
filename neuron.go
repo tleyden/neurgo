@@ -10,11 +10,11 @@ type Neuron struct {
 
 // Connectable interface implementations
 
-func (neuron *Neuron) Connect_with_weights(target NeuralNode, weights []float32) {
+func (neuron *Neuron) Connect_with_weights(target Connectable, weights []float32) {
 
 }
 
-func (neuron *Neuron) Connect(target NeuralNode) {
+func (neuron *Neuron) Connect(target Connectable) {
 
 }
 

@@ -7,11 +7,11 @@ type Actuator struct {
 
 // Connectable interface implementations
 
-func (actuator *Actuator) Connect_with_weights(target NeuralNode, weights []float32) {
+func (actuator *Actuator) Connect_with_weights(target Connectable, weights []float32) {
 	panic("Actuator does not support outbound connections")
 }
 
-func (actuator *Actuator) Connect(target NeuralNode) {
+func (actuator *Actuator) Connect(target Connectable) {
 	panic("Actuator does not support outbound connections")
 }
 

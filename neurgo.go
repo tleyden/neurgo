@@ -6,6 +6,6 @@ type NeuralNode interface {
 }
 
 type Connectable interface {
-	Connect_with_weights(target NeuralNode, weights []float32)
-	Connect(target NeuralNode)
+	Connect_with_weights(target Connectable, weights []float32)
+	Connect(target Connectable)
 }

@@ -7,11 +7,13 @@ type Sensor struct {
 
 // Connectable interface implementations
 
-func (sensor *Sensor) Connect_with_weights(target NeuralNode, weights []float32) {
+func (sensor *Sensor) Connect_with_weights(target Connectable, weights []float32) {
+
+	// 
 
 }
 
-func (sensor *Sensor) Connect(target NeuralNode) {
+func (sensor *Sensor) Connect(target Connectable) {
 
 }
 
