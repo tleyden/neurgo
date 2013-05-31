@@ -1,14 +1,43 @@
 
 package neurgo
 
+import (
+	"log"
+)
+
+type connection struct {
+	channel     VectorChannel
+	weights     []float32
+}
+
 type Node struct {
 	inbound  []*connection
 	outbound []*connection
 }
 
-type connection struct {
-	channel     VectorChannel
-	weights     []float32
+func (node *Node) Run() {
+
+	// stub: read from input and send to output
+	if len(node.inbound) > 0 && len(node.outbound) > 0 {
+		val := <- node.inbound[0].channel   
+		node.outbound[0].channel <- val
+	}
+
+	// loop through all the inbound_connections 
+
+	    // get channel 
+
+	    // read value from channel
+
+	// Via "Activatable" interface..
+	// calculate output value: dot product + bias of all values read from SignalEmitters
+
+	// loop over all outbound_connections 
+
+	    // get channel 
+
+	    // send output value to channel
+
 }
 
 

@@ -4,17 +4,18 @@ package main
 import (
 	"github.com/tleyden/neurgo"
 	"log"
+	"sync"
 )
 
 func main() {
 
 	// create network nodes
 	neuron := &neurgo.Neuron{Bias: 10, ActivationFunction: identity_activation}
-	sensor := &neurgo.Sensor{InputChannel: make(neurgo.VectorChannel)}
-	actuator := &neurgo.Actuator{OutputChannel: make(neurgo.VectorChannel)}
+	sensor := &neurgo.Sensor{}
+	actuator := &neurgo.Actuator{}
 	
 	// connect nodes together 
-	weights = []float32{20,20,20,20,20}
+	weights := []float32{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron, weights)
 	neuron.ConnectBidirectional(actuator)
 
@@ -23,22 +24,35 @@ func main() {
 	go sensor.Run()
 	go actuator.Run()
 
-	// push test value into sensor input channel
-	// sensor.SendInput([]float32{1,1,1,1,1})
+	inbound_channels := sensor.inbound
 
-	// read value from actuator output channel
-	result := actuator.ReadOutput()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	wg.Add(1)
 
-	log.Printf("result: %f", result)
+	// inject a value from sensor -> neuron
+	go func() {
+		sensorChannel := sensor.outbound[0].channel
+		sensorChannel <- []float32{1,1,1,1,1}
+		wg.Done()
+	}()
 
-	// make sure it's the expected value
+	// read the value from actuator
+	go func() {
+		actuatorChannel := actuator.inbound[0].channel
+		value := <- actuatorChannel
+		log.Printf("Value: %v", value)
+		wg.Done()
+	}()
 
-	// debug crap ..
-	log.Printf("neuron bias: %f", neuron.Bias)
-	log.Printf("sensor: %v", sensor)
-	log.Printf("actuator: %v", actuator)
+	wg.Wait()
+	log.Println("done")
+
 
 }
+
+
+
 
 func identity_activation(x float32) float32 {
 	return x
