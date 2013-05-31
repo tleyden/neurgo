@@ -9,13 +9,15 @@ import (
 func main() {
 
 	// create network nodes
-	neuron := neurgo.Neuron{Bias: 10, ActivationFunction: identity_activation}
-	sensor := neurgo.Sensor{InputChannel: make(neurgo.VectorChannel)}
-	actuator := neurgo.Actuator{OutputChannel: make(chan float32)}
-
+	neuron := &neurgo.Neuron{Bias: 10, ActivationFunction: identity_activation}
+	sensor := &neurgo.Sensor{InputChannel: make(neurgo.VectorChannel)}
+	actuator := &neurgo.Actuator{OutputChannel: make(neurgo.VectorChannel)}
+	
 	// connect nodes together 
-	sensor.Connect_with_weights(&neuron, []float32{20,20,20,20,20})
-	neuron.Connect(&actuator)
+	weights = []float32{20,20,20,20,20}
+	sensor.ConnectBidirectional(neuron, weights)
+
+	// neuron.Connect(actuator)
 
 	// spinup node goroutines
 	go neuron.Run()

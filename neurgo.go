@@ -3,7 +3,13 @@ package neurgo
 
 type VectorChannel chan []float32
 
+
 type Connectable interface {
-	Connect_with_weights(target Connectable, weights []float32)
-	Connect(target Connectable)
+
+	ConnectBidirectional(target Connectable, weights []float32)
+	connectOutbound(target Connectable, channel VectorChannel) 
+	connectInboundWeighted(source Connectable, channel VectorChannel, weights []float32)
+
+	// Connect(target Connectable)
 }
+
