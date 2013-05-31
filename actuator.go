@@ -3,6 +3,7 @@ package neurgo
 
 type Actuator struct {
 	OutputChannel chan float32
+	NeuralNode
 }
 
 // Connectable interface implementations
@@ -13,12 +14,6 @@ func (actuator *Actuator) Connect_with_weights(target Connectable, weights []flo
 
 func (actuator *Actuator) Connect(target Connectable) {
 	panic("Actuator does not support outbound connections")
-}
-
-// NeuralNode interface implementations
-
-func (actuator *Actuator) DoSomething() {
-
 }
 
 // Methods

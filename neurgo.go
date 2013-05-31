@@ -1,9 +1,7 @@
 
 package neurgo
 
-type NeuralNode interface {
-	DoSomething()
-}
+type VectorChannel chan []float32
 
 type Connectable interface {
 	Connect_with_weights(target Connectable, weights []float32)

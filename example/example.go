@@ -1,19 +1,21 @@
 
 package main
 
-import "fmt"
-import "github.com/tleyden/neurgo"
+import (
+	"github.com/tleyden/neurgo"
+	"log"
+)
 
 func main() {
 
 	// create network nodes
-	neuron := &neurgo.Neuron{Bias: 10, ActivationFunction: identity_activation}
-	sensor := &neurgo.Sensor{InputChannel: make(chan []float32)}
-	actuator := &neurgo.Actuator{OutputChannel: make(chan float32)}
+	neuron := neurgo.Neuron{Bias: 10, ActivationFunction: identity_activation}
+	sensor := neurgo.Sensor{InputChannel: make(neurgo.VectorChannel)}
+	actuator := neurgo.Actuator{OutputChannel: make(chan float32)}
 
-	// connect nodes together
-	sensor.Connect_with_weights(neuron, []float32{20,20,20,20,20})
-	neuron.Connect(actuator)
+	// connect nodes together 
+	sensor.Connect_with_weights(&neuron, []float32{20,20,20,20,20})
+	neuron.Connect(&actuator)
 
 	// spinup node goroutines
 	go neuron.Run()
@@ -26,14 +28,14 @@ func main() {
 	// read value from actuator output channel
 	result := actuator.ReadOutput()
 
-	fmt.Printf("result: %f\n", result)
+	log.Printf("result: %f", result)
 
 	// make sure it's the expected value
 
 	// debug crap ..
-	fmt.Printf("neuron bias: %f\n", neuron.Bias)
-	fmt.Printf("sensor: %v\n", sensor)
-	fmt.Printf("actuator: %v\n", actuator)
+	log.Printf("neuron bias: %f", neuron.Bias)
+	log.Printf("sensor: %v", sensor)
+	log.Printf("actuator: %v", actuator)
 
 }
 
