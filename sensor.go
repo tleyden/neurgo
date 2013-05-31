@@ -5,7 +5,7 @@ import "fmt"
 
 type Sensor struct {
 	InputChannel VectorChannel
-	NeuralNode
+	Node
 }
 
 

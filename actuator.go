@@ -3,7 +3,7 @@ package neurgo
 
 type Actuator struct {
 	OutputChannel chan float32
-	NeuralNode
+	Node
 }
 
 // Connectable interface implementations
