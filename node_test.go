@@ -6,7 +6,7 @@ import (
 	"github.com/couchbaselabs/go.assert"
 )
 
-func Test(t *testing.T) {
+func TestConnectBidirectionalWeighted(t *testing.T) {
 
 	fmt.Println("test is running!")
 
@@ -14,7 +14,7 @@ func Test(t *testing.T) {
 	sensor := &Sensor{}
 
 	weights := []float32{20,20,20,20,20}
-	sensor.ConnectBidirectional(neuron, weights)
+	sensor.ConnectBidirectionalWeighted(neuron, weights)
 
 	assert.Equals(t, len(sensor.outbound), 1)
 	assert.Equals(t, len(neuron.inbound), 1)

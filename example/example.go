@@ -15,7 +15,7 @@ func main() {
 	
 	// connect nodes together 
 	weights = []float32{20,20,20,20,20}
-	sensor.ConnectBidirectional(neuron, weights)
+	sensor.ConnectBidirectionalWeighted(neuron, weights)
 
 	// neuron.Connect(actuator)
 
