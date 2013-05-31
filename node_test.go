@@ -2,7 +2,6 @@ package neurgo
 
 import (
 	"testing"
-	"fmt"
 	"github.com/couchbaselabs/go.assert"
 )
 
@@ -22,7 +21,7 @@ func TestConnectBidirectional(t *testing.T) {
 	assert.Equals(t, neuron.inbound[0].weights[0], weights[0])
 
 	actuator := &Actuator{}
-	neuron.ConnectBidirectionalUnweighted(actuator)
+	neuron.ConnectBidirectional(actuator)
 	assert.Equals(t, len(neuron.outbound), 1)
 	assert.Equals(t, len(actuator.inbound), 1)
 	assert.Equals(t, len(actuator.inbound[0].weights), 0)

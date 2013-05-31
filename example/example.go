@@ -16,7 +16,7 @@ func main() {
 	// connect nodes together 
 	weights = []float32{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron, weights)
-	neuron.ConnectBidirectionalUnweighted(actuator)
+	neuron.ConnectBidirectional(actuator)
 
 	// spinup node goroutines
 	go neuron.Run()
