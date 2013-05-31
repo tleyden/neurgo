@@ -6,9 +6,7 @@ import (
 	"github.com/couchbaselabs/go.assert"
 )
 
-func TestConnectBidirectionalWeighted(t *testing.T) {
-
-	fmt.Println("test is running!")
+func TestConnectBidirectional(t *testing.T) {
 
 	neuron := &Neuron{}
 	sensor := &Sensor{}
@@ -23,5 +21,10 @@ func TestConnectBidirectionalWeighted(t *testing.T) {
 	assert.Equals(t, len(neuron.inbound[0].weights), len(weights))
 	assert.Equals(t, neuron.inbound[0].weights[0], weights[0])
 
+	actuator := &Actuator{}
+	neuron.ConnectBidirectionalUnweighted(actuator)
+	assert.Equals(t, len(neuron.outbound), 1)
+	assert.Equals(t, len(actuator.inbound), 1)
+	assert.Equals(t, len(actuator.inbound[0].weights), 0)
 
 }
