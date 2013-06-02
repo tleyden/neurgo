@@ -5,7 +5,16 @@ import (
 	"github.com/couchbaselabs/go.assert"
 	"log"
 	"sync"
+	"time"
 )
+
+type Wiretap struct {
+	Node
+}
+
+func (wiretap *Wiretap) Run() {  // TODO: where does this code belong
+	log.Printf("%s: Run() called, do nothing", wiretap.Name) 
+}
 
 func TestConnectBidirectional(t *testing.T) {
 
@@ -33,19 +42,31 @@ func TestConnectBidirectional(t *testing.T) {
 func TestNetwork(t *testing.T) {
 
 	// create network nodes
-	neuron := &Neuron{Bias: 10, ActivationFunction: identity_activation}
+	neuron1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}  
+	neuron1.Name = "neuron1" // TODO: why doesn't this work in literal above?
+	neuron2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
+	neuron2.Name = "neuron2"
 	sensor := &Sensor{}
+	sensor.Name = "sensor"
 	actuator := &Actuator{}
-	
+	actuator.Name = "actuator"
+	wiretap := &Wiretap{}
+	wiretap.Name = "wiretap"
+
 	// connect nodes together 
 	weights := []float32{20,20,20,20,20}
-	sensor.ConnectBidirectionalWeighted(neuron, weights)
-	neuron.ConnectBidirectional(actuator)
+	sensor.ConnectBidirectionalWeighted(neuron1, weights)
+	sensor.ConnectBidirectionalWeighted(neuron2, weights)
+	neuron1.ConnectBidirectional(actuator)
+	neuron2.ConnectBidirectional(actuator)
+	actuator.ConnectBidirectional(wiretap)
 
 	// spinup node goroutines
-	go neuron.Run()
+	go neuron1.Run()
+	go neuron2.Run()
 	go sensor.Run()
 	go actuator.Run()
+	go wiretap.Run()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -53,27 +74,46 @@ func TestNetwork(t *testing.T) {
 
 	// inject a value from sensor -> neuron
 	testValue := []float32{1,1,1,1,1}
-	log.Printf("Injecting value: %v", testValue)
+
 	go func() {
-		sensorChannel := sensor.outbound[0].channel
-		sensorChannel <- testValue
+
+		// send in opposite order to flesh out any possible deadlocks
+
+		log.Printf("%v Injecting value2: %v via outbound[1].  channel: %v", sensor.Name, testValue, sensor.outbound[1].channel)
+		sensor.outbound[1].channel <- testValue
+
+		time.Sleep(250 * time.Millisecond) // simulate sensor delay
+
+		log.Printf("%v Injecting value: %v via outbound[0].  channel: %v", sensor.Name, testValue, sensor.outbound[0].channel)
+		sensor.outbound[0].channel <- testValue
+
+		log.Println("sensor goroutine done")
 		wg.Done()
+
 	}()
 
 	// read the value from actuator
 	go func() {
-		actuatorChannel := actuator.inbound[0].channel
-		value := <- actuatorChannel
-		log.Printf("Received value: %v", value)
-		assert.Equals(t, len(value), len(testValue))
-		assert.Equals(t, value[0], testValue[0])  // TODO: is there a better way to check slice equality?
+
+		log.Printf("%v Getting value on chan: %v", wiretap.Name, wiretap.inbound[0].channel)
+		value := <- wiretap.inbound[0].channel
+		log.Printf("%v Received value on chan: %v: %v", wiretap.Name, wiretap.inbound[0].channel, value)
+		
+		log.Println("wiretap goroutine done")
 		wg.Done()
+		
+		assert.Equals(t, len(value), 2)  // accumulate values from 2 neurons, therefore 2 elt vector    
+		//assert.Equals(t, value[0], 110) // n1 output: 110 
+		//assert.Equals(t, value[1], 110) // n2 output: 110 
+
 	}()
 
 	wg.Wait()
-	log.Println("done")
+	log.Println("test done")
 
 }
+
+
 
 func identity_activation(x float32) float32 {
 	return x
