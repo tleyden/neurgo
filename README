@@ -1,2 +1,6 @@
 
-Start with example.go
+# Neurgo
+
+A library for constructing Neural Networks in [Go](http://golang.org/)
+
+It's in the process of being constructed, so it's still pretty braindead.
