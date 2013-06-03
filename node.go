@@ -16,7 +16,7 @@ type Node struct {
 	outbound []*connection
 }
 
-func (node *Node) Run() {
+func (node *Node) propagateSignal() {
 
 	log.Printf("%s: Run()", node.Name) // TODO: how do I print the type of this struct w/o using Name field?
 

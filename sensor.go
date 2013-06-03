@@ -10,8 +10,7 @@ type Sensor struct {
 	Node
 }
 
-
-func (sensor *Sensor) Run() {
+func (sensor *Sensor) propagateSignal() {
 
 	log.Printf("%s: Run()", sensor.Name) 
 

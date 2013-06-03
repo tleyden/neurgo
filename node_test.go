@@ -65,10 +65,10 @@ func TestNetwork(t *testing.T) {
 	actuator.ConnectBidirectional(wiretap)
 
 	// spinup node goroutines
-	go neuron1.Run()
-	go neuron2.Run()
-	go sensor.Run()
-	go actuator.Run()
+	go Run(neuron1)
+	go Run(neuron2)
+	go Run(sensor)
+	go Run(actuator)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
