@@ -5,15 +5,22 @@ import (
 	"github.com/couchbaselabs/go.assert"
 	"log"
 	"sync"
-	"time"
 )
 
 type Wiretap struct {
 	Node
 }
 
+type Injector struct {
+	Node
+}
+
 func (wiretap *Wiretap) Run() {  // TODO: where does this code belong
 	log.Printf("%s: Run() called, do nothing", wiretap.Name) 
+}
+
+func (injector *Injector) Run() { 
+	log.Printf("%s: Run() called, do nothing", injector.Name)
 }
 
 func TestConnectBidirectional(t *testing.T) {
@@ -52,8 +59,11 @@ func TestNetwork(t *testing.T) {
 	actuator.Name = "actuator"
 	wiretap := &Wiretap{}
 	wiretap.Name = "wiretap"
+	injector := &Injector{}
+	injector.Name = "injector"
 
 	// connect nodes together 
+	injector.ConnectBidirectional(sensor)
 	weights := []float32{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron1, weights)
 	sensor.ConnectBidirectionalWeighted(neuron2, weights)
@@ -67,6 +77,7 @@ func TestNetwork(t *testing.T) {
 	go sensor.Run()
 	go actuator.Run()
 	go wiretap.Run()
+	go injector.Run()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -77,17 +88,10 @@ func TestNetwork(t *testing.T) {
 
 	go func() {
 
-		// send in opposite order to flesh out any possible deadlocks
+		log.Printf("%v Injecting value2: %v via outbound[0].  channel: %v", injector.Name, testValue, injector.outbound[0].channel)
+		injector.outbound[0].channel <- testValue
 
-		log.Printf("%v Injecting value2: %v via outbound[1].  channel: %v", sensor.Name, testValue, sensor.outbound[1].channel)
-		sensor.outbound[1].channel <- testValue
-
-		time.Sleep(250 * time.Millisecond) // simulate sensor delay
-
-		log.Printf("%v Injecting value: %v via outbound[0].  channel: %v", sensor.Name, testValue, sensor.outbound[0].channel)
-		sensor.outbound[0].channel <- testValue
-
-		log.Println("sensor goroutine done")
+		log.Println("injector goroutine done")
 		wg.Done()
 
 	}()
