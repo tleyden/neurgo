@@ -15,13 +15,6 @@ type Injector struct {
 	Node
 }
 
-func (wiretap *Wiretap) Run() {  // TODO: where does this code belong
-	log.Printf("%s: Run() called, do nothing", wiretap.Name) 
-}
-
-func (injector *Injector) Run() { 
-	log.Printf("%s: Run() called, do nothing", injector.Name)
-}
 
 func TestConnectBidirectional(t *testing.T) {
 
@@ -76,8 +69,6 @@ func TestNetwork(t *testing.T) {
 	go neuron2.Run()
 	go sensor.Run()
 	go actuator.Run()
-	go wiretap.Run()
-	go injector.Run()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
