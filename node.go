@@ -22,14 +22,17 @@ func (node *Node) propagateSignal() {
 
 	if len(node.inbound) > 0 {  
 
+		// TODO: for a neuron, output vector dimension should be [1]
 		outputVectorDimension := len(node.inbound)
 		outputVector := make([]float32,outputVectorDimension) 
+
+		// TODO: sum up the dot products and then add the bias?
 
 		for i, inboundConnection := range node.inbound {
 			log.Printf("%v reading from channel: %v", node.Name, inboundConnection.channel)
 			inputVector := <- inboundConnection.channel
 			log.Printf("%v got data from channel: %v", node.Name, inboundConnection.channel)
-			// TODO multiply by weights, run through activation function
+			// TODO multiply by weights, run through activation function  (in its own method, with a test)
 			fakeOutputValue := float32(len(inputVector))
 			outputVector[i] = fakeOutputValue
 		}
