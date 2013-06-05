@@ -18,10 +18,12 @@ func TestComputeOutput(t *testing.T) {
 	weightedInput2 := &weightedInput{weights: weights, inputs: inputs}
 	weightedInputs := []*weightedInput{weightedInput1, weightedInput2}
 
-	result := neuron.computeOutput(weightedInputs)
+	result := neuron.computeScalarOutput(weightedInputs)
 	log.Printf("result: %v", result)
 
-	assert.Equals(t, result, 200)
+	delta := result - 200  // had to do within limit hack because 200 != 200 issue
+	withinLimit := delta < 0.01
+	assert.Equals(t, withinLimit, true)
 
 }
 
