@@ -7,7 +7,7 @@ import (
 
 type connection struct {
 	channel     VectorChannel
-	weights     []float32
+	weights     []float64
 }
 
 type Node struct {
@@ -17,8 +17,8 @@ type Node struct {
 }
 
 type weightedInput struct {
-	weights     []float32
-	inputs      []float32
+	weights     []float64
+	inputs      []float64
 }
 
 func (node *Node) weightedInputs() []*weightedInput {
@@ -46,7 +46,7 @@ func (node *Node) propagateSignal() {
 
 		// TODO: for a neuron, output vector dimension should be [1]
 		outputVectorDimension := len(node.inbound)
-		outputVector := make([]float32,outputVectorDimension) 
+		outputVector := make([]float64,outputVectorDimension) 
 
 		// TODO: sum up the dot products and then add the bias?
 
@@ -62,7 +62,7 @@ func (node *Node) propagateSignal() {
 			inputVector := <- inboundConnection.channel
 			log.Printf("%v got data from channel: %v", node.Name, inboundConnection.channel)
 			// TODO multiply by weights, run through activation function  (in its own method, with a test)
-			fakeOutputValue := float32(len(inputVector))
+			fakeOutputValue := float64(len(inputVector))
 			outputVector[i] = fakeOutputValue
 		}
 
@@ -102,7 +102,7 @@ func (node *Node) ConnectBidirectional(target Connectable) {
 }
 
 // Create a bi-directional connection between node <-> target with the given weights.
-func (node *Node) ConnectBidirectionalWeighted(target Connectable, weights []float32) {
+func (node *Node) ConnectBidirectionalWeighted(target Connectable, weights []float64) {
 	channel := make(VectorChannel)		
 	node.connectOutboundWithChannel(target, channel)
 	target.connectInboundWithChannel(node, channel, weights)
@@ -115,7 +115,7 @@ func (node *Node) connectOutboundWithChannel(target Connectable, channel VectorC
 }
 
 // Create inbound connection from source -> node
-func (node *Node) connectInboundWithChannel(source Connectable, channel VectorChannel, weights []float32) {
+func (node *Node) connectInboundWithChannel(source Connectable, channel VectorChannel, weights []float64) {
 	connection := &connection{channel: channel, weights: weights}
 	node.inbound = append(node.inbound, connection)
 }

@@ -21,7 +21,7 @@ func TestConnectBidirectional(t *testing.T) {
 	neuron := &Neuron{}
 	sensor := &Sensor{}
 
-	weights := []float32{20,20,20,20,20}
+	weights := []float64{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron, weights)
 
 	assert.Equals(t, len(sensor.outbound), 1)
@@ -57,7 +57,7 @@ func TestNetwork(t *testing.T) {
 
 	// connect nodes together 
 	injector.ConnectBidirectional(sensor)
-	weights := []float32{20,20,20,20,20}
+	weights := []float64{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron1, weights)
 	sensor.ConnectBidirectionalWeighted(neuron2, weights)
 	neuron1.ConnectBidirectional(actuator)
@@ -75,7 +75,7 @@ func TestNetwork(t *testing.T) {
 	wg.Add(1)
 
 	// inject a value from sensor -> neuron
-	testValue := []float32{1,1,1,1,1}
+	testValue := []float64{1,1,1,1,1}
 
 	go func() {
 
@@ -110,6 +110,6 @@ func TestNetwork(t *testing.T) {
 
 
 
-func identity_activation(x float32) float32 {
+func identity_activation(x float64) float64 {
 	return x
 }

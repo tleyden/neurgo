@@ -17,7 +17,7 @@ func (actuator *Actuator) propagateSignal() {
 	if len(actuator.inbound) > 0 {  
 
 		outputVectorDimension := len(actuator.inbound)
-		outputVector := make([]float32,outputVectorDimension) 
+		outputVector := make([]float64,outputVectorDimension) 
 
 		for i, inboundConnection := range actuator.inbound {
 			log.Printf("%v reading from channel: %v", actuator.Name, inboundConnection.channel)

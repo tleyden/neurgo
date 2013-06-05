@@ -1,16 +1,16 @@
 
 package neurgo
 
-type VectorChannel chan []float32
+type VectorChannel chan []float64
 
 
 type Connectable interface {  // TODO: move to connectable.go
 
 	ConnectBidirectional(target Connectable)
-	ConnectBidirectionalWeighted(target Connectable, weights []float32)
+	ConnectBidirectionalWeighted(target Connectable, weights []float64)
 
 	connectOutboundWithChannel(target Connectable, channel VectorChannel) 
-	connectInboundWithChannel(source Connectable, channel VectorChannel, weights []float32)
+	connectInboundWithChannel(source Connectable, channel VectorChannel, weights []float64)
 
 }
 

@@ -8,11 +8,11 @@ import (
 
 func TestComputeOutput(t *testing.T) {
 
-	activation := func(x float32) float32 { return x }
+	activation := func(x float64) float64 { return x }
 	neuron := &Neuron{Bias: 0, ActivationFunction: activation} 
 	
-	weights := []float32{1,1,1,1,1}
-	inputs := []float32{20,20,20,20,20}
+	weights := []float64{1,1,1,1,1}
+	inputs := []float64{20,20,20,20,20}
 
 	weightedInput1 := &weightedInput{weights: weights, inputs: inputs}
 	weightedInput2 := &weightedInput{weights: weights, inputs: inputs}
