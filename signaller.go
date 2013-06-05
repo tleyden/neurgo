@@ -8,6 +8,8 @@ type Signaller interface {
 
 func Run(signaller Signaller) {
 
-	signaller.propagateSignal()
+	for {
+		signaller.propagateSignal()
+	}
 
 }

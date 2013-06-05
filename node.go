@@ -16,9 +16,31 @@ type Node struct {
 	outbound []*connection
 }
 
+type weightedInput struct {
+	weights     []float32
+	inputs      []float32
+}
+
+func (node *Node) weightedInputs() []*weightedInput {
+	weightedInputs := make([]*weightedInput, len(node.inbound))
+	for i, inboundConnection := range node.inbound {
+		log.Printf("%v reading from channel: %v", node.Name, inboundConnection.channel)
+		inputs := <- inboundConnection.channel
+		log.Printf("%v got data from channel: %v", node.Name, inboundConnection.channel)
+		weightedInputs[i] = &weightedInput{weights: inboundConnection.weights, inputs: inputs}
+	}
+	return weightedInputs
+}
+
 func (node *Node) propagateSignal() {
 
 	log.Printf("%s: Run()", node.Name) // TODO: how do I print the type of this struct w/o using Name field?
+	
+	//weightedInputs := node.weightedInputs()
+	//scalarOutput := node.computeOutput(weightedInputs)
+	//log.Printf("scalarOutput: %v", scalarOutput)
+
+	// OLD
 
 	if len(node.inbound) > 0 {  
 
@@ -27,6 +49,13 @@ func (node *Node) propagateSignal() {
 		outputVector := make([]float32,outputVectorDimension) 
 
 		// TODO: sum up the dot products and then add the bias?
+
+		/*
+                neurlang snippet:
+                    weighted_inputs = get_weighted_inputs(neuron)
+                    scalar_output = compute_output(weighted_inputs, bias, activation_function)
+                    [ scalar_output ]
+                */
 
 		for i, inboundConnection := range node.inbound {
 			log.Printf("%v reading from channel: %v", node.Name, inboundConnection.channel)

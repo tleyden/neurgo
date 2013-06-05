@@ -12,7 +12,7 @@ type Actuator struct {
 
 func (actuator *Actuator) propagateSignal() {
 
-	log.Printf("%s: Run()", actuator.Name) // TODO: how do I print the type of this struct w/o using Name field?
+	log.Printf("%s: Run().  Type: %T", actuator.Name, actuator) // TODO: how do I print the type of this struct w/o using Name field?
 
 	if len(actuator.inbound) > 0 {  
 
@@ -37,7 +37,7 @@ func (actuator *Actuator) propagateSignal() {
 		}
 
 		if len(actuator.outbound) > 0 {
-			actuator.outbound[0].channel <- outputVector  
+			actuator.outbound[0].channel <- outputVector   
 		}
 
 	}
