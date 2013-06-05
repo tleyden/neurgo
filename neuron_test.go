@@ -3,7 +3,6 @@ package neurgo
 import (
 	"testing"
 	"github.com/couchbaselabs/go.assert"
-	"log"
 )
 
 func TestComputeOutput(t *testing.T) {
@@ -19,7 +18,6 @@ func TestComputeOutput(t *testing.T) {
 	weightedInputs := []*weightedInput{weightedInput1, weightedInput2}
 
 	result := neuron.computeScalarOutput(weightedInputs)
-	log.Printf("result: %v", result)
 
 	assert.Equals(t, result, float64(200))
 

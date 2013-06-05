@@ -36,7 +36,7 @@ go Run(actuator)
 # Architecture
 
 * Each node in the network is a go-routine
-* Nodes communicate with eachother over channels
+* Nodes communicate with each other over channels
 
 # Status
 

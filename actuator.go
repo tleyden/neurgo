@@ -3,7 +3,6 @@ package neurgo
 
 import (
 	"fmt"
-	"log"
 )
 
 type Actuator struct {
@@ -12,18 +11,13 @@ type Actuator struct {
 
 func (actuator *Actuator) propagateSignal() {
 
-	log.Printf("%s: Run().  Type: %T", actuator.Name, actuator) // TODO: how do I print the type of this struct w/o using Name field?
-
 	if len(actuator.inbound) > 0 {  
 
 		outputVectorDimension := len(actuator.inbound)
 		outputVector := make([]float64,outputVectorDimension) 
 
 		for i, inboundConnection := range actuator.inbound {
-			log.Printf("%v reading from channel: %v", actuator.Name, inboundConnection.channel)
 			inputVector := <- inboundConnection.channel
-
-			log.Printf("%v got data from channel: %v", actuator.Name, inboundConnection.channel)
 
 			// assert that the neruron feeding this actuator is emitting a vector containing a single value
 			if len(inputVector) != 1 {
@@ -32,7 +26,6 @@ func (actuator *Actuator) propagateSignal() {
 			}
 
 			inputValue := inputVector[0]
-
 			outputVector[i] = inputValue 
 		}
 

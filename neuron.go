@@ -2,7 +2,6 @@
 package neurgo
 
 import (
-	"log"
 	"fmt"
 	"github.com/proxypoke/vector"
 )
@@ -17,7 +16,6 @@ type Neuron struct {
 
 
 func (neuron *Neuron) propagateSignal() {
-	log.Printf("%s: Run()", neuron.Name)
 	weightedInputs := neuron.weightedInputs()
 	scalarOutput := neuron.computeScalarOutput(weightedInputs)
 	outputs := []float64{scalarOutput}  
@@ -39,8 +37,7 @@ func (neuron *Neuron) weightedInputDotProductSum(weightedInputs []*weightedInput
 	var dotProductSummation float64
 	dotProductSummation = 0
 
-	for i, weightedInput := range weightedInputs {
-		log.Printf("i: %v, weightedInput: %v", i, weightedInput)
+	for _, weightedInput := range weightedInputs {
 		inputs := weightedInput.inputs
 		weights := weightedInput.weights
 		inputVector := vector.NewFrom(inputs) 

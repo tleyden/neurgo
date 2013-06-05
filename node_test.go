@@ -3,7 +3,6 @@ package neurgo
 import (
 	"testing"
 	"github.com/couchbaselabs/go.assert"
-	"log"
 	"sync"
 )
 
@@ -14,7 +13,6 @@ type Wiretap struct {
 type Injector struct {
 	Node
 }
-
 
 func TestConnectBidirectional(t *testing.T) {
 
@@ -74,42 +72,25 @@ func TestNetwork(t *testing.T) {
 	wg.Add(1)
 	wg.Add(1)
 
-	// inject a value from sensor -> neuron
-	testValue := []float64{1,1,1,1,1}
-
+	// inject a value into sensor
 	go func() {
-
-		log.Printf("%v Injecting value2: %v via outbound[0].  channel: %v", injector.Name, testValue, injector.outbound[0].channel)
+		testValue := []float64{1,1,1,1,1}
 		injector.outbound[0].channel <- testValue
-
-		log.Println("injector goroutine done")
 		wg.Done()
-
 	}()
 
-	// read the value from actuator
+	// read the value from wiretap (which taps into actuator)
 	go func() {
-
-		log.Printf("%v Getting value on chan: %v", wiretap.Name, wiretap.inbound[0].channel)
 		value := <- wiretap.inbound[0].channel
-		log.Printf("%v Received value on chan: %v: %v", wiretap.Name, wiretap.inbound[0].channel, value)
-		
-		wg.Done()
-		
 		assert.Equals(t, len(value), 2)  
-
-		
 		assert.Equals(t, value[0], float64(110)) 
-		assert.Equals(t, value[1], float64(110)) 
-
+		assert.Equals(t, value[1], float64(110))
+		wg.Done() 
 	}()
 
 	wg.Wait()
 
-
 }
-
-
 
 func identity_activation(x float64) float64 {
 	return x

@@ -2,7 +2,7 @@
 package neurgo
 
 import (
-	"log"
+
 )
 
 type connection struct {
@@ -24,9 +24,7 @@ type weightedInput struct {
 func (node *Node) weightedInputs() []*weightedInput {
 	weightedInputs := make([]*weightedInput, len(node.inbound))
 	for i, inboundConnection := range node.inbound {
-		log.Printf("%v reading from channel: %v", node.Name, inboundConnection.channel)
 		inputs := <- inboundConnection.channel
-		log.Printf("%v got data from channel: %v", node.Name, inboundConnection.channel)
 		weightedInputs[i] = &weightedInput{weights: inboundConnection.weights, inputs: inputs}
 	}
 	return weightedInputs
