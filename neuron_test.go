@@ -21,9 +21,7 @@ func TestComputeOutput(t *testing.T) {
 	result := neuron.computeScalarOutput(weightedInputs)
 	log.Printf("result: %v", result)
 
-	delta := result - 200  // had to do within limit hack because 200 != 200 issue
-	withinLimit := delta < 0.01
-	assert.Equals(t, withinLimit, true)
+	assert.Equals(t, result, float64(200))
 
 }
 

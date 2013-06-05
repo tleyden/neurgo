@@ -94,17 +94,18 @@ func TestNetwork(t *testing.T) {
 		value := <- wiretap.inbound[0].channel
 		log.Printf("%v Received value on chan: %v: %v", wiretap.Name, wiretap.inbound[0].channel, value)
 		
-		log.Println("wiretap goroutine done")
 		wg.Done()
 		
-		assert.Equals(t, len(value), 2)  // accumulate values from 2 neurons, therefore 2 elt vector    
-		//assert.Equals(t, value[0], 110) // n1 output: 110 
-		//assert.Equals(t, value[1], 110) // n2 output: 110 
+		assert.Equals(t, len(value), 2)  
+
+		
+		assert.Equals(t, value[0], float64(110)) 
+		assert.Equals(t, value[1], float64(110)) 
 
 	}()
 
 	wg.Wait()
-	log.Println("test done")
+
 
 }
 

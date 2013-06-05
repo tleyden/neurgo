@@ -14,6 +14,15 @@ type Neuron struct {
 	ActivationFunction activationFunction
 	Node
 }
+
+
+func (neuron *Neuron) propagateSignal() {
+	log.Printf("%s: Run()", neuron.Name)
+	weightedInputs := neuron.weightedInputs()
+	scalarOutput := neuron.computeScalarOutput(weightedInputs)
+	outputs := []float64{scalarOutput}  
+	neuron.scatterOutput(outputs)
+}
 	
 // compute the scalar output for the neuron
 func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float64 {
