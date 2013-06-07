@@ -11,8 +11,8 @@ type Actuator struct {
 
 func (actuator *Actuator) validateInputs(inputs []float64) {
 	if len(inputs) != 1 {
-		t := "%v got invalid input vector: %v"
-		message := fmt.Sprintf(t, actuator.Name, inputs)
+		t := "%T got invalid input vector: %v"
+		message := fmt.Sprintf(t, actuator, inputs)
 		panic(message)
 	}
 }

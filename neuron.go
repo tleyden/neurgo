@@ -61,8 +61,8 @@ func (neuron *Neuron) weightedInputDotProductSum(weightedInputs []*weightedInput
 		weightVector := vector.NewFrom(weights)
 		dotProduct, error := vector.DotProduct(inputVector, weightVector)
 		if error != nil {
-			t := "%v error performing dot product between %v and %v"
-			message := fmt.Sprintf(t, neuron.Name, inputVector, weightVector) 
+			t := "%T error performing dot product between %v and %v"
+			message := fmt.Sprintf(t, neuron, inputVector, weightVector) 
 			panic(message)
 		}
 		dotProductSummation += dotProduct

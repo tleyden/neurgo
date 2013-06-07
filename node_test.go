@@ -41,17 +41,11 @@ func TestNetwork(t *testing.T) {
 
 	// create network nodes
 	neuron1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}  
-	neuron1.Name = "neuron1" // TODO: why doesn't this work in literal above?
 	neuron2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
-	neuron2.Name = "neuron2"
 	sensor := &Sensor{}
-	sensor.Name = "sensor"
 	actuator := &Actuator{}
-	actuator.Name = "actuator"
 	wiretap := &Wiretap{}
-	wiretap.Name = "wiretap"
 	injector := &Injector{}
-	injector.Name = "injector"
 
 	// connect nodes together 
 	injector.ConnectBidirectional(sensor)
@@ -91,6 +85,8 @@ func TestNetwork(t *testing.T) {
 	wg.Wait()
 
 }
+
+
 
 func identity_activation(x float64) float64 {
 	return x
