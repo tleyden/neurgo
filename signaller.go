@@ -1,10 +1,17 @@
 package neurgo
 
+import (
+	"fmt"
+)
+
 type Signaller interface {
 
 	// read inputs from inbound connections, calculate output, then
 	// propagate the output to outbound connections
 	propagateSignal()
+
+	// is this signaller actually able to propagate a signal?
+	canPropagateSignal() bool
 
 }
 
@@ -12,7 +19,13 @@ type Signaller interface {
 func Run(signaller Signaller) {
 
 	for {
-		signaller.propagateSignal()
+		if !signaller.canPropagateSignal() {
+			msg := fmt.Sprintf("%T cannot propagate message", signaller)
+			panic(msg)
+		}
+
+		signaller.propagateSignal()	
+		
 	}
 
 }

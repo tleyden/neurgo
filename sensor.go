@@ -2,27 +2,25 @@
 package neurgo
 
 import (
-	"fmt"
 )
 
 type Sensor struct {
 	Node
 }
 
+func (sensor *Sensor) canPropagateSignal() bool {
+	return len(sensor.inbound) == 1 
+}
+
 func (sensor *Sensor) propagateSignal() {
 
-	// read from input channel and broadcast to all output channels
-	if (len(sensor.inbound) != 1) {
-		message := fmt.Sprintf("Sensor (%v) should have exactly one input channel, currently has: %v", sensor.Name, len(sensor.inbound))
-		panic(message)
-	}
+	// this implemenation is just a stub which makes it easy to test for now.
+	// at some point, sensors will act as proxies to real virtual sensors,
+	// and probably be reading their inputs from sockets.
 	
 	value := <- sensor.inbound[0].channel 
 
-	for _, outboundConnection := range sensor.outbound {
-		outboundConnection.channel <- value
-	}
-
+	sensor.scatterOutput(value)
 
 }
 

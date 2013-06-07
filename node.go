@@ -16,18 +16,8 @@ type Node struct {
 	outbound []*connection
 }
 
-type weightedInput struct {
-	weights     []float64
-	inputs      []float64
-}
-
-func (node *Node) weightedInputs() []*weightedInput {
-	weightedInputs := make([]*weightedInput, len(node.inbound))
-	for i, inboundConnection := range node.inbound {
-		inputs := <- inboundConnection.channel
-		weightedInputs[i] = &weightedInput{weights: inboundConnection.weights, inputs: inputs}
-	}
-	return weightedInputs
+func (node *Node) canPropagateSignal() bool {
+	return len(node.inbound) > 0 
 }
 
 func (node *Node) scatterOutput(outputs []float64) {

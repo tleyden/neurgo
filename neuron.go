@@ -14,12 +14,29 @@ type Neuron struct {
 	Node
 }
 
+type weightedInput struct {
+	weights     []float64
+	inputs      []float64
+}
 
 func (neuron *Neuron) propagateSignal() {
 	weightedInputs := neuron.weightedInputs()
 	scalarOutput := neuron.computeScalarOutput(weightedInputs)
 	outputs := []float64{scalarOutput}  
 	neuron.scatterOutput(outputs)
+}
+
+// read each inbound channel and get the inputs, and pair this vector
+// with the weight vector for that inbound channel, then return the
+// list of those weight/input pairings.
+func (neuron *Neuron) weightedInputs() []*weightedInput {
+	weightedInputs := make([]*weightedInput, len(neuron.inbound))
+	for i, connection := range neuron.inbound {
+		inputs := <- connection.channel
+		weights := connection.weights
+		weightedInputs[i] = &weightedInput{weights: weights, inputs: inputs}
+	}
+	return weightedInputs
 }
 	
 // compute the scalar output for the neuron
@@ -44,7 +61,8 @@ func (neuron *Neuron) weightedInputDotProductSum(weightedInputs []*weightedInput
 		weightVector := vector.NewFrom(weights)
 		dotProduct, error := vector.DotProduct(inputVector, weightVector)
 		if error != nil {
-			message := fmt.Sprintf("%v error performing dot product between %v and %v", neuron.Name, inputVector, weightVector) 
+			t := "%v error performing dot product between %v and %v"
+			message := fmt.Sprintf(t, neuron.Name, inputVector, weightVector) 
 			panic(message)
 		}
 		dotProductSummation += dotProduct
