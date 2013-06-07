@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/couchbaselabs/go.assert"
 	"sync"
+	"log"
 )
 
 type Wiretap struct {
@@ -86,6 +87,65 @@ func TestNetwork(t *testing.T) {
 
 }
 
+func TestXnorNetwork(t *testing.T) {
+
+	// create network nodes
+	input_neuron1 := &Neuron{Bias: 0, ActivationFunction: identity_activation}   
+	input_neuron2 := &Neuron{Bias: 0, ActivationFunction: identity_activation}  
+	hidden_neuron1 := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
+	hidden_neuron2 := &Neuron{Bias: 10, ActivationFunction: sigmoid}  
+	output_neuron := &Neuron{Bias: 0, ActivationFunction: sigmoid}  
+
+	sensor1 := &Sensor{}
+	sensor2 := &Sensor{}
+	actuator := &Actuator{}
+	wiretap := &Wiretap{}
+	injector1 := &Injector{}
+	injector2 := &Injector{}
+
+	// connect nodes together 
+	injector1.ConnectBidirectional(sensor1)
+	injector2.ConnectBidirectional(sensor2)
+	sensor1.ConnectBidirectionalWeighted(input_neuron1, []float64{1})
+	sensor2.ConnectBidirectionalWeighted(input_neuron2, []float64{1})
+	input_neuron1.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20})
+	input_neuron2.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20})
+	input_neuron1.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-20})
+	input_neuron2.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-10})
+	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{20})
+	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{20})
+	output_neuron.ConnectBidirectional(actuator)
+	actuator.ConnectBidirectional(wiretap)
+
+	// spinup node goroutines
+	signallers := []Signaller{input_neuron1, input_neuron2, hidden_neuron1, hidden_neuron2, output_neuron, sensor1, sensor2, actuator}
+	for _, signaller := range signallers {
+		go Run(signaller)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	wg.Add(1)
+
+	// inject a value into sensor
+	go func() {
+		testValue1 := []float64{0}
+		injector1.outbound[0].channel <- testValue1
+		testValue2 := []float64{1}
+		injector2.outbound[0].channel <- testValue2
+		wg.Done()
+	}()
+
+	// read the value from wiretap (which taps into actuator)
+	go func() {
+		value := <- wiretap.inbound[0].channel
+		log.Printf("Xnor - Got value from wiretap: %v", value)
+		wg.Done() 
+	}()
+
+	wg.Wait()
+
+}
 
 
 func identity_activation(x float64) float64 {
