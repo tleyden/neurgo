@@ -95,7 +95,6 @@ func TestXnorNetwork(t *testing.T) {
 	hidden_neuron1 := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
 	hidden_neuron2 := &Neuron{Bias: 10, ActivationFunction: sigmoid}  
 	output_neuron := &Neuron{Bias: -10, ActivationFunction: sigmoid}  
-
 	sensor1 := &Sensor{}
 	sensor2 := &Sensor{}
 	actuator := &Actuator{}
@@ -103,6 +102,7 @@ func TestXnorNetwork(t *testing.T) {
 	injector1 := &Injector{}
 	injector2 := &Injector{}
 
+	// give names to network nodes
 	sensor1.Name = "sensor1"
 	sensor2.Name = "sensor2"
 	input_neuron1.Name = "input_neuron1"
@@ -140,9 +140,11 @@ func TestXnorNetwork(t *testing.T) {
 		x1 []float64
 		x2 []float64
 	}{ {x1: []float64{0}, x2: []float64{1}},
-	   {x1: []float64{1}, x2: []float64{1}}}
+		{x1: []float64{1}, x2: []float64{1}},
+		{x1: []float64{1}, x2: []float64{0}},
+		{x1: []float64{0}, x2: []float64{0}}}
 
-	expectedOutputs := []float64{ 0.0000, 1.00000 }
+	expectedOutputs := []float64{ 0.0000, 1.00000, 0.0000, 1.00000 }
 
 	// inject a value into sensor
 	go func() {
