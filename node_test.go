@@ -136,36 +136,40 @@ func TestXnorNetwork(t *testing.T) {
 	wg.Add(1)
 	wg.Add(1)
 
+	testInputs := []struct{
+		x1 []float64
+		x2 []float64
+	}{ {x1: []float64{0}, x2: []float64{1}},
+	   {x1: []float64{1}, x2: []float64{1}}}
+
+	expectedOutputs := []float64{ 0.0000, 1.00000 }
+
 	// inject a value into sensor
 	go func() {
-		testValue1 := []float64{0}
-		injector1.outbound[0].channel <- testValue1
-		testValue2 := []float64{1}
-		injector2.outbound[0].channel <- testValue2
 
-		//testValue1b := []float64{1}
-		//injector1.outbound[0].channel <- testValue1b
-		//testValue2b := []float64{1}
-		//injector2.outbound[0].channel <- testValue2b
+		for _, inputPair := range testInputs {
+			injector1.outbound[0].channel <- inputPair.x1
+			injector2.outbound[0].channel <- inputPair.x2
+		}
 
 		wg.Done()
 	}()
 
 	// read the value from wiretap (which taps into actuator)
 	go func() {
-		resultVector := <- wiretap.inbound[0].channel
-		result := resultVector[0]
-		assert.True(t, equalsWithMaxDelta(result, 0.00000, .01))
-		log.Printf("Xnor - Got value from wiretap: %v", result)
-
-		//resultVector2 := <- wiretap.inbound[0].channel
-		//result2 := resultVector2[0]
-		//log.Printf("Xnor - Got value2 from wiretap: %v", result2)
+		
+		for _, expectedOuput := range expectedOutputs {
+			resultVector := <- wiretap.inbound[0].channel
+			result := resultVector[0]
+			assert.True(t, equalsWithMaxDelta(result, expectedOuput, .01))
+		}
 
 		wg.Done() 
 	}()
 
 	wg.Wait()
+
+	log.Printf("Done")
 
 }
 
