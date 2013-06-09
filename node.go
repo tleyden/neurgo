@@ -11,6 +11,7 @@ type connection struct {
 }
 
 type Node struct {
+	Name     string
 	inbound  []*connection
 	outbound []*connection
 }
