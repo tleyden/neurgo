@@ -133,6 +133,12 @@ func TestXnorNetwork(t *testing.T) {
 		injector1.outbound[0].channel <- testValue1
 		testValue2 := []float64{1}
 		injector2.outbound[0].channel <- testValue2
+
+		//testValue1b := []float64{1}
+		//injector1.outbound[0].channel <- testValue1b
+		//testValue2b := []float64{1}
+		//injector2.outbound[0].channel <- testValue2b
+
 		wg.Done()
 	}()
 
@@ -140,8 +146,13 @@ func TestXnorNetwork(t *testing.T) {
 	go func() {
 		resultVector := <- wiretap.inbound[0].channel
 		result := resultVector[0]
-		assert.True(t, equalsWithMaxDelta(result, 1.00000, .01))
+		assert.True(t, equalsWithMaxDelta(result, 0.00000, .01))
 		log.Printf("Xnor - Got value from wiretap: %v", result)
+
+		//resultVector2 := <- wiretap.inbound[0].channel
+		//result2 := resultVector2[0]
+		//log.Printf("Xnor - Got value2 from wiretap: %v", result2)
+
 		wg.Done() 
 	}()
 
