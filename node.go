@@ -16,6 +16,10 @@ type Node struct {
 	outbound []*connection
 }
 
+func (node *Node) String() string {
+	return node.Name
+}
+
 func (node *Node) canPropagateSignal() bool {
 	return len(node.inbound) > 0 
 }

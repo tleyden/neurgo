@@ -103,6 +103,15 @@ func TestXnorNetwork(t *testing.T) {
 	injector1 := &Injector{}
 	injector2 := &Injector{}
 
+	sensor1.Name = "sensor1"
+	sensor2.Name = "sensor2"
+	input_neuron1.Name = "input_neuron1"
+	input_neuron2.Name = "input_neuron2"
+	hidden_neuron1.Name = "hidden_neuron1"
+	hidden_neuron2.Name = "hidden_neuron2"
+	output_neuron.Name = "output_neuron"
+	actuator.Name = "actuator_neuron"
+
 	// connect nodes together 
 	injector1.ConnectBidirectional(sensor1)
 	injector2.ConnectBidirectional(sensor2)
