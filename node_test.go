@@ -111,7 +111,7 @@ func TestXnorNetwork(t *testing.T) {
 	input_neuron1.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20})
 	input_neuron2.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20})
 	input_neuron1.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-20})
-	input_neuron2.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-10})
+	input_neuron2.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-20})
 	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{20})
 	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{20})
 	output_neuron.ConnectBidirectional(actuator)
