@@ -94,7 +94,7 @@ func TestXnorNetwork(t *testing.T) {
 	input_neuron2 := &Neuron{Bias: 0, ActivationFunction: identity_activation}  
 	hidden_neuron1 := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
 	hidden_neuron2 := &Neuron{Bias: 10, ActivationFunction: sigmoid}  
-	output_neuron := &Neuron{Bias: 0, ActivationFunction: sigmoid}  
+	output_neuron := &Neuron{Bias: -10, ActivationFunction: sigmoid}  
 
 	sensor1 := &Sensor{}
 	sensor2 := &Sensor{}
