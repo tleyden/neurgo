@@ -138,14 +138,17 @@ func TestXnorNetwork(t *testing.T) {
 
 	// read the value from wiretap (which taps into actuator)
 	go func() {
-		value := <- wiretap.inbound[0].channel
-		log.Printf("Xnor - Got value from wiretap: %v", value)
+		resultVector := <- wiretap.inbound[0].channel
+		result := resultVector[0]
+		assert.True(t, equalsWithMaxDelta(result, 1.00000, .01))
+		log.Printf("Xnor - Got value from wiretap: %v", result)
 		wg.Done() 
 	}()
 
 	wg.Wait()
 
 }
+
 
 
 func identity_activation(x float64) float64 {
