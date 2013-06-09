@@ -12,3 +12,8 @@ func TestSigmoid(t *testing.T) {
 	assert.True(t, sigmoid(-10) < 0.1)
 
 }
+
+func TestEqualsWithMaxDelta(t *testing.T) {
+	assert.True(t, equalsWithMaxDelta(0.99999, 1.00000, .01))
+	assert.False(t, equalsWithMaxDelta(0.95, 1.00000, .01))
+}
