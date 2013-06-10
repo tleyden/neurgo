@@ -110,7 +110,7 @@ func TestXnorNetwork(t *testing.T) {
 	hidden_neuron1.Name = "hidden_neuron1"
 	hidden_neuron2.Name = "hidden_neuron2"
 	output_neuron.Name = "output_neuron"
-	actuator.Name = "actuator_neuron"
+	actuator.Name = "actuator"
 
 	// connect nodes together 
 	injector1.ConnectBidirectional(sensor1)
@@ -174,6 +174,85 @@ func TestXnorNetwork(t *testing.T) {
 	log.Printf("Done")
 
 }
+
+func TestXnorCondensedNetwork(t *testing.T) {
+
+	// identical to TestXnorNetwork, but uses single sensor with vector outputs, removes 
+	// the input layer neurons which are useless
+
+	// create network nodes
+	hidden_neuron1 := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
+	hidden_neuron2 := &Neuron{Bias: 10, ActivationFunction: sigmoid}  
+	output_neuron := &Neuron{Bias: -10, ActivationFunction: sigmoid}  
+	sensor := &Sensor{}
+	actuator := &Actuator{}
+	wiretap := &Wiretap{}
+	injector := &Injector{}
+
+	// give names to network nodes
+	sensor.Name = "sensor"
+	hidden_neuron1.Name = "hidden_neuron1"
+	hidden_neuron2.Name = "hidden_neuron2"
+	output_neuron.Name = "output_neuron"
+	actuator.Name = "actuator"
+
+	// connect nodes together 
+	injector.ConnectBidirectional(sensor)
+	sensor.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20,20})
+	sensor.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-20, -20})
+	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{20})
+	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{20})
+	output_neuron.ConnectBidirectional(actuator)
+	actuator.ConnectBidirectional(wiretap)
+
+	// spinup node goroutines
+	signallers := []Signaller{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
+	for _, signaller := range signallers {
+		go Run(signaller)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	wg.Add(1)
+
+	testInputs := []struct{
+		x1 float64
+		x2 float64
+	}{ {x1: 0, x2: 1},
+		{x1: 1, x2: 1},
+		{x1: 1, x2: 0},
+		{x1: 0, x2: 0}}
+
+	expectedOutputs := []float64{ 0.0000, 1.00000, 0.0000, 1.00000 }
+
+	// inject a value into sensor
+	go func() {
+
+		for _, inputPair := range testInputs {
+			injector.outbound[0].channel <- []float64{inputPair.x1, inputPair.x2}
+		}
+
+		wg.Done()
+	}()
+
+	// read the value from wiretap (which taps into actuator)
+	go func() {
+		
+		for _, expectedOuput := range expectedOutputs {
+			resultVector := <- wiretap.inbound[0].channel
+			result := resultVector[0]
+			assert.True(t, equalsWithMaxDelta(result, expectedOuput, .01))
+		}
+
+		wg.Done() 
+	}()
+
+	wg.Wait()
+
+	log.Printf("Done")
+
+}
+
 
 
 
