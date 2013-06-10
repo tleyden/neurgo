@@ -156,8 +156,6 @@ func TestXnorCondensedNetwork(t *testing.T) {
 	output_neuron := &Neuron{Bias: -10, ActivationFunction: sigmoid}  
 	sensor := &Sensor{}
 	actuator := &Actuator{}
-	wiretap := &Wiretap{}
-	injector := &Injector{}
 
 	// give names to network nodes
 	sensor.Name = "sensor"
@@ -167,13 +165,25 @@ func TestXnorCondensedNetwork(t *testing.T) {
 	actuator.Name = "actuator"
 
 	// connect nodes together 
-	injector.ConnectBidirectional(sensor)
 	sensor.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20,20})
 	sensor.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-20, -20})
 	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{20})
 	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{20})
 	output_neuron.ConnectBidirectional(actuator)
-	actuator.ConnectBidirectional(wiretap)
+
+	// create neural network
+	sensors := []*Sensor{sensor}	
+	actuators := []*Actuator{actuator}
+	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
+
+	// inputs + expected outputs
+	examples := []*TrainingSample{
+
+		// TODO: how to wrap this?
+		{sampleInputs: [][]float64{[]float64{0, 1}}, expectedOutputs: [][]float64{[]float64{0}}},
+		{sampleInputs: [][]float64{[]float64{1, 1}}, expectedOutputs: [][]float64{[]float64{1}}},
+		{sampleInputs: [][]float64{[]float64{1, 0}}, expectedOutputs: [][]float64{[]float64{0}}},
+		{sampleInputs: [][]float64{[]float64{0, 0}}, expectedOutputs: [][]float64{[]float64{1}}}}
 
 	// spinup node goroutines
 	signallers := []Signaller{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
@@ -181,43 +191,10 @@ func TestXnorCondensedNetwork(t *testing.T) {
 		go Run(signaller)
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	wg.Add(1)
+	// verify neural network
+	verified := neuralNet.Verify(examples)
+	assert.True(t, verified)
 
-	testInputs := []struct{
-		x1 float64
-		x2 float64
-	}{ {x1: 0, x2: 1},
-		{x1: 1, x2: 1},
-		{x1: 1, x2: 0},
-		{x1: 0, x2: 0}}
-
-	expectedOutputs := []float64{ 0.0000, 1.00000, 0.0000, 1.00000 }
-
-	// inject a value into sensor
-	go func() {
-
-		for _, inputPair := range testInputs {
-			injector.outbound[0].channel <- []float64{inputPair.x1, inputPair.x2}
-		}
-
-		wg.Done()
-	}()
-
-	// read the value from wiretap (which taps into actuator)
-	go func() {
-		
-		for _, expectedOuput := range expectedOutputs {
-			resultVector := <- wiretap.inbound[0].channel
-			result := resultVector[0]
-			assert.True(t, equalsWithMaxDelta(result, expectedOuput, .01))
-		}
-
-		wg.Done() 
-	}()
-
-	wg.Wait()
 
 	log.Printf("Done")
 

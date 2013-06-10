@@ -5,13 +5,6 @@ import (
 	"github.com/couchbaselabs/go.assert"
 )
 
-type Wiretap struct {
-	Node
-}
-
-type Injector struct {
-	Node
-}
 
 func TestConnectBidirectional(t *testing.T) {
 
