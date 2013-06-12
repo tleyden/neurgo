@@ -15,17 +15,21 @@ func TestNetwork(t *testing.T) {
 	neuron2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
 	sensor := &Sensor{}
 	actuator := &Actuator{}
-	wiretap := &Wiretap{}
-	injector := &Injector{}
 
 	// connect nodes together 
-	injector.ConnectBidirectional(sensor)
 	weights := []float64{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron1, weights)
 	sensor.ConnectBidirectionalWeighted(neuron2, weights)
 	neuron1.ConnectBidirectional(actuator)
 	neuron2.ConnectBidirectional(actuator)
-	actuator.ConnectBidirectional(wiretap)
+
+	// inputs + expected outputs
+	examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1,1,1,1,1}}, expectedOutputs: [][]float64{[]float64{110,110}}}}
+
+	// create neural network
+	sensors := []*Sensor{sensor}	
+	actuators := []*Actuator{actuator}
+	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
 	// spinup node goroutines
 	signallers := []Signaller{neuron1, neuron2, sensor, actuator}
@@ -33,27 +37,12 @@ func TestNetwork(t *testing.T) {
 		go Run(signaller)
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	wg.Add(1)
+	// verify neural network
+	verified := neuralNet.Verify(examples)
+	assert.True(t, verified)
 
-	// inject a value into sensor
-	go func() {
-		testValue := []float64{1,1,1,1,1}
-		injector.outbound[0].channel <- testValue
-		wg.Done()
-	}()
+	log.Printf("Done")
 
-	// read the value from wiretap (which taps into actuator)
-	go func() {
-		value := <- wiretap.inbound[0].channel
-		assert.Equals(t, len(value), 2)  
-		assert.Equals(t, value[0], float64(110)) 
-		assert.Equals(t, value[1], float64(110))
-		wg.Done() 
-	}()
-
-	wg.Wait()
 
 }
 
