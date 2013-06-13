@@ -9,7 +9,7 @@ A library for constructing Neural Networks in [Go](http://golang.org/)
 # Project Goals:
 
 * Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a topology and weight evolving neural network in Erlang)
-* Support traditional Backpropagation learning methods
+* Support traditional Backpropagation learning methods, in addition to Evolutionary based methods
 * 100% test coverage
 * Thorough documentation & examples
 
@@ -36,20 +36,15 @@ go Run(sensor)
 go Run(actuator)
 ```
 
-# Architecture
-
-* Each node in the network is a go-routine
-* Nodes communicate with each other over channels
-
 # Status
 
-* Feedforward operation is nearly complete
-* No learning algorithms have been added yet, so it's basically useless (braindead)
+* Feedforward operation is complete
+* Learning algorithms (Stochastic Hill Climbing) in progress.
 * Stay tuned!
 
 # Understanding the codebase
 
-Start with TestNetwork in node_test.go
+Start with TestNetwork in neural_network_test.go
 
 # Related Work
 
