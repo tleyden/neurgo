@@ -3,7 +3,10 @@
 
 A library for constructing Neural Networks in [Go](http://golang.org/)
 
-The end goal:
+![architecture_diagram.png](http://cl.ly/image/1o2I07063Y3X/Screen%20Shot%202013-06-13%20at%2012.24.09%20AM.png)
+
+
+# Project Goals:
 
 * Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a topology and weight evolving neural network in Erlang)
 * Support traditional Backpropagation learning methods
@@ -47,3 +50,11 @@ go Run(actuator)
 # Understanding the codebase
 
 Start with TestNetwork in node_test.go
+
+# Related Work
+
+[DXNN2](https://github.com/CorticalComputer/DXNN2) - Pure Erlang TWEANN (Topology WEight Adapting Neural Network).  
+
+# Related Publications
+
+[Handbook of Neuroevolution Through Erlang](http://www.amazon.com/Handbook-Neuroevolution-Through-Erlang-Gene/dp/1461444624) _by Gene Sher_.
