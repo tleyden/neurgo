@@ -7,7 +7,7 @@ import (
 )
 
 
-func TestNetwork(t *testing.T) {
+func TestNetworkVerify(t *testing.T) {
 
 	// create network nodes
 	neuron1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}  
@@ -40,6 +40,10 @@ func TestNetwork(t *testing.T) {
 	verified := neuralNet.Verify(examples)
 	assert.True(t, verified)
 
+	// make sure injectors/wiretaps have been removed
+	assert.Equals(t, len(sensor.inbound), 0)
+	assert.Equals(t, len(actuator.outbound), 0)
+	
 
 }
 

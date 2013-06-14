@@ -2,7 +2,7 @@ package neurgo
 
 import (
 	"sync"
-	"log"
+	"fmt"
 )
 
 type NeuralNetwork struct {
@@ -27,6 +27,7 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 	injectors := make([]*Injector, len(neuralNet.sensors))
 	for i, _ := range injectors {
 		injectors[i] = &Injector{}
+		injectors[i].Name = fmt.Sprintf("injector-%d", i+1)
 		injectors[i].ConnectBidirectional(neuralNet.sensors[i])
 	}
 
@@ -34,6 +35,7 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 	wiretaps := make([]*Wiretap, len(neuralNet.actuators))
 	for i, _ := range wiretaps {
 		wiretaps[i] = &Wiretap{}
+		wiretaps[i].Name = fmt.Sprintf("wiretap-%d", i+1)
 		neuralNet.actuators[i].ConnectBidirectional(wiretaps[i])
 	}
 
@@ -69,7 +71,14 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 
 	wg.Wait()
 	
-	log.Printf("Done")
+	// disconnect injectors and wiretaps to leave it in the same state!
+	for i, injector := range injectors {
+		injector.DisconnectBidirectional(neuralNet.sensors[i])
+	}
+	for i, actuator := range neuralNet.actuators {
+		actuator.DisconnectBidirectional(wiretaps[i])
+	}
+
 
 	return verified  
 

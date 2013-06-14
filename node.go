@@ -6,6 +6,7 @@ import (
 )
 
 type connection struct {
+	other       Connector
 	channel     VectorChannel
 	weights     []float64
 }
@@ -45,14 +46,37 @@ func (node *Node) ConnectBidirectionalWeighted(target Connector, weights []float
 
 // Create outbound connection from node -> target
 func (node *Node) connectOutboundWithChannel(target Connector, channel VectorChannel) {
-	connection := &connection{channel: channel}
+	connection := &connection{channel: channel, other: target}
 	node.outbound = append(node.outbound, connection)
 }
 
 // Create inbound connection from source -> node
 func (node *Node) connectInboundWithChannel(source Connector, channel VectorChannel, weights []float64) {
-	connection := &connection{channel: channel, weights: weights}
+	connection := &connection{channel: channel, weights: weights, other: source}
 	node.inbound = append(node.inbound, connection)
 }
 
+// Remove the bi-directional connection between node <-> target
+func (node *Node) DisconnectBidirectional(target Connector) {
+	node.disconnectOutbound(target)
+	target.disconnectInbound(node)
+}
+
+// Remove the outbound connection from node -> target
+func (node *Node) disconnectOutbound(target Connector) {
+	for i, connection := range node.outbound {
+		if connection.other == target {
+			node.outbound = removeConnection(node.outbound, i)
+		}
+	}
+}
+
+// Remove the inbound connection from source -> node
+func (node *Node) disconnectInbound(source Connector) {
+	for i, connection := range node.inbound {
+		if connection.other == source {
+			node.inbound = removeConnection(node.inbound, i)
+		}
+	}
+}
 
