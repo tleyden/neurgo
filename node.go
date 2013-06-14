@@ -31,38 +31,31 @@ func (node *Node) scatterOutput(outputs []float64) {
 	}
 }
 
-// Create a bi-directional connection between node <-> target with no weights associated
-// with the connection
 func (node *Node) ConnectBidirectional(target Connector) {
 	node.ConnectBidirectionalWeighted(target, nil)
 }
 
-// Create a bi-directional connection between node <-> target with the given weights.
 func (node *Node) ConnectBidirectionalWeighted(target Connector, weights []float64) {
 	channel := make(VectorChannel)		
 	node.connectOutboundWithChannel(target, channel)
 	target.connectInboundWithChannel(node, channel, weights)
 }
 
-// Create outbound connection from node -> target
 func (node *Node) connectOutboundWithChannel(target Connector, channel VectorChannel) {
 	connection := &connection{channel: channel, other: target}
 	node.outbound = append(node.outbound, connection)
 }
 
-// Create inbound connection from source -> node
 func (node *Node) connectInboundWithChannel(source Connector, channel VectorChannel, weights []float64) {
 	connection := &connection{channel: channel, weights: weights, other: source}
 	node.inbound = append(node.inbound, connection)
 }
 
-// Remove the bi-directional connection between node <-> target
 func (node *Node) DisconnectBidirectional(target Connector) {
 	node.disconnectOutbound(target)
 	target.disconnectInbound(node)
 }
 
-// Remove the outbound connection from node -> target
 func (node *Node) disconnectOutbound(target Connector) {
 	for i, connection := range node.outbound {
 		if connection.other == target {
@@ -71,7 +64,6 @@ func (node *Node) disconnectOutbound(target Connector) {
 	}
 }
 
-// Remove the inbound connection from source -> node
 func (node *Node) disconnectInbound(source Connector) {
 	for i, connection := range node.inbound {
 		if connection.other == source {
