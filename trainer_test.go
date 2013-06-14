@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/couchbaselabs/go.assert"
 	"log"
+	"time"
 )
 
 
@@ -30,6 +31,8 @@ func xnorNetworkUntrained() *NeuralNetwork {
 	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{0})
 	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{0})
 	output_neuron.ConnectBidirectional(actuator)
+
+	log.Printf("sensor %v inbound connections size: %v", sensor, len(sensor.inbound))
 
 	// create neural network
 	sensors := []*Sensor{sensor}	
@@ -65,14 +68,19 @@ func TestWeightTraining(t *testing.T) {
 	verified := neuralNet.Verify(examples)
 	assert.False(t, verified)
 
+	// TODO - shutdown the network so we can re-use it
 
 	// create stochastic hill climber trainer
 
+	log.Printf("sleeping 5 secs.........")
+	time.Sleep(5 * 1e9)
+
 	// train the network 
 
+
 	// verify it can now solve the training set
-	// verified = neuralNet.Verify(examples)
-	// assert.True(t, verified)
+	verified = neuralNet.Verify(examples)
+	assert.True(t, verified)
 
 
 }

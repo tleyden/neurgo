@@ -15,6 +15,12 @@ func TestNetworkVerify(t *testing.T) {
 	sensor := &Sensor{}
 	actuator := &Actuator{}
 
+	// give nodes names
+	sensor.Name = "sensor"
+	actuator.Name = "actuator"
+	neuron1.Name = "neuron1"
+	neuron2.Name = "neuron2"
+
 	// connect nodes together 
 	weights := []float64{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron1, weights)

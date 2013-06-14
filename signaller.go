@@ -1,7 +1,7 @@
 package neurgo
 
 import (
-	"fmt"
+	"time"
 )
 
 type Signaller interface {
@@ -20,11 +20,11 @@ func Run(signaller Signaller) {
 
 	for {
 		if !signaller.canPropagateSignal() {
-			msg := fmt.Sprintf("%T cannot propagate message", signaller)
-			panic(msg)
+			time.Sleep(1 * 1e9)
+		} else {
+			signaller.propagateSignal()	
 		}
 
-		signaller.propagateSignal()	
 		
 	}
 

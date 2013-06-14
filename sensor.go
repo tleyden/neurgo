@@ -17,10 +17,12 @@ func (sensor *Sensor) propagateSignal() {
 	// this implemenation is just a stub which makes it easy to test for now.
 	// at some point, sensors will act as proxies to real virtual sensors,
 	// and probably be reading their inputs from sockets.
-	
-	value := <- sensor.inbound[0].channel 
 
-	sensor.scatterOutput(value)
+	if value, ok := <- sensor.inbound[0].channel; ok {
+		sensor.scatterOutput(value)
+	} 
+
+
 
 }
 

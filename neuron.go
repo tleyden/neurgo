@@ -30,6 +30,9 @@ func (neuron *Neuron) propagateSignal() {
 // with the weight vector for that inbound channel, then return the
 // list of those weight/input pairings.
 func (neuron *Neuron) weightedInputs() []*weightedInput {
+
+	// TODO!! deal with closed channels (and write test to exercise this)
+
 	weightedInputs := make([]*weightedInput, len(neuron.inbound))
 	for i, connection := range neuron.inbound {
 		inputs := <- connection.channel

@@ -19,6 +19,8 @@ func (actuator *Actuator) validateInputs(inputs []float64) {
 
 func (actuator *Actuator) gatherInputs() []float64 {
 
+	// TODO!! deal with closed channels  (and write test to exercise this)
+
 	outputVectorDimension := len(actuator.inbound)
 	outputVector := make([]float64,outputVectorDimension) 
 
