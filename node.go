@@ -2,7 +2,6 @@
 package neurgo
 
 import (
-	"log"
 )
 
 type connection struct {
@@ -60,7 +59,6 @@ func (node *Node) disconnectOutbound(target Connector) {
 	for i, connection := range node.outbound {
 		if connection.other == target {
 			channel := node.outbound[i].channel
-			log.Printf("%v disconnecting outbound channel %v", node, channel)
 			node.outbound = removeConnection(node.outbound, i)
 			close(channel)
 		}
@@ -70,8 +68,6 @@ func (node *Node) disconnectOutbound(target Connector) {
 func (node *Node) disconnectInbound(source Connector) {
 	for i, connection := range node.inbound {
 		if connection.other == source {
-			channel := node.inbound[i].channel
-			log.Printf("%v disconnecting inbound channel %v", node, channel)
 			node.inbound = removeConnection(node.inbound, i)
 		}
 	}

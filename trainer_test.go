@@ -32,8 +32,6 @@ func xnorNetworkUntrained() *NeuralNetwork {
 	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{0})
 	output_neuron.ConnectBidirectional(actuator)
 
-	log.Printf("sensor %v inbound connections size: %v", sensor, len(sensor.inbound))
-
 	// create neural network
 	sensors := []*Sensor{sensor}	
 	actuators := []*Actuator{actuator}
@@ -50,8 +48,6 @@ func xnorNetworkUntrained() *NeuralNetwork {
 }
 
 func TestWeightTraining(t *testing.T) {
-
-	log.Printf(".")
 
 	// training set
 	examples := []*TrainingSample{

@@ -3,7 +3,6 @@ package neurgo
 import (
 	"testing"
 	"github.com/couchbaselabs/go.assert"
-	"log"
 )
 
 
@@ -164,8 +163,6 @@ func TestXnorCondensedNetwork(t *testing.T) {
 	verified := neuralNet.Verify(examples)
 	assert.True(t, verified)
 
-
-	log.Printf("Done")
 
 }
 
