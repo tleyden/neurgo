@@ -113,10 +113,7 @@ func TestXnorNetwork(t *testing.T) {
 
 }
 
-func TestXnorCondensedNetwork(t *testing.T) {
-
-	// identical to TestXnorNetwork, but uses single sensor with vector outputs, removes 
-	// the input layer neurons which are useless
+func xnorCondensedNetwork() *NeuralNetwork {
 
 	// create network nodes
 	hidden_neuron1 := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
@@ -144,6 +141,22 @@ func TestXnorCondensedNetwork(t *testing.T) {
 	actuators := []*Actuator{actuator}
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
+	// spinup node goroutines
+	signallers := []Signaller{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
+	for _, signaller := range signallers {
+		go Run(signaller)
+	}
+
+	return neuralNet
+}
+
+func TestXnorCondensedNetwork(t *testing.T) {
+
+	// identical to TestXnorNetwork, but uses single sensor with vector outputs, removes 
+	// the input layer neurons which are useless
+
+	neuralNet := xnorCondensedNetwork()
+
 	// inputs + expected outputs
 	examples := []*TrainingSample{
 
@@ -153,11 +166,6 @@ func TestXnorCondensedNetwork(t *testing.T) {
 		{sampleInputs: [][]float64{[]float64{1, 0}}, expectedOutputs: [][]float64{[]float64{0}}},
 		{sampleInputs: [][]float64{[]float64{0, 0}}, expectedOutputs: [][]float64{[]float64{1}}}}
 
-	// spinup node goroutines
-	signallers := []Signaller{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
-	for _, signaller := range signallers {
-		go Run(signaller)
-	}
 
 	// verify neural network
 	verified := neuralNet.Verify(examples)
@@ -166,3 +174,7 @@ func TestXnorCondensedNetwork(t *testing.T) {
 
 }
 
+func TestCopy(t *testing.T) {
+
+
+}
