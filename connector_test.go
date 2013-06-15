@@ -3,7 +3,6 @@ package neurgo
 import (
 	"testing"
 	"github.com/couchbaselabs/go.assert"
-	"log"
 	"sync"
 	"time"
 )
@@ -114,13 +113,16 @@ func TestRemoveConnectionFromRunningNode(t *testing.T) {
 	
 	go func() {
 		weightedInputs := neuron.weightedInputs()
-		log.Printf("len(weightedInputs): %v", len(weightedInputs))
 		assert.Equals(t, len(weightedInputs), 1)
 		wg.Done() 
 	}()
 
 	go func() {
+		
+		// need to sleep so that we can be sure that the other go-routine 
+		// is blocked on the channel read of its inbound channels
 		time.Sleep(0.1 * 1e9)
+		
 		sensor1.DisconnectBidirectional(neuron)
 		sensor2.outbound[0].channel <- []float64{0}
 		wg.Done() 
@@ -128,7 +130,6 @@ func TestRemoveConnectionFromRunningNode(t *testing.T) {
 
 	wg.Wait()
 
-	log.Printf("done")
 
 }
 
