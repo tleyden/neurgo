@@ -71,7 +71,7 @@ func TestRemoveConnection(t *testing.T) {
 
 }
 
-func TestRemoveConnectionFromRunningNode(t *testing.T) {
+func TestRemoveConnectionFromRunningNeuron(t *testing.T) {
 
 	// create nodes
 	sensor1 := &Sensor{}
@@ -88,11 +88,6 @@ func TestRemoveConnectionFromRunningNode(t *testing.T) {
 	sensor1.ConnectBidirectionalWeighted(neuron, weights)
 	sensor2.ConnectBidirectionalWeighted(neuron, weights)
 
-	// TODO
-	// close other channel
-	// call weightedInputs and get zero results 
-
-
 	// basic sanity check, send two inputs to neuron inbound channels
 	// and verify that weightedInputs() returns both inputs
 	go func() {
@@ -106,7 +101,6 @@ func TestRemoveConnectionFromRunningNode(t *testing.T) {
 	
 	// close one channel while a neuron is reading from
 	// both inbound connections, make sure it returns one value
-	
 	var wg sync.WaitGroup
 	wg.Add(1)
 	wg.Add(1)
@@ -132,6 +126,49 @@ func TestRemoveConnectionFromRunningNode(t *testing.T) {
 
 
 }
+
+func TestRemoveConnectionFromRunningActuator(t *testing.T) {
+
+	// create nodes
+	neuron1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
+	neuron2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
+	actuator := &Actuator{}
+
+	// give names to nodes
+	neuron1.Name = "neuron1"
+	neuron2.Name = "neuron2"
+	actuator.Name = "actuator"
+
+	// connect nodes together
+	neuron1.ConnectBidirectional(actuator)
+	neuron2.ConnectBidirectional(actuator)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	wg.Add(1)
+	
+	go func() {
+		inputs := actuator.gatherInputs()
+		assert.Equals(t, len(inputs), 1)
+		wg.Done() 
+	}()
+
+	go func() {
+		
+		// need to sleep so that we can be sure that the other go-routine 
+		// is blocked on the channel read of its inbound channels
+		time.Sleep(0.1 * 1e9)
+		
+		neuron1.DisconnectBidirectional(actuator)
+		neuron2.outbound[0].channel <- []float64{0}
+		wg.Done() 
+	}()
+
+	wg.Wait()
+
+
+}
+
 
 func identity_activation(x float64) float64 {
 	return x
