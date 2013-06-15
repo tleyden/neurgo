@@ -31,21 +31,17 @@ func (neuron *Neuron) propagateSignal() {
 // list of those weight/input pairings.
 func (neuron *Neuron) weightedInputs() []*weightedInput {
 
-	weightedInputs := make([]*weightedInput, len(neuron.inbound))
-	for i, connection := range neuron.inbound {
+	weightedInputs := make([]*weightedInput, 0)
+	for _, connection := range neuron.inbound {
 		if inputs, ok := <- connection.channel; ok {
 			if len(inputs) == 0 {
 				msg := fmt.Sprintf("%v got empty inputs", neuron)
 				panic(msg)
 			}
 			weights := connection.weights
-			weightedInputs[i] = &weightedInput{weights: weights, inputs: inputs}
-
+			weightedInputs = append(weightedInputs, &weightedInput{weights: weights, inputs: inputs})
 		} 
 	}
-
-	// prune any empty slots due to closed channels
-	weightedInputs = pruneEmptyElements(weightedInputs)
 
 	return weightedInputs
 }
