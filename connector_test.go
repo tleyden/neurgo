@@ -120,7 +120,7 @@ func TestRemoveConnectionFromRunningNode(t *testing.T) {
 	}()
 
 	go func() {
-		time.Sleep(0.5 * 1e9)
+		time.Sleep(0.1 * 1e9)
 		sensor1.DisconnectBidirectional(neuron)
 		sensor2.outbound[0].channel <- []float64{0}
 		wg.Done() 

@@ -4,7 +4,6 @@ package neurgo
 import (
 	"fmt"
 	"github.com/proxypoke/vector"
-	"log"
 )
 
 type activationFunction func(float64) float64
@@ -32,19 +31,22 @@ func (neuron *Neuron) propagateSignal() {
 // list of those weight/input pairings.
 func (neuron *Neuron) weightedInputs() []*weightedInput {
 
-	// TODO!! deal with closed channels (and write test to exercise this)
-
 	weightedInputs := make([]*weightedInput, len(neuron.inbound))
 	for i, connection := range neuron.inbound {
-		inputs := <- connection.channel
-		log.Printf("%v got inputs: %v", neuron, inputs)
-		if len(inputs) == 0 {
-			msg := fmt.Sprintf("%v got empty inputs", neuron)
-			panic(msg)
-		}
-		weights := connection.weights
-		weightedInputs[i] = &weightedInput{weights: weights, inputs: inputs}
+		if inputs, ok := <- connection.channel; ok {
+			if len(inputs) == 0 {
+				msg := fmt.Sprintf("%v got empty inputs", neuron)
+				panic(msg)
+			}
+			weights := connection.weights
+			weightedInputs[i] = &weightedInput{weights: weights, inputs: inputs}
+
+		} 
 	}
+
+	// prune any empty slots due to closed channels
+	weightedInputs = pruneEmptyElements(weightedInputs)
+
 	return weightedInputs
 }
 	
