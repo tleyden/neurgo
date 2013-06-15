@@ -19,16 +19,14 @@ func (actuator *Actuator) validateInputs(inputs []float64) {
 
 func (actuator *Actuator) gatherInputs() []float64 {
 
-	// TODO!! deal with closed channels  (and write test to exercise this)
+	outputVector := make([]float64,0) 
 
-	outputVectorDimension := len(actuator.inbound)
-	outputVector := make([]float64,outputVectorDimension) 
-
-	for i, inboundConnection := range actuator.inbound {
-		inputVector := <- inboundConnection.channel
-		actuator.validateInputs(inputVector)
-		inputValue := inputVector[0]
-		outputVector[i] = inputValue 
+	for _, inboundConnection := range actuator.inbound {
+		if inputVector, ok := <- inboundConnection.channel; ok {
+			actuator.validateInputs(inputVector)
+			inputValue := inputVector[0]
+			outputVector = append(outputVector, inputValue)
+		}
 	}
 
 	return outputVector
