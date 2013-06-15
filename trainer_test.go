@@ -3,8 +3,6 @@ package neurgo
 import (
 	"testing"
 	"github.com/couchbaselabs/go.assert"
-	"log"
-	"time"
 )
 
 
@@ -67,9 +65,6 @@ func TestWeightTraining(t *testing.T) {
 	// TODO - shutdown the network so we can re-use it
 
 	// create stochastic hill climber trainer
-
-	log.Printf("sleeping 5 secs.........")
-	time.Sleep(5 * 1e9)
 
 	// train the network 
 

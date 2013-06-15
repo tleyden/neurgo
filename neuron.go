@@ -4,6 +4,7 @@ package neurgo
 import (
 	"fmt"
 	"github.com/proxypoke/vector"
+	"log"
 )
 
 type activationFunction func(float64) float64
@@ -36,13 +37,17 @@ func (neuron *Neuron) weightedInputs() []*weightedInput {
 	weightedInputs := make([]*weightedInput, len(neuron.inbound))
 	for i, connection := range neuron.inbound {
 		inputs := <- connection.channel
+		log.Printf("%v got inputs: %v", neuron, inputs)
+		if len(inputs) == 0 {
+			msg := fmt.Sprintf("%v got empty inputs", neuron)
+			panic(msg)
+		}
 		weights := connection.weights
 		weightedInputs[i] = &weightedInput{weights: weights, inputs: inputs}
 	}
 	return weightedInputs
 }
 	
-// compute the scalar output for the neuron
 func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float64 {
 	output := neuron.weightedInputDotProductSum(weightedInputs)
 	output += neuron.Bias
