@@ -26,5 +26,17 @@ func (sensor *Sensor) propagateSignal() {
 
 }
 
+// implementation needed here because when it was a method on *Node, it was calling 
+// connectInboundWithChannel with a *Node instance and losing the fact it was a sensor
+func (sensor *Sensor) ConnectBidirectional(target Connector) {
+	sensor.ConnectBidirectionalWeighted(target, nil)
+}
 
+// implementation needed here because when it was a method on *Node, it was calling 
+// connectInboundWithChannel with a *Node instance and losing the fact it was a sensor
+func (sensor *Sensor) ConnectBidirectionalWeighted(target Connector, weights []float64) {
+	channel := make(VectorChannel)		
+	sensor.connectOutboundWithChannel(target, channel)
+	target.connectInboundWithChannel(sensor, channel, weights)
+}
 

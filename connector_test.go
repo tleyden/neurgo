@@ -22,6 +22,10 @@ func TestConnectBidirectional(t *testing.T) {
 	weights := []float64{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron, weights)
 
+	// make sure the reverse connection points back to correct node type
+	sensorTypeCheck := neuron.inbound[0].other.(*Sensor)
+	assert.Equals(t, sensor, sensorTypeCheck)
+
 	// assert that it worked
 	assert.Equals(t, len(sensor.outbound), 1)
 	assert.Equals(t, len(neuron.inbound), 1)
@@ -33,6 +37,10 @@ func TestConnectBidirectional(t *testing.T) {
 	// make a new node and connect it
 	actuator := &Actuator{}
 	neuron.ConnectBidirectional(actuator)
+
+	// make sure the reverse connection points back to correct node type
+	neuronTypeCheck := actuator.inbound[0].other.(*Neuron)
+	assert.Equals(t, neuron, neuronTypeCheck)
 
 	// assert that it worked
 	assert.Equals(t, len(neuron.outbound), 1)

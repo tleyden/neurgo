@@ -26,6 +26,21 @@ func (neuron *Neuron) propagateSignal() {
 	neuron.scatterOutput(outputs)
 }
 
+// implementation needed here because when it was a method on *Node, it was calling 
+// connectInboundWithChannel with a *Node instance and losing the fact it was a neuron
+func (neuron *Neuron) ConnectBidirectional(target Connector) {
+	neuron.ConnectBidirectionalWeighted(target, nil)
+}
+
+// implementation needed here because when it was a method on *Node, it was calling 
+// connectInboundWithChannel with a *Node instance and losing the fact it was a neuron
+func (neuron *Neuron) ConnectBidirectionalWeighted(target Connector, weights []float64) {
+	channel := make(VectorChannel)		
+	neuron.connectOutboundWithChannel(target, channel)
+	target.connectInboundWithChannel(neuron, channel, weights)
+}
+
+
 // read each inbound channel and get the inputs, and pair this vector
 // with the weight vector for that inbound channel, then return the
 // list of those weight/input pairings.

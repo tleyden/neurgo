@@ -9,6 +9,21 @@ type Actuator struct {
 	Node
 }
 
+// implementation needed here because when it was a method on *Node, it was calling 
+// connectInboundWithChannel with a *Node instance and losing the fact it was a actuator
+func (actuator *Actuator) ConnectBidirectional(target Connector) {
+	actuator.ConnectBidirectionalWeighted(target, nil)
+}
+
+// implementation needed here because when it was a method on *Node, it was calling 
+// connectInboundWithChannel with a *Node instance and losing the fact it was an actuator
+func (actuator *Actuator) ConnectBidirectionalWeighted(target Connector, weights []float64) {
+	channel := make(VectorChannel)		
+	actuator.connectOutboundWithChannel(target, channel)
+	target.connectInboundWithChannel(actuator, channel, weights)
+}
+
+
 func (actuator *Actuator) validateInputs(inputs []float64) {
 	if len(inputs) != 1 {
 		t := "%T got invalid input vector: %v"
