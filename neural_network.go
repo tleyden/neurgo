@@ -117,15 +117,11 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 		neuralNetCopy.actuators = append(neuralNetCopy.actuators, actuatorCopy)
 	}
 
-
 	for _, sensor := range neuralNet.sensors {
 		sensorCopy := nodeScaffold[sensor]
 		recreateOutboundConnectionsRecursive(sensor, sensorCopy, scaffold)
 	}
 
-	log.Printf("-----------------------------------")
-
-	// TODO: inbound connections!!
 	for _, actuator := range neuralNet.actuators {
 		actuatorCopy := nodeScaffold[actuator]
 		recreateInboundConnectionsRecursive(actuator, actuatorCopy, scaffold)
@@ -239,6 +235,8 @@ func createConnectionTargetCopy(cxnTargetOriginal Connector, nodeScaffold map[Co
 			log.Printf("its a neuron: %T", t)
 			neuron := &Neuron{}
 			neuron.Name = t.Name
+			neuron.Bias = t.Bias
+			neuron.ActivationFunction = t.ActivationFunction
 			cxnTargetCopy = neuron
 		case *Actuator:
 			log.Printf("its an actuator: %T", t)

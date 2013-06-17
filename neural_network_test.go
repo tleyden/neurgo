@@ -209,8 +209,18 @@ func TestCopy(t *testing.T) {
 	assert.NotEquals(t, neuralNet.actuators[0].inbound[0], neuralNetCopy.actuators[0].inbound[0]) 
 	assert.Equals(t, len(neuralNetCopy.sensors[0].outbound[0].other.inboundConnections()[0].weights), len(neuralNet.sensors[0].outbound[0].other.inboundConnections()[0].weights)) 	
 
-	// TODO: make sure bias is the same for neurons, type assertion needed
-	
+	otherNeuron := neuralNet.sensors[0].outbound[0].other.(*Neuron)
+	otherNeuronCopy := neuralNetCopy.sensors[0].outbound[0].other.(*Neuron)
+	assert.Equals(t, otherNeuron.Bias, otherNeuronCopy.Bias)
+	assert.Equals(t, otherNeuron.ActivationFunction(1), otherNeuronCopy.ActivationFunction(1))
+
+	// TODO: can't do this because the network is not running
+	/*
+	// verify neural network copy
+	examples := xnorTrainingSamples()
+	verified := neuralNetCopy.Verify(examples)
+	assert.True(t, verified)
+        */
 
 	log.Printf("")
 
