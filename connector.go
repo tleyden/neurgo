@@ -15,6 +15,8 @@ type Connector interface {
 	outboundConnections() []*connection
 	inboundConnections() []*connection
 
+	appendOutboundConnection(target *connection)
+	appendInboundConnection(source *connection)
 
 }
 

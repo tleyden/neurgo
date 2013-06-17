@@ -80,3 +80,12 @@ func (node *Node) outboundConnections() []*connection {
 func (node *Node) inboundConnections() []*connection {
 	return node.inbound
 }
+
+func (node *Node) appendOutboundConnection(target *connection) {
+	node.outbound = append(node.outbound, target)
+}
+
+func (node *Node) appendInboundConnection(source *connection) {
+	node.inbound = append(node.inbound, source)
+}
+	
