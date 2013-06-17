@@ -153,6 +153,13 @@ func recreateInboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connec
 		channelCopy := createChannelCopy(inboundConnection.channel, channelScaffold)
 		newCxn.channel = channelCopy
 
+		if inboundConnection.weights != nil && len(inboundConnection.weights) > 0 {
+			weightsCopy := make([]float64, len(inboundConnection.weights))
+			copy(weightsCopy, inboundConnection.weights)
+			newCxn.weights = weightsCopy
+		}
+		
+
 		log.Printf("append inbound connection %v to %v", newCxn, nodeCopy)
 		nodeCopy.appendInboundConnection(newCxn)
 		log.Printf("%v (%p) now has %v inbound connections", nodeCopy, nodeCopy, len(nodeCopy.inboundConnections()))
@@ -162,7 +169,6 @@ func recreateInboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connec
 			log.Printf("recursing into recreateInboundConnectionsRecursive with: %v, %v, %v ", cxnTargetOriginal, cxnTargetCopy, nodeScaffold)
 			recreateInboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
 		} 
-		
 
 	} 
 
