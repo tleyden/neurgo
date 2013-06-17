@@ -151,12 +151,7 @@ func xnorCondensedNetwork() *NeuralNetwork {
 	return neuralNet
 }
 
-func TestXnorCondensedNetwork(t *testing.T) {
-
-	// identical to TestXnorNetwork, but uses single sensor with vector outputs, removes 
-	// the input layer neurons which are useless
-
-	neuralNet := xnorCondensedNetwork()
+func xnorTrainingSamples() []*TrainingSample {
 
 	// inputs + expected outputs
 	examples := []*TrainingSample{
@@ -167,11 +162,24 @@ func TestXnorCondensedNetwork(t *testing.T) {
 		{sampleInputs: [][]float64{[]float64{1, 0}}, expectedOutputs: [][]float64{[]float64{0}}},
 		{sampleInputs: [][]float64{[]float64{0, 0}}, expectedOutputs: [][]float64{[]float64{1}}}}
 
+	return examples
+
+}
+
+
+func TestXnorCondensedNetwork(t *testing.T) {
+
+	// identical to TestXnorNetwork, but uses single sensor with vector outputs, removes 
+	// the input layer neurons which are useless
+
+	neuralNet := xnorCondensedNetwork()
+
+	// inputs + expected outputs
+	examples := xnorTrainingSamples()
 
 	// verify neural network
 	verified := neuralNet.Verify(examples)
 	assert.True(t, verified)
-
 
 }
 
@@ -200,6 +208,9 @@ func TestCopy(t *testing.T) {
 
 	assert.NotEquals(t, neuralNet.actuators[0].inbound[0], neuralNetCopy.actuators[0].inbound[0]) 
 	assert.Equals(t, len(neuralNetCopy.sensors[0].outbound[0].other.inboundConnections()[0].weights), len(neuralNet.sensors[0].outbound[0].other.inboundConnections()[0].weights)) 	
+
+	// TODO: make sure bias is the same for neurons, type assertion needed
+	
 
 	log.Printf("")
 
