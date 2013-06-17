@@ -123,6 +123,8 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 		recreateOutboundConnectionsRecursive(sensor, sensorCopy, scaffold)
 	}
 
+	log.Printf("-----------------------------------")
+
 	// TODO: inbound connections!!
 	for _, actuator := range neuralNet.actuators {
 		actuatorCopy := nodeScaffold[actuator]
@@ -151,9 +153,9 @@ func recreateInboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connec
 		channelCopy := createChannelCopy(inboundConnection.channel, channelScaffold)
 		newCxn.channel = channelCopy
 
-		log.Printf("append connection %v to %v", newCxn, nodeCopy)
+		log.Printf("append inbound connection %v to %v", newCxn, nodeCopy)
 		nodeCopy.appendInboundConnection(newCxn)
-		log.Printf("nodeCopy now has %v inbound connections", len(nodeCopy.inboundConnections()))
+		log.Printf("%v (%p) now has %v inbound connections", nodeCopy, nodeCopy, len(nodeCopy.inboundConnections()))
 
 
 		if len(cxnTargetOriginal.inboundConnections()) > 0 {
@@ -206,6 +208,7 @@ func createChannelCopy(channelOriginal VectorChannel, channelScaffold map[Vector
 		channelCopy = channelCopyTemp
 	} else {
 		channelCopy = make(VectorChannel)
+		channelScaffold[channelOriginal] = channelCopy
 	}
 	return channelCopy
 
