@@ -73,3 +73,10 @@ func (node *Node) disconnectInbound(source Connector) {
 	}
 }
 
+func (node *Node) outboundConnections() []*connection {
+	return node.outbound
+}
+
+func (node *Node) inboundConnections() []*connection {
+	return node.inbound
+}

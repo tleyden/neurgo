@@ -12,6 +12,10 @@ type Connector interface {
 	disconnectOutbound(target Connector)
 	disconnectInbound(source Connector)
 
+	outboundConnections() []*connection
+	inboundConnections() []*connection
+
+
 }
 
 
