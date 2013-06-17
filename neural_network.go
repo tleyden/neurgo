@@ -131,6 +131,8 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 	//          (or maybe this makes sense to do in a separate pass)
 	//   recursive call for the connection target
 	
+	log.Printf("recreateOutboundConnectionsRecursive called with: %v", nodeOriginal)
+
 	var cxnTargetCopy Connector
 	for _, outboundConnection := range nodeOriginal.outboundConnections() {
 
@@ -165,10 +167,16 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 
 		}
 
-		log.Printf("map: %v", nodeScaffold)
 
-		newConnection := &connection{}
-		newConnection.other = cxnTargetCopy
+		newCxn := &connection{}
+		newCxn.other = cxnTargetCopy
+		// TODO: add channel  (might neeed channel scaffold)
+		// TODO: add weights, if any
+
+		log.Printf("append connection %v to %v", newCxn, nodeCopy)
+		nodeCopy.appendOutboundConnection(newCxn)
+		log.Printf("nodeCopy now has %v outbound connections", len(nodeCopy.outboundConnections()))
+
 
 		if len(cxnTargetOriginal.outboundConnections()) > 0 {
 			log.Printf("recursing into recreateOutboundConnectionsRecursive with: %v, %v, %v ", cxnTargetOriginal, cxnTargetCopy, nodeScaffold)
