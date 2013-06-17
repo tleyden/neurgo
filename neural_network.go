@@ -3,7 +3,6 @@ package neurgo
 import (
 	"sync"
 	"fmt"
-	"log"
 )
 
 type NeuralNetwork struct {
@@ -134,7 +133,6 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 func recreateInboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, scaffold *copyScaffold) {
 	
-	log.Printf("recreateInboundConnectionsRecursive called with: %v", nodeOriginal)
 	nodeScaffold := scaffold.nodeScaffold
 	channelScaffold := scaffold.channelScaffold
 
@@ -155,25 +153,18 @@ func recreateInboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connec
 			newCxn.weights = weightsCopy
 		}
 		
-
-		log.Printf("append inbound connection %v to %v", newCxn, nodeCopy)
 		nodeCopy.appendInboundConnection(newCxn)
-		log.Printf("%v (%p) now has %v inbound connections", nodeCopy, nodeCopy, len(nodeCopy.inboundConnections()))
-
 
 		if len(cxnTargetOriginal.inboundConnections()) > 0 {
-			log.Printf("recursing into recreateInboundConnectionsRecursive with: %v, %v, %v ", cxnTargetOriginal, cxnTargetCopy, nodeScaffold)
 			recreateInboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
 		} 
-
 	} 
-
 }
 
 
 func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, scaffold *copyScaffold) {
 	
-	log.Printf("recreateOutboundConnectionsRecursive called with: %v", nodeOriginal)
+
 	nodeScaffold := scaffold.nodeScaffold
 	channelScaffold := scaffold.channelScaffold
 
@@ -188,19 +179,12 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 		channelCopy := createChannelCopy(outboundConnection.channel, channelScaffold)
 		newCxn.channel = channelCopy
 
-		log.Printf("append connection %v to %v", newCxn, nodeCopy)
 		nodeCopy.appendOutboundConnection(newCxn)
-		log.Printf("nodeCopy now has %v outbound connections", len(nodeCopy.outboundConnections()))
-
 
 		if len(cxnTargetOriginal.outboundConnections()) > 0 {
-			log.Printf("recursing into recreateOutboundConnectionsRecursive with: %v, %v, %v ", cxnTargetOriginal, cxnTargetCopy, nodeScaffold)
 			recreateOutboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
 		} 
-		
-
 	} 
-
 }
 
 func createChannelCopy(channelOriginal VectorChannel, channelScaffold map[VectorChannel]VectorChannel) VectorChannel {
@@ -227,24 +211,20 @@ func createConnectionTargetCopy(cxnTargetOriginal Connector, nodeScaffold map[Co
 		// the connection target does not exist in nodeScaffold, create it
 		switch t:= cxnTargetOriginal.(type) {
 		case *Sensor:
-			log.Printf("its a sensor: %T", t)
 			sensor := &Sensor{}
 			sensor.Name = t.Name  
 			cxnTargetCopy = sensor
 		case *Neuron:
-			log.Printf("its a neuron: %T", t)
 			neuron := &Neuron{}
 			neuron.Name = t.Name
 			neuron.Bias = t.Bias
 			neuron.ActivationFunction = t.ActivationFunction
 			cxnTargetCopy = neuron
 		case *Actuator:
-			log.Printf("its an actuator: %T", t)
 			actuator := &Actuator{}
 			actuator.Name = t.Name
 			cxnTargetCopy = actuator
 		case *Node:
-			log.Printf("its a node: %T %v", t, t)
 			node := &Node{}
 			node.Name = t.Name
 			cxnTargetCopy = node

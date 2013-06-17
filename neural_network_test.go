@@ -215,12 +215,13 @@ func TestCopy(t *testing.T) {
 	assert.Equals(t, otherNeuron.ActivationFunction(1), otherNeuronCopy.ActivationFunction(1))
 
 	// TODO: can't do this because the network is not running
-	/*
+	
 	// verify neural network copy
+/*
 	examples := xnorTrainingSamples()
 	verified := neuralNetCopy.Verify(examples)
 	assert.True(t, verified)
-        */
+  */      
 
 	log.Printf("")
 
