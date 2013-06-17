@@ -124,20 +124,50 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 	}
 
 	// TODO: inbound connections!!
+	for _, actuator := range neuralNet.actuators {
+		actuatorCopy := nodeScaffold[actuator]
+		recreateInboundConnectionsRecursive(actuator, actuatorCopy, scaffold)
+	}
 
 	return neuralNetCopy
 
 }
 
 
-func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, scaffold *copyScaffold) {
+func recreateInboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, scaffold *copyScaffold) {
 	
-	// for each outbound connection:
-	//   see if connection target node copy exists in map, if not, create it
-	//   duplicate the outgoing connection
-	//   maybe: duplicate the incoming connection on the other side of this outbound 
-	//          (or maybe this makes sense to do in a separate pass)
-	//   recursive call for the connection target
+	log.Printf("recreateInboundConnectionsRecursive called with: %v", nodeOriginal)
+	nodeScaffold := scaffold.nodeScaffold
+	channelScaffold := scaffold.channelScaffold
+
+	for _, inboundConnection := range nodeOriginal.inboundConnections() {
+
+		cxnTargetOriginal := inboundConnection.other
+		cxnTargetCopy := createConnectionTargetCopy(cxnTargetOriginal, nodeScaffold)
+
+		newCxn := &connection{}
+		newCxn.other = cxnTargetCopy
+
+		channelCopy := createChannelCopy(inboundConnection.channel, channelScaffold)
+		newCxn.channel = channelCopy
+
+		log.Printf("append connection %v to %v", newCxn, nodeCopy)
+		nodeCopy.appendInboundConnection(newCxn)
+		log.Printf("nodeCopy now has %v inbound connections", len(nodeCopy.inboundConnections()))
+
+
+		if len(cxnTargetOriginal.inboundConnections()) > 0 {
+			log.Printf("recursing into recreateInboundConnectionsRecursive with: %v, %v, %v ", cxnTargetOriginal, cxnTargetCopy, nodeScaffold)
+			recreateInboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
+		} 
+		
+
+	} 
+
+}
+
+
+func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, scaffold *copyScaffold) {
 	
 	log.Printf("recreateOutboundConnectionsRecursive called with: %v", nodeOriginal)
 	nodeScaffold := scaffold.nodeScaffold
@@ -162,9 +192,7 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 		if len(cxnTargetOriginal.outboundConnections()) > 0 {
 			log.Printf("recursing into recreateOutboundConnectionsRecursive with: %v, %v, %v ", cxnTargetOriginal, cxnTargetCopy, nodeScaffold)
 			recreateOutboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
-		} else {
-			log.Printf("not recursing, cxnTargetOriginal has no outbound connections")
-		}
+		} 
 		
 
 	} 
@@ -208,6 +236,12 @@ func createConnectionTargetCopy(cxnTargetOriginal Connector, nodeScaffold map[Co
 			actuator := &Actuator{}
 			actuator.Name = t.Name
 			cxnTargetCopy = actuator
+		case *Node:
+			log.Printf("its a node: %T %v", t, t)
+			node := &Node{}
+			node.Name = t.Name
+			cxnTargetCopy = node
+
 		default:
 			msg := fmt.Sprintf("unexpected cxnTargetOriginal type: %T", t) 
 			panic(msg)
