@@ -100,11 +100,22 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 		nodeScaffold[sensor] = sensorCopy
 		sensorCopy.Name = sensor.Name
 		neuralNetCopy.sensors = append(neuralNetCopy.sensors, sensorCopy)
-		log.Printf("sensorOriginal: %v", sensor)
-		log.Printf("sensorCopy: %v", sensorCopy)
+	}
 
+	for _, actuator := range neuralNet.actuators {
+		actuatorCopy := new(Actuator)
+		nodeScaffold[actuator] = actuatorCopy
+		actuatorCopy.Name = actuator.Name
+		neuralNetCopy.actuators = append(neuralNetCopy.actuators, actuatorCopy)
+	}
+
+
+	for _, sensor := range neuralNet.sensors {
+		sensorCopy := nodeScaffold[sensor]
 		recreateOutboundConnectionsRecursive(sensor, sensorCopy, nodeScaffold)
 	}
+
+	// TODO: inbound connections!!
 
 	return neuralNetCopy
 
@@ -147,7 +158,6 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 				actuator.Name = t.Name
 				cxnTargetCopy = actuator
 			default:
-
 				msg := fmt.Sprintf("unexpected cxnTargetOriginal type: %T", t) 
 				panic(msg)
 			}
