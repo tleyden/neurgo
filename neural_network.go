@@ -12,6 +12,11 @@ type NeuralNetwork struct {
 	Node
 }
 
+type copyScaffold struct {
+	nodeScaffold map[Connector]Connector
+	channelScaffold map[VectorChannel]VectorChannel
+}
+
 type Wiretap struct {
 	Node
 }
@@ -87,13 +92,12 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 	
-	// create a map between old nodes and new nodes that will be used
-	// to track which nodes have already been connected in the target 
-	// network.  in an abstract way, the source network provides a 
-	// "scaffold" for building the target network, and this provides
-	// the mapping between nodes.
+	// the source neural network provides a "scaffold" for building the 
+	// target network.  these provide the mapping between nodes and channels.
 	nodeScaffold := make(map[Connector]Connector)
-	// channelScaffold := make(map[VectorChannel]VectorChannel)
+	channelScaffold := make(map[VectorChannel]VectorChannel)
+
+	scaffold := &copyScaffold{nodeScaffold: nodeScaffold, channelScaffold: channelScaffold}
 
 	sensorsCopy := make([]*Sensor,0)
 	actuatorsCopy := make([]*Actuator, 0)
@@ -116,7 +120,7 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 	for _, sensor := range neuralNet.sensors {
 		sensorCopy := nodeScaffold[sensor]
-		recreateOutboundConnectionsRecursive(sensor, sensorCopy, nodeScaffold)
+		recreateOutboundConnectionsRecursive(sensor, sensorCopy, scaffold)
 	}
 
 	// TODO: inbound connections!!
@@ -126,7 +130,7 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 }
 
 
-func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, nodeScaffold map[Connector]Connector) {
+func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, scaffold *copyScaffold) {
 	
 	// for each outbound connection:
 	//   see if connection target node copy exists in map, if not, create it
@@ -136,6 +140,8 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 	//   recursive call for the connection target
 	
 	log.Printf("recreateOutboundConnectionsRecursive called with: %v", nodeOriginal)
+	nodeScaffold := scaffold.nodeScaffold
+	channelScaffold := scaffold.channelScaffold
 
 	for _, outboundConnection := range nodeOriginal.outboundConnections() {
 
@@ -144,7 +150,9 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 
 		newCxn := &connection{}
 		newCxn.other = cxnTargetCopy
-		// TODO: add channel  (might neeed channel scaffold)
+
+		channelCopy := createChannelCopy(outboundConnection.channel, channelScaffold)
+		newCxn.channel = channelCopy
 
 		log.Printf("append connection %v to %v", newCxn, nodeCopy)
 		nodeCopy.appendOutboundConnection(newCxn)
@@ -153,13 +161,25 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 
 		if len(cxnTargetOriginal.outboundConnections()) > 0 {
 			log.Printf("recursing into recreateOutboundConnectionsRecursive with: %v, %v, %v ", cxnTargetOriginal, cxnTargetCopy, nodeScaffold)
-			recreateOutboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, nodeScaffold)
+			recreateOutboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
 		} else {
 			log.Printf("not recursing, cxnTargetOriginal has no outbound connections")
 		}
 		
 
 	} 
+
+}
+
+func createChannelCopy(channelOriginal VectorChannel, channelScaffold map[VectorChannel]VectorChannel) VectorChannel {
+
+	var channelCopy VectorChannel
+	if channelCopyTemp, ok := channelScaffold[channelOriginal]; ok {
+		channelCopy = channelCopyTemp
+	} else {
+		channelCopy = make(VectorChannel)
+	}
+	return channelCopy
 
 }
 
