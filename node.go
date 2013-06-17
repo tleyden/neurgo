@@ -24,6 +24,10 @@ func (node *Node) canPropagateSignal() bool {
 	return len(node.inbound) > 0 
 }
 
+func (node *Node) propagateSignal() {
+	panic("node.propagateSignal called")
+}
+
 func (node *Node) scatterOutput(outputs []float64) {
 	for _, outboundConnection := range node.outbound {
 		outboundConnection.channel <- outputs

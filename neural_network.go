@@ -24,6 +24,12 @@ type Injector struct {
 	Node
 }
 
+func (wiretap *Wiretap) propagateSignal() {}
+func (wiretap *Wiretap) canPropagateSignal() bool { return false }
+func (injector *Injector) propagateSignal() {}
+func (injector *Injector) canPropagateSignal() bool { return false }
+
+
 // Make sure the neural network gives expected output for the given 
 // training samples.
 func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
@@ -224,11 +230,6 @@ func createConnectionTargetCopy(cxnTargetOriginal Connector, nodeScaffold map[Co
 			actuator := &Actuator{}
 			actuator.Name = t.Name
 			cxnTargetCopy = actuator
-		case *Node:
-			node := &Node{}
-			node.Name = t.Name
-			cxnTargetCopy = node
-
 		default:
 			msg := fmt.Sprintf("unexpected cxnTargetOriginal type: %T", t) 
 			panic(msg)
