@@ -87,9 +87,13 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 	
-	// create an empty map between old nodes and new nodes
-	// var nodeScaffold map[*Node]*Node
+	// create a map between old nodes and new nodes that will be used
+	// to track which nodes have already been connected in the target 
+	// network.  in an abstract way, the source network provides a 
+	// "scaffold" for building the target network, and this provides
+	// the mapping between nodes.
 	nodeScaffold := make(map[Connector]Connector)
+	// channelScaffold := make(map[VectorChannel]VectorChannel)
 
 	sensorsCopy := make([]*Sensor,0)
 	actuatorsCopy := make([]*Actuator, 0)
@@ -133,45 +137,14 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 	
 	log.Printf("recreateOutboundConnectionsRecursive called with: %v", nodeOriginal)
 
-	var cxnTargetCopy Connector
 	for _, outboundConnection := range nodeOriginal.outboundConnections() {
 
 		cxnTargetOriginal := outboundConnection.other
-		
-		if cxnTargetCopyTemp, ok := nodeScaffold[cxnTargetOriginal]; ok {  // TODO: hack
-			cxnTargetCopy = cxnTargetCopyTemp
-		} else {
-
-			// the connection target does not exist in nodeScaffold, create it
-			switch t:= cxnTargetOriginal.(type) {
-			case *Sensor:
-				log.Printf("its a sensor: %T", t)
-				sensor := &Sensor{}
-				sensor.Name = t.Name
-				cxnTargetCopy = sensor
-			case *Neuron:
-				log.Printf("its a neuron: %T", t)
-				neuron := &Neuron{}
-				neuron.Name = t.Name
-				cxnTargetCopy = neuron
-			case *Actuator:
-				log.Printf("its an actuator: %T", t)
-				actuator := &Actuator{}
-				actuator.Name = t.Name
-				cxnTargetCopy = actuator
-			default:
-				msg := fmt.Sprintf("unexpected cxnTargetOriginal type: %T", t) 
-				panic(msg)
-			}
-			nodeScaffold[cxnTargetOriginal] = cxnTargetCopy
-
-		}
-
+		cxnTargetCopy := createConnectionTargetCopy(cxnTargetOriginal, nodeScaffold)
 
 		newCxn := &connection{}
 		newCxn.other = cxnTargetCopy
 		// TODO: add channel  (might neeed channel scaffold)
-		// TODO: add weights, if any
 
 		log.Printf("append connection %v to %v", newCxn, nodeCopy)
 		nodeCopy.appendOutboundConnection(newCxn)
@@ -188,6 +161,42 @@ func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Conne
 
 	} 
 
+}
+
+
+func createConnectionTargetCopy(cxnTargetOriginal Connector, nodeScaffold map[Connector]Connector) Connector {
+
+	var cxnTargetCopy Connector
+	if cxnTargetCopyTemp, ok := nodeScaffold[cxnTargetOriginal]; ok {  // TODO: hack
+		cxnTargetCopy = cxnTargetCopyTemp
+	} else {
+
+		// the connection target does not exist in nodeScaffold, create it
+		switch t:= cxnTargetOriginal.(type) {
+		case *Sensor:
+			log.Printf("its a sensor: %T", t)
+			sensor := &Sensor{}
+			sensor.Name = t.Name  
+			cxnTargetCopy = sensor
+		case *Neuron:
+			log.Printf("its a neuron: %T", t)
+			neuron := &Neuron{}
+			neuron.Name = t.Name
+			cxnTargetCopy = neuron
+		case *Actuator:
+			log.Printf("its an actuator: %T", t)
+			actuator := &Actuator{}
+			actuator.Name = t.Name
+			cxnTargetCopy = actuator
+		default:
+			msg := fmt.Sprintf("unexpected cxnTargetOriginal type: %T", t) 
+			panic(msg)
+		}
+		nodeScaffold[cxnTargetOriginal] = cxnTargetCopy
+		
+	}
+
+	return cxnTargetCopy
 
 
 }

@@ -186,11 +186,18 @@ func TestCopy(t *testing.T) {
 	assert.Equals(t, neuralNet.sensors[0].Name, neuralNetCopy.sensors[0].Name)
 	assert.Equals(t, len(neuralNet.actuators), len(neuralNetCopy.actuators))
 	assert.NotEquals(t, neuralNet.actuators[0], neuralNetCopy.actuators[0])
-	// -------
+
 	assert.Equals(t, len(neuralNet.sensors[0].outbound), len(neuralNetCopy.sensors[0].outbound))
-	/*assert.NotEquals(t, neuralNet.sensors[0].outbound[0], neuralNetCopy.sensors[0].outbound[0])
+	assert.NotEquals(t, neuralNet.sensors[0].outbound[0], neuralNetCopy.sensors[0].outbound[0])
+	// -------	
+
+	assert.False(t, neuralNetCopy.sensors[0].outbound[0].channel == nil) 
 	assert.Equals(t, len(neuralNet.actuators[0].inbound), len(neuralNetCopy.actuators[0].inbound)) 
-	assert.NotEquals(t, neuralNet.actuators[0].inbound[0], neuralNetCopy.actuators[0].inbound[0]) */
+	/*
+
+assert.True(t, neuralNetCopy.sensors[0].outbound[0].channel == neuralNetCopy.sensors[0].outbound[0].other.inboundConnections()[0].channel) 
+
+assert.NotEquals(t, neuralNet.actuators[0].inbound[0], neuralNetCopy.actuators[0].inbound[0]) */
 	
 
 }
