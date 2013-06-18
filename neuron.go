@@ -11,7 +11,6 @@ type activationFunction func(float64) float64
 type Neuron struct {
 	Bias               float64
 	ActivationFunction activationFunction
-	Node
 }
 
 type weightedInput struct {
@@ -19,35 +18,24 @@ type weightedInput struct {
 	inputs      []float64
 }
 
-func (neuron *Neuron) propagateSignal() {
-	weightedInputs := neuron.weightedInputs()
+func (neuron *Neuron) canPropagateSignal(node *Node) bool {
+	return len(node.inbound) > 0 
+}
+
+func (neuron *Neuron) propagateSignal(node *Node) {
+	weightedInputs := neuron.weightedInputs(node)
 	scalarOutput := neuron.computeScalarOutput(weightedInputs)
 	outputs := []float64{scalarOutput}  
-	neuron.scatterOutput(outputs)
+	node.scatterOutput(outputs)
 }
-
-// implementation needed here because when it was a method on *Node, it was calling 
-// connectInboundWithChannel with a *Node instance and losing the fact it was a neuron
-func (neuron *Neuron) ConnectBidirectional(target Connector) {
-	neuron.ConnectBidirectionalWeighted(target, nil)
-}
-
-// implementation needed here because when it was a method on *Node, it was calling 
-// connectInboundWithChannel with a *Node instance and losing the fact it was a neuron
-func (neuron *Neuron) ConnectBidirectionalWeighted(target Connector, weights []float64) {
-	channel := make(VectorChannel)		
-	neuron.connectOutboundWithChannel(target, channel)
-	target.connectInboundWithChannel(neuron, channel, weights)
-}
-
 
 // read each inbound channel and get the inputs, and pair this vector
 // with the weight vector for that inbound channel, then return the
 // list of those weight/input pairings.
-func (neuron *Neuron) weightedInputs() []*weightedInput {
+func (neuron *Neuron) weightedInputs(node *Node) []*weightedInput {
 
 	weightedInputs := make([]*weightedInput, 0)
-	for _, connection := range neuron.inbound {
+	for _, connection := range node.inbound {
 		if inputs, ok := <- connection.channel; ok {
 			if len(inputs) == 0 {
 				msg := fmt.Sprintf("%v got empty inputs", neuron)

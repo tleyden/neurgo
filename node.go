@@ -5,27 +5,20 @@ import (
 )
 
 type connection struct {
-	other       Connector
+	other       *Node
 	channel     VectorChannel
 	weights     []float64
 }
 
 type Node struct {
-	Name     string
-	inbound  []*connection
-	outbound []*connection
+	Name        string
+	inbound     []*connection
+	outbound    []*connection
+	processor   SignalProcessor
 }
 
 func (node *Node) String() string {
 	return node.Name
-}
-
-func (node *Node) canPropagateSignal() bool {
-	return len(node.inbound) > 0 
-}
-
-func (node *Node) propagateSignal() {
-	panic("node.propagateSignal called")
 }
 
 func (node *Node) scatterOutput(outputs []float64) {
@@ -34,32 +27,32 @@ func (node *Node) scatterOutput(outputs []float64) {
 	}
 }
 
-func (node *Node) ConnectBidirectional(target Connector) {
+func (node *Node) ConnectBidirectional(target *Node) {
 	node.ConnectBidirectionalWeighted(target, nil)
 }
 
-func (node *Node) ConnectBidirectionalWeighted(target Connector, weights []float64) {
+func (node *Node) ConnectBidirectionalWeighted(target *Node, weights []float64) {
 	channel := make(VectorChannel)		
 	node.connectOutboundWithChannel(target, channel)
 	target.connectInboundWithChannel(node, channel, weights)
 }
 
-func (node *Node) connectOutboundWithChannel(target Connector, channel VectorChannel) {
+func (node *Node) connectOutboundWithChannel(target *Node, channel VectorChannel) {
 	connection := &connection{channel: channel, other: target}
 	node.outbound = append(node.outbound, connection)
 }
 
-func (node *Node) connectInboundWithChannel(source Connector, channel VectorChannel, weights []float64) {
+func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel, weights []float64) {
 	connection := &connection{channel: channel, weights: weights, other: source}
 	node.inbound = append(node.inbound, connection)
 }
 
-func (node *Node) DisconnectBidirectional(target Connector) {
+func (node *Node) DisconnectBidirectional(target *Node) {
 	node.disconnectOutbound(target)
 	target.disconnectInbound(node)
 }
 
-func (node *Node) disconnectOutbound(target Connector) {
+func (node *Node) disconnectOutbound(target *Node) {
 	for i, connection := range node.outbound {
 		if connection.other == target {
 			channel := node.outbound[i].channel
@@ -69,7 +62,7 @@ func (node *Node) disconnectOutbound(target Connector) {
 	}
 }
 
-func (node *Node) disconnectInbound(source Connector) {
+func (node *Node) disconnectInbound(source *Node) {
 	for i, connection := range node.inbound {
 		if connection.other == source {
 			node.inbound = removeConnection(node.inbound, i)

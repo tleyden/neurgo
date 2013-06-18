@@ -6,28 +6,21 @@ import (
 )
 
 type NeuralNetwork struct {
-	sensors   []*Sensor
-	actuators []*Actuator
+	sensors   []*Node
+	actuators []*Node
 	Node
 }
 
 type copyScaffold struct {
-	nodeScaffold map[Connector]Connector
+	nodeScaffold map[*Node]*Node
 	channelScaffold map[VectorChannel]VectorChannel
 }
 
-type Wiretap struct {
-	Node
-}
 
-type Injector struct {
-	Node
-}
-
-func (wiretap *Wiretap) propagateSignal() {}
+/*func (wiretap *Wiretap) propagateSignal() {}
 func (wiretap *Wiretap) canPropagateSignal() bool { return false }
 func (injector *Injector) propagateSignal() {}
-func (injector *Injector) canPropagateSignal() bool { return false }
+func (injector *Injector) canPropagateSignal() bool { return false }*/
 
 
 // Make sure the neural network gives expected output for the given 
@@ -35,17 +28,17 @@ func (injector *Injector) canPropagateSignal() bool { return false }
 func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 
 	// make as many injectors as there are sensors
-	injectors := make([]*Injector, len(neuralNet.sensors))
+	injectors := make([]*Node, len(neuralNet.sensors))
 	for i, _ := range injectors {
-		injectors[i] = &Injector{}
+		injectors[i] = &Node{}
 		injectors[i].Name = fmt.Sprintf("injector-%d", i+1)
 		injectors[i].ConnectBidirectional(neuralNet.sensors[i])
 	}
 
 	// make as many wiretaps as actuators
-	wiretaps := make([]*Wiretap, len(neuralNet.actuators))
+	wiretaps := make([]*Node, len(neuralNet.actuators))
 	for i, _ := range wiretaps {
-		wiretaps[i] = &Wiretap{}
+		wiretaps[i] = &Node{}
 		wiretaps[i].Name = fmt.Sprintf("wiretap-%d", i+1)
 		neuralNet.actuators[i].ConnectBidirectional(wiretaps[i])
 	}
@@ -101,7 +94,7 @@ func (neuralNet *NeuralNetwork) Run() {
 
 	// call Run() on each node
 	for _, node := range nodes {
-		Run(node)
+		Run(node.processor, node)
 	}
 	
 	// NOTE: could refactor into call which performs a function on 
@@ -109,8 +102,8 @@ func (neuralNet *NeuralNetwork) Run() {
 
 }
 
-func (neuralNet *NeuralNetwork) uniqueNodes() []Connector {
-	return []Connector{neuralNet.sensors[0]}
+func (neuralNet *NeuralNetwork) uniqueNodes() []*Node {
+	return []*Node{neuralNet.sensors[0]}
 
 }
 
@@ -119,24 +112,26 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 	
 	// the source neural network provides a "scaffold" for building the 
 	// target network.  these provide the mapping between nodes and channels.
-	nodeScaffold := make(map[Connector]Connector)
+	nodeScaffold := make(map[*Node]*Node)
 	channelScaffold := make(map[VectorChannel]VectorChannel)
 
 	scaffold := &copyScaffold{nodeScaffold: nodeScaffold, channelScaffold: channelScaffold}
 
-	sensorsCopy := make([]*Sensor,0)
-	actuatorsCopy := make([]*Actuator, 0)
+	sensorsCopy := make([]*Node,0)
+	actuatorsCopy := make([]*Node, 0)
 	neuralNetCopy := &NeuralNetwork{sensors: sensorsCopy, actuators: actuatorsCopy}
 
 	for _, sensor := range neuralNet.sensors {
-		sensorCopy := new(Sensor)
+		sensorCopy := new(Node)
+		// TODO: copy processor
 		nodeScaffold[sensor] = sensorCopy
 		sensorCopy.Name = sensor.Name
 		neuralNetCopy.sensors = append(neuralNetCopy.sensors, sensorCopy)
 	}
 
 	for _, actuator := range neuralNet.actuators {
-		actuatorCopy := new(Actuator)
+		actuatorCopy := new(Node)
+		// TODO: copy processor
 		nodeScaffold[actuator] = actuatorCopy
 		actuatorCopy.Name = actuator.Name
 		neuralNetCopy.actuators = append(neuralNetCopy.actuators, actuatorCopy)
@@ -157,7 +152,7 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 }
 
 
-func recreateInboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, scaffold *copyScaffold) {
+func recreateInboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, scaffold *copyScaffold) {
 	
 	nodeScaffold := scaffold.nodeScaffold
 	channelScaffold := scaffold.channelScaffold
@@ -188,7 +183,7 @@ func recreateInboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connec
 }
 
 
-func recreateOutboundConnectionsRecursive(nodeOriginal Connector, nodeCopy Connector, scaffold *copyScaffold) {
+func recreateOutboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, scaffold *copyScaffold) {
 	
 
 	nodeScaffold := scaffold.nodeScaffold
@@ -227,33 +222,17 @@ func createChannelCopy(channelOriginal VectorChannel, channelScaffold map[Vector
 }
 
 
-func createConnectionTargetCopy(cxnTargetOriginal Connector, nodeScaffold map[Connector]Connector) Connector {
+func createConnectionTargetCopy(cxnTargetOriginal *Node, nodeScaffold map[*Node]*Node) *Node {
 
-	var cxnTargetCopy Connector
+	var cxnTargetCopy *Node
 	if cxnTargetCopyTemp, ok := nodeScaffold[cxnTargetOriginal]; ok {  // TODO: hack
 		cxnTargetCopy = cxnTargetCopyTemp
 	} else {
 
 		// the connection target does not exist in nodeScaffold, create it
-		switch t:= cxnTargetOriginal.(type) {
-		case *Sensor:
-			sensor := &Sensor{}
-			sensor.Name = t.Name  
-			cxnTargetCopy = sensor
-		case *Neuron:
-			neuron := &Neuron{}
-			neuron.Name = t.Name
-			neuron.Bias = t.Bias
-			neuron.ActivationFunction = t.ActivationFunction
-			cxnTargetCopy = neuron
-		case *Actuator:
-			actuator := &Actuator{}
-			actuator.Name = t.Name
-			cxnTargetCopy = actuator
-		default:
-			msg := fmt.Sprintf("unexpected cxnTargetOriginal type: %T", t) 
-			panic(msg)
-		}
+		node := &Node{}
+		node.Name = cxnTargetOriginal.Name
+		cxnTargetCopy = node
 		nodeScaffold[cxnTargetOriginal] = cxnTargetCopy
 		
 	}
