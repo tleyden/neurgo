@@ -11,20 +11,16 @@ import (
 func TestConnectBidirectional(t *testing.T) {
 
 	// create nodes
-	neuron := &Node{processor: &Neuron{}}
-	sensor := &Node{processor: &Sensor{}}
-
-	// give names
-	neuron.Name = "neuron"
-	sensor.Name = "sensor"
+	neuron := &Node{Name: "neuron", processor: &Neuron{}}
+	sensor := &Node{Name: "sensor", processor: &Sensor{}}
 
 	// make connection
 	weights := []float64{20,20,20,20,20}
 	sensor.ConnectBidirectionalWeighted(neuron, weights)
 
 	// make sure the reverse connection points back to correct node type
-	sensorTypeCheck := neuron.inbound[0].other.processor.(*Sensor)
-	assert.Equals(t, sensor, sensorTypeCheck)
+	_, isSensor := neuron.inbound[0].other.processor.(*Sensor)
+	assert.True(t, isSensor)
 
 	// assert that it worked
 	assert.Equals(t, len(sensor.outbound), 1)
@@ -39,8 +35,8 @@ func TestConnectBidirectional(t *testing.T) {
 	neuron.ConnectBidirectional(actuator)
 
 	// make sure the reverse connection points back to correct node type
-	neuronTypeCheck := actuator.inbound[0].other.processor.(*Neuron)
-	assert.Equals(t, neuron, neuronTypeCheck)
+	_, isNeuron := actuator.inbound[0].other.processor.(*Neuron)
+	assert.True(t, isNeuron)
 
 	// assert that it worked
 	assert.Equals(t, len(neuron.outbound), 1)
