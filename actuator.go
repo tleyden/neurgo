@@ -9,6 +9,10 @@ type Actuator struct {
 
 }
 
+func (actuator *Actuator) canPropagateSignal(node *Node) bool {
+	return len(node.inbound) > 0 
+}
+
 func (actuator *Actuator) propagateSignal(node *Node) {
 
 	// this implemenation is just a stub which makes it easy to test.
