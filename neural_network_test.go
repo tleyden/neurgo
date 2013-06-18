@@ -10,16 +10,12 @@ import (
 func TestNetworkVerify(t *testing.T) {
 
 	// create network nodes
-	neuron1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}  
-	neuron2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
-	sensor := &Sensor{}
-	actuator := &Actuator{}
-
-	// give nodes names
-	sensor.Name = "sensor"
-	actuator.Name = "actuator"
-	neuron1.Name = "neuron1"
-	neuron2.Name = "neuron2"
+	neuronProcessor1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}  
+	neuronProcessor2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
+	neuron1 := &Node{Name: "neuron1", processor: neuronProcessor1}
+	neuron2 := &Node{Name: "neuron2", processor: neuronProcessor2}
+	sensor := &Node{Name: "sensor", processor: &Sensor{}}
+	actuator := &Node{Name: "actuator", processor: &Actuator{}}
 
 	// connect nodes together 
 	weights := []float64{20,20,20,20,20}
@@ -32,14 +28,14 @@ func TestNetworkVerify(t *testing.T) {
 	examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1,1,1,1,1}}, expectedOutputs: [][]float64{[]float64{110,110}}}}
 
 	// create neural network
-	sensors := []*Sensor{sensor}	
-	actuators := []*Actuator{actuator}
+	sensors := []*Node{sensor}	
+	actuators := []*Node{actuator}
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
 	// spinup node goroutines
-	signallers := []Connector{neuron1, neuron2, sensor, actuator}
-	for _, signaller := range signallers {
-		go Run(signaller)
+	nodes := []*Node{neuron1, neuron2, sensor, actuator}
+	for _, node := range nodes {
+		go Run(node.processor, node)
 	}
 
 	// verify neural network
@@ -56,24 +52,24 @@ func TestNetworkVerify(t *testing.T) {
 func TestXnorNetwork(t *testing.T) {
 
 	// create network nodes
-	input_neuron1 := &Neuron{Bias: 0, ActivationFunction: identity_activation}   
-	input_neuron2 := &Neuron{Bias: 0, ActivationFunction: identity_activation}  
-	hidden_neuron1 := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
-	hidden_neuron2 := &Neuron{Bias: 10, ActivationFunction: sigmoid}  
-	output_neuron := &Neuron{Bias: -10, ActivationFunction: sigmoid}  
-	sensor1 := &Sensor{}
-	sensor2 := &Sensor{}
-	actuator := &Actuator{}
+	n1_processor := &Neuron{Bias: 0, ActivationFunction: identity_activation}   
+	input_neuron1 := &Node{Name: "input_neuron1", processor: n1_processor}
 
-	// give names to network nodes
-	sensor1.Name = "sensor1"
-	sensor2.Name = "sensor2"
-	input_neuron1.Name = "input_neuron1"
-	input_neuron2.Name = "input_neuron2"
-	hidden_neuron1.Name = "hidden_neuron1"
-	hidden_neuron2.Name = "hidden_neuron2"
-	output_neuron.Name = "output_neuron"
-	actuator.Name = "actuator"
+	n2_processor := &Neuron{Bias: 0, ActivationFunction: identity_activation}   
+	input_neuron2 := &Node{Name: "input_neuron2", processor: n2_processor}
+
+	hn1_processor := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
+	hidden_neuron1 := &Node{Name: "hidden_neuron1", processor: hn1_processor}
+	
+	hn2_processor := &Neuron{Bias: 10, ActivationFunction: sigmoid}  
+	hidden_neuron2 := &Node{Name: "hidden_neuron2", processor: hn2_processor}
+
+	outn_processor := &Neuron{Bias: -10, ActivationFunction: sigmoid}  
+	output_neuron := &Node{Name: "output_neuron", processor: outn_processor}
+
+	sensor1 := &Node{Name: "sensor1", processor: &Sensor{}}
+	sensor2 := &Node{Name: "sensor2", processor: &Sensor{}}
+	actuator := &Node{Name: "actuator", processor: &Actuator{}}
 
 	// connect nodes together 
 	sensor1.ConnectBidirectionalWeighted(input_neuron1, []float64{1})
@@ -87,8 +83,8 @@ func TestXnorNetwork(t *testing.T) {
 	output_neuron.ConnectBidirectional(actuator)
 
 	// create neural network
-	sensors := []*Sensor{sensor1, sensor2}	
-	actuators := []*Actuator{actuator}
+	sensors := []*Node{sensor1, sensor2}	
+	actuators := []*Node{actuator}
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
 	// inputs + expected outputs
@@ -102,9 +98,9 @@ func TestXnorNetwork(t *testing.T) {
 
 
 	// spinup node goroutines
-	signallers := []Connector{input_neuron1, input_neuron2, hidden_neuron1, hidden_neuron2, output_neuron, sensor1, sensor2, actuator}
-	for _, signaller := range signallers {
-		go Run(signaller)
+	nodes := []*Node{input_neuron1, input_neuron2, hidden_neuron1, hidden_neuron2, output_neuron, sensor1, sensor2, actuator}
+	for _, node := range nodes {
+		go Run(node.processor, node)
 	}
 
 	// verify neural network
@@ -117,18 +113,17 @@ func TestXnorNetwork(t *testing.T) {
 func xnorCondensedNetwork() *NeuralNetwork {
 
 	// create network nodes
-	hidden_neuron1 := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
-	hidden_neuron2 := &Neuron{Bias: 10, ActivationFunction: sigmoid}  
-	output_neuron := &Neuron{Bias: -10, ActivationFunction: sigmoid}  
-	sensor := &Sensor{}
-	actuator := &Actuator{}
+	hn1_processor := &Neuron{Bias: -30, ActivationFunction: sigmoid}  
+	hidden_neuron1 := &Node{Name: "hidden_neuron1", processor: hn1_processor}
+	
+	hn2_processor := &Neuron{Bias: 10, ActivationFunction: sigmoid}  
+	hidden_neuron2 := &Node{Name: "hidden_neuron2", processor: hn2_processor}
 
-	// give names to network nodes
-	sensor.Name = "sensor"
-	hidden_neuron1.Name = "hidden_neuron1"
-	hidden_neuron2.Name = "hidden_neuron2"
-	output_neuron.Name = "output_neuron"
-	actuator.Name = "actuator"
+	outn_processor := &Neuron{Bias: -10, ActivationFunction: sigmoid}  
+	output_neuron := &Node{Name: "output_neuron", processor: outn_processor}
+
+	sensor := &Node{Name: "sensor", processor: &Sensor{}}
+	actuator := &Node{Name: "actuator", processor: &Actuator{}}
 
 	// connect nodes together 
 	sensor.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20,20})
@@ -138,14 +133,14 @@ func xnorCondensedNetwork() *NeuralNetwork {
 	output_neuron.ConnectBidirectional(actuator)
 
 	// create neural network
-	sensors := []*Sensor{sensor}	
-	actuators := []*Actuator{actuator}
+	sensors := []*Node{sensor}	
+	actuators := []*Node{actuator}
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
 	// spinup node goroutines
-	signallers := []Connector{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
-	for _, signaller := range signallers {
-		go Run(signaller)
+	nodes := []*Node{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
+	for _, node := range nodes {
+		go Run(node.processor, node)
 	}
 
 	return neuralNet
@@ -214,10 +209,12 @@ func TestCopy(t *testing.T) {
 	assert.NotEquals(t, neuralNet.actuators[0].inbound[0], neuralNetCopy.actuators[0].inbound[0]) 
 	assert.Equals(t, len(neuralNetCopy.sensors[0].outbound[0].other.inboundConnections()[0].weights), len(neuralNet.sensors[0].outbound[0].other.inboundConnections()[0].weights)) 	
 
-	otherNeuron := neuralNet.sensors[0].outbound[0].other.(*Neuron)
-	otherNeuronCopy := neuralNetCopy.sensors[0].outbound[0].other.(*Neuron)
+	otherNeuron := neuralNet.sensors[0].outbound[0].other.processor.(*Neuron)
+	otherNeuronCopy := neuralNetCopy.sensors[0].outbound[0].other.processor.(*Neuron)
 	assert.Equals(t, otherNeuron.Bias, otherNeuronCopy.Bias)
 	assert.Equals(t, otherNeuron.ActivationFunction(1), otherNeuronCopy.ActivationFunction(1))
+
+	// TODO: in the copy, the sesnsor and actuator nodes have no processors!  test should check for that
 
 	// TODO: can't do this because the network is not running
 	
