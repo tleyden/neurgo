@@ -94,6 +94,26 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 
 }
 
+func (neuralNet *NeuralNetwork) Run() {
+
+	// get list of unique nodes in network
+	nodes := neuralNet.uniqueNodes()
+
+	// call Run() on each node
+	for _, node := range nodes {
+		Run(node)
+	}
+	
+	// NOTE: could refactor into call which performs a function on 
+	// every unique node in the network 
+
+}
+
+func (neuralNet *NeuralNetwork) uniqueNodes() []Connector {
+	return []Connector{neuralNet.sensors[0]}
+
+}
+
 func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 	

@@ -183,6 +183,11 @@ func TestXnorCondensedNetwork(t *testing.T) {
 
 }
 
+/*func TestUniqueNodes(t *testing.T) {
+	neuralNet := xnorCondensedNetwork()
+	nodes := neuralNet.uniqueNodes()
+	assert.Equals(t, len(nodes), 5)
+}*/
 
 func TestCopy(t *testing.T) {
 
