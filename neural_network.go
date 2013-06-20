@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"fmt"
+	"log"
 	"sync"
 )
 
@@ -60,6 +61,8 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 			for j, expectedOutputs := range sample.expectedOutputs {
 				resultVector := <-wiretaps[j].inbound[0].channel
 				if !vectorEqualsWithMaxDelta(resultVector, expectedOutputs, 0.01) {
+					log.Printf("verification failed.  actual: %v, expected: %v",
+						resultVector, expectedOutputs)
 					verified = false
 				}
 			}

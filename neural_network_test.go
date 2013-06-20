@@ -215,14 +215,11 @@ func TestCopy(t *testing.T) {
 	assert.True(t, neuralNetCopy.sensors[0].processor != nil)
 	assert.True(t, neuralNetCopy.actuators[0].processor != nil)
 
-	// TODO: can't do this because the network is not running
+	neuralNetCopy.Run()
 
-	// verify neural network copy
-	/*
-		examples := xnorTrainingSamples()
-		verified := neuralNetCopy.Verify(examples)
-		assert.True(t, verified)
-	*/
+	examples := xnorTrainingSamples()
+	verified := neuralNetCopy.Verify(examples)
+	assert.True(t, verified)
 
 	log.Printf("")
 
