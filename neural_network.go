@@ -88,10 +88,10 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 func (neuralNet *NeuralNetwork) Run() {
 
 	// get list of unique nodes in network
-	nodes := neuralNet.uniqueNodes()
+	nodes := neuralNet.uniqueNodeMap()
 
 	// call Run() on each node
-	for _, node := range nodes {
+	for node, _ := range nodes {
 		Run(node.processor, node)
 	}
 
@@ -100,9 +100,23 @@ func (neuralNet *NeuralNetwork) Run() {
 
 }
 
-func (neuralNet *NeuralNetwork) uniqueNodes() []*Node {
-	return []*Node{neuralNet.sensors[0]}
+type NodeMap map[*Node]*Node
 
+func (neuralNet *NeuralNetwork) uniqueNodeMap() NodeMap {
+	uniqueNodeMap := make(NodeMap)
+	for _, sensor := range neuralNet.sensors {
+		neuralNet.addUniqueNodeRecursive(sensor, uniqueNodeMap)
+	}
+	return uniqueNodeMap
+}
+
+func (neuralNet *NeuralNetwork) addUniqueNodeRecursive(node *Node, uniqueNodeMap NodeMap) {
+	if _, ok := uniqueNodeMap[node]; !ok {
+		uniqueNodeMap[node] = node
+	}
+	for _, connection := range node.outbound {
+		neuralNet.addUniqueNodeRecursive(connection.other, uniqueNodeMap)
+	}
 }
 
 func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
