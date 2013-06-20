@@ -16,10 +16,7 @@ type copyScaffold struct {
 	channelScaffold map[VectorChannel]VectorChannel
 }
 
-/*func (wiretap *Wiretap) propagateSignal() {}
-func (wiretap *Wiretap) canPropagateSignal() bool { return false }
-func (injector *Injector) propagateSignal() {}
-func (injector *Injector) canPropagateSignal() bool { return false }*/
+type NodeMap map[*Node]*Node
 
 // Make sure the neural network gives expected output for the given
 // training samples.
@@ -95,12 +92,7 @@ func (neuralNet *NeuralNetwork) Run() {
 		Run(node.processor, node)
 	}
 
-	// NOTE: could refactor into call which performs a function on
-	// every unique node in the network
-
 }
-
-type NodeMap map[*Node]*Node
 
 func (neuralNet *NeuralNetwork) uniqueNodeMap() NodeMap {
 	uniqueNodeMap := make(NodeMap)
