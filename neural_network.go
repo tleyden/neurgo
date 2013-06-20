@@ -1,8 +1,8 @@
 package neurgo
 
 import (
-	"sync"
 	"fmt"
+	"sync"
 )
 
 type NeuralNetwork struct {
@@ -12,18 +12,16 @@ type NeuralNetwork struct {
 }
 
 type copyScaffold struct {
-	nodeScaffold map[*Node]*Node
+	nodeScaffold    map[*Node]*Node
 	channelScaffold map[VectorChannel]VectorChannel
 }
-
 
 /*func (wiretap *Wiretap) propagateSignal() {}
 func (wiretap *Wiretap) canPropagateSignal() bool { return false }
 func (injector *Injector) propagateSignal() {}
 func (injector *Injector) canPropagateSignal() bool { return false }*/
 
-
-// Make sure the neural network gives expected output for the given 
+// Make sure the neural network gives expected output for the given
 // training samples.
 func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 
@@ -63,18 +61,18 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 
 		for _, sample := range samples {
 			for j, expectedOutputs := range sample.expectedOutputs {
-				resultVector := <- wiretaps[j].inbound[0].channel
+				resultVector := <-wiretaps[j].inbound[0].channel
 				if !vectorEqualsWithMaxDelta(resultVector, expectedOutputs, 0.01) {
 					verified = false
 				}
 			}
 		}
 
-		wg.Done() 
+		wg.Done()
 	}()
 
 	wg.Wait()
-	
+
 	// disconnect injectors and wiretaps to leave it in the same state!
 	for i, injector := range injectors {
 		injector.DisconnectBidirectional(neuralNet.sensors[i])
@@ -83,7 +81,7 @@ func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 		actuator.DisconnectBidirectional(wiretaps[i])
 	}
 
-	return verified  
+	return verified
 
 }
 
@@ -96,9 +94,9 @@ func (neuralNet *NeuralNetwork) Run() {
 	for _, node := range nodes {
 		Run(node.processor, node)
 	}
-	
-	// NOTE: could refactor into call which performs a function on 
-	// every unique node in the network 
+
+	// NOTE: could refactor into call which performs a function on
+	// every unique node in the network
 
 }
 
@@ -109,15 +107,14 @@ func (neuralNet *NeuralNetwork) uniqueNodes() []*Node {
 
 func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
-	
-	// the source neural network provides a "scaffold" for building the 
+	// the source neural network provides a "scaffold" for building the
 	// target network.  these provide the mapping between nodes and channels.
 	nodeScaffold := make(map[*Node]*Node)
 	channelScaffold := make(map[VectorChannel]VectorChannel)
 
 	scaffold := &copyScaffold{nodeScaffold: nodeScaffold, channelScaffold: channelScaffold}
 
-	sensorsCopy := make([]*Node,0)
+	sensorsCopy := make([]*Node, 0)
 	actuatorsCopy := make([]*Node, 0)
 	neuralNetCopy := &NeuralNetwork{sensors: sensorsCopy, actuators: actuatorsCopy}
 
@@ -151,9 +148,8 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 }
 
-
 func recreateInboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, scaffold *copyScaffold) {
-	
+
 	nodeScaffold := scaffold.nodeScaffold
 	channelScaffold := scaffold.channelScaffold
 
@@ -173,18 +169,16 @@ func recreateInboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, sca
 			copy(weightsCopy, inboundConnection.weights)
 			newCxn.weights = weightsCopy
 		}
-		
+
 		nodeCopy.appendInboundConnection(newCxn)
 
 		if len(cxnTargetOriginal.inboundConnections()) > 0 {
 			recreateInboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
-		} 
-	} 
+		}
+	}
 }
 
-
 func recreateOutboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, scaffold *copyScaffold) {
-	
 
 	nodeScaffold := scaffold.nodeScaffold
 	channelScaffold := scaffold.channelScaffold
@@ -204,8 +198,8 @@ func recreateOutboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, sc
 
 		if len(cxnTargetOriginal.outboundConnections()) > 0 {
 			recreateOutboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
-		} 
-	} 
+		}
+	}
 }
 
 func createChannelCopy(channelOriginal VectorChannel, channelScaffold map[VectorChannel]VectorChannel) VectorChannel {
@@ -221,11 +215,10 @@ func createChannelCopy(channelOriginal VectorChannel, channelScaffold map[Vector
 
 }
 
-
 func createConnectionTargetCopy(cxnTargetOriginal *Node, nodeScaffold map[*Node]*Node) *Node {
 
 	var cxnTargetCopy *Node
-	if cxnTargetCopyTemp, ok := nodeScaffold[cxnTargetOriginal]; ok {  // TODO: hack
+	if cxnTargetCopyTemp, ok := nodeScaffold[cxnTargetOriginal]; ok { // TODO: hack
 		cxnTargetCopy = cxnTargetCopyTemp
 	} else {
 
@@ -234,10 +227,9 @@ func createConnectionTargetCopy(cxnTargetOriginal *Node, nodeScaffold map[*Node]
 		node.Name = cxnTargetOriginal.Name
 		cxnTargetCopy = node
 		nodeScaffold[cxnTargetOriginal] = cxnTargetCopy
-		
+
 	}
 
 	return cxnTargetCopy
-
 
 }

@@ -1,20 +1,18 @@
-
 package neurgo
 
-import (
-)
+import ()
 
 type connection struct {
-	other       *Node
-	channel     VectorChannel
-	weights     []float64
+	other   *Node
+	channel VectorChannel
+	weights []float64
 }
 
 type Node struct {
-	Name        string
-	inbound     []*connection
-	outbound    []*connection
-	processor   SignalProcessor
+	Name      string
+	inbound   []*connection
+	outbound  []*connection
+	processor SignalProcessor
 }
 
 func (node *Node) String() string {
@@ -32,7 +30,7 @@ func (node *Node) ConnectBidirectional(target *Node) {
 }
 
 func (node *Node) ConnectBidirectionalWeighted(target *Node, weights []float64) {
-	channel := make(VectorChannel)		
+	channel := make(VectorChannel)
 	node.connectOutboundWithChannel(target, channel)
 	target.connectInboundWithChannel(node, channel, weights)
 }
@@ -85,4 +83,3 @@ func (node *Node) appendOutboundConnection(target *connection) {
 func (node *Node) appendInboundConnection(source *connection) {
 	node.inbound = append(node.inbound, source)
 }
-	

@@ -1,15 +1,12 @@
 package neurgo
 
-import (
+import ()
 
-)
-
-type Connector interface { 
-
+type Connector interface {
 	ConnectBidirectional(target *Node)
 	ConnectBidirectionalWeighted(target *Node, weights []float64)
 
-	connectOutboundWithChannel(target *Node, channel VectorChannel) 
+	connectOutboundWithChannel(target *Node, channel VectorChannel)
 	connectInboundWithChannel(source *Node, channel VectorChannel, weights []float64)
 
 	DisconnectBidirectional(target *Node)
@@ -21,9 +18,7 @@ type Connector interface {
 
 	appendOutboundConnection(target *connection)
 	appendInboundConnection(source *connection)
-
 }
-
 
 func removeConnection(connections []*connection, index int) []*connection {
 

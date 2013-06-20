@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type SignalProcessor interface { 
+type SignalProcessor interface {
 
 	// read inputs from inbound connections, calculate output, then
 	// propagate the output to outbound connections
@@ -12,7 +12,6 @@ type SignalProcessor interface {
 
 	// is this signaller actually able to propagate a signal?
 	canPropagateSignal(node *Node) bool
-
 }
 
 // continually propagate incoming signals -> outgoing signals
@@ -22,9 +21,9 @@ func Run(processor SignalProcessor, node *Node) {
 		if !processor.canPropagateSignal(node) {
 			time.Sleep(1 * 1e9)
 		} else {
-			processor.propagateSignal(node)	
+			processor.propagateSignal(node)
 		}
-		
+
 	}
 
 }

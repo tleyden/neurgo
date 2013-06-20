@@ -1,4 +1,3 @@
-
 package neurgo
 
 import (
@@ -14,18 +13,18 @@ type Neuron struct {
 }
 
 type weightedInput struct {
-	weights     []float64
-	inputs      []float64
+	weights []float64
+	inputs  []float64
 }
 
 func (neuron *Neuron) canPropagateSignal(node *Node) bool {
-	return len(node.inbound) > 0 
+	return len(node.inbound) > 0
 }
 
 func (neuron *Neuron) propagateSignal(node *Node) {
 	weightedInputs := neuron.weightedInputs(node)
 	scalarOutput := neuron.computeScalarOutput(weightedInputs)
-	outputs := []float64{scalarOutput}  
+	outputs := []float64{scalarOutput}
 	node.scatterOutput(outputs)
 }
 
@@ -36,19 +35,19 @@ func (neuron *Neuron) weightedInputs(node *Node) []*weightedInput {
 
 	weightedInputs := make([]*weightedInput, 0)
 	for _, connection := range node.inbound {
-		if inputs, ok := <- connection.channel; ok {
+		if inputs, ok := <-connection.channel; ok {
 			if len(inputs) == 0 {
 				msg := fmt.Sprintf("%v got empty inputs", neuron)
 				panic(msg)
 			}
 			weights := connection.weights
 			weightedInputs = append(weightedInputs, &weightedInput{weights: weights, inputs: inputs})
-		} 
+		}
 	}
 
 	return weightedInputs
 }
-	
+
 func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float64 {
 	output := neuron.weightedInputDotProductSum(weightedInputs)
 	output += neuron.Bias
@@ -57,7 +56,7 @@ func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float
 }
 
 // for each weighted input vector, calculate the (inputs * weights) dot product
-// and sum all of these dot products together to produce a sum  
+// and sum all of these dot products together to produce a sum
 func (neuron *Neuron) weightedInputDotProductSum(weightedInputs []*weightedInput) float64 {
 
 	var dotProductSummation float64
@@ -66,18 +65,17 @@ func (neuron *Neuron) weightedInputDotProductSum(weightedInputs []*weightedInput
 	for _, weightedInput := range weightedInputs {
 		inputs := weightedInput.inputs
 		weights := weightedInput.weights
-		inputVector := vector.NewFrom(inputs) 
+		inputVector := vector.NewFrom(inputs)
 		weightVector := vector.NewFrom(weights)
 		dotProduct, error := vector.DotProduct(inputVector, weightVector)
 		if error != nil {
 			t := "%T error performing dot product between %v and %v"
-			message := fmt.Sprintf(t, neuron, inputVector, weightVector) 
+			message := fmt.Sprintf(t, neuron, inputVector, weightVector)
 			panic(message)
 		}
 		dotProductSummation += dotProduct
 	}
 
 	return dotProductSummation
-	
 
 }

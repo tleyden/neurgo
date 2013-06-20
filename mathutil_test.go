@@ -1,8 +1,8 @@
 package neurgo
 
 import (
-	"testing"
 	"github.com/couchbaselabs/go.assert"
+	"testing"
 )
 
 func TestSigmoid(t *testing.T) {
@@ -18,9 +18,8 @@ func TestEqualsWithMaxDelta(t *testing.T) {
 	assert.False(t, equalsWithMaxDelta(0.95, 1.00000, .01))
 }
 
-
 func TestVectorEqualsWithMaxDelta(t *testing.T) {
-	
+
 	xValues := []float64{0.99999, 0.00000}
 	yValues := []float64{1.00000, 0.00001}
 

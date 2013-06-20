@@ -6,47 +6,46 @@ type TrainingSample struct {
 	sampleInputs [][]float64
 
 	// for each actuator in the network, provide an expected output vector
-	expectedOutputs [][]float64  
-
+	expectedOutputs [][]float64
 }
 
 type StochasticHillClimber struct {
 	currentCandidate *NeuralNetwork
-	currentOptimal *NeuralNetwork
+	currentOptimal   *NeuralNetwork
 }
 
 type Trainer interface {
-	train(neuralNet *NeuralNetwork, examples []*TrainingSample) *NeuralNetwork 
+	train(neuralNet *NeuralNetwork, examples []*TrainingSample) *NeuralNetwork
 }
 
 func (shc *StochasticHillClimber) train(neuralNet *NeuralNetwork, examples []*TrainingSample) *NeuralNetwork {
 
 	/*
-	// Repeat
+		// Repeat
 
-	// Apply NN to problem and save fitness
-	fitness = neuralNet.FitnessScore(examples)
-	
-	// Save the genotype
-	currentWinner := neuralNet.Copy()
+		// Apply NN to problem and save fitness
+		fitness = neuralNet.FitnessScore(examples)
 
-	// Perturb synaptic weights and biases
-	shc.PerturbParameters(neuralNet)
+		// Save the genotype
+		currentWinner := neuralNet.Copy()
 
-	// Re-Apply NN to problem
-	newFitness := neuralNet.FitnessScore(examples)
+		// Perturb synaptic weights and biases
+		shc.PerturbParameters(neuralNet)
 
-	// If the fitness of the perturbed NN is higher, discard original NN and keep 
-	// the new.  If the fitness of original is higher, discard perturbed and keep
-	// the old.
-	if newFitness < fitness {
-		neuralNet.RestoreFrom(currentWinner)
-	}
+		// Re-Apply NN to problem
+		newFitness := neuralNet.FitnessScore(examples)
 
-	// Until - acceptable solution is found, or stopping condition reached
+		// If the fitness of the perturbed NN is higher, discard original NN and keep
+		// the new.  If the fitness of original is higher, discard perturbed and keep
+		// the old.
+		if newFitness < fitness {
+			neuralNet.RestoreFrom(currentWinner)
+		}
 
-	// Return - genotype with the fittest combination of weights
-        */
+		// Until - acceptable solution is found, or stopping condition reached
+
+		// Return - genotype with the fittest combination of weights
+	*/
 
 	return &NeuralNetwork{}
 }

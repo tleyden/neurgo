@@ -1,4 +1,3 @@
-
 package neurgo
 
 import (
@@ -6,11 +5,10 @@ import (
 )
 
 type Actuator struct {
-
 }
 
 func (actuator *Actuator) canPropagateSignal(node *Node) bool {
-	return len(node.inbound) > 0 
+	return len(node.inbound) > 0
 }
 
 func (actuator *Actuator) propagateSignal(node *Node) {
@@ -26,10 +24,10 @@ func (actuator *Actuator) propagateSignal(node *Node) {
 
 func (actuator *Actuator) gatherInputs(node *Node) []float64 {
 
-	outputVector := make([]float64,0) 
+	outputVector := make([]float64, 0)
 
 	for _, inboundConnection := range node.inbound {
-		if inputVector, ok := <- inboundConnection.channel; ok {
+		if inputVector, ok := <-inboundConnection.channel; ok {
 			actuator.validateInputs(inputVector)
 			inputValue := inputVector[0]
 			outputVector = append(outputVector, inputValue)
@@ -40,7 +38,6 @@ func (actuator *Actuator) gatherInputs(node *Node) []float64 {
 
 }
 
-
 func (actuator *Actuator) validateInputs(inputs []float64) {
 	if len(inputs) != 1 {
 		t := "%T got invalid input vector: %v"
@@ -48,5 +45,3 @@ func (actuator *Actuator) validateInputs(inputs []float64) {
 		panic(message)
 	}
 }
-
-
