@@ -3,7 +3,7 @@
 
 A library for constructing Neural Networks in [Go](http://golang.org/)
 
-![architecture_diagram.png](http://cl.ly/image/1o2I07063Y3X/Screen%20Shot%202013-06-13%20at%2012.24.09%20AM.png)
+![architecture_diagram.png](http://cl.ly/image/143P2G2i3i1a/neurgo.png)
 
 
 # Project Goals:
