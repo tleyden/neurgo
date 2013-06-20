@@ -42,7 +42,19 @@ func (neuron *Neuron) weightedInputs(node *Node) []*weightedInput {
 
 	weightedInputs := make([]*weightedInput, 0)
 	for _, connection := range node.inbound {
-		if inputs, ok := <-connection.channel; ok {
+
+		// change this to a select
+		var inputs []float64
+		var ok bool
+
+		select {
+		case inputs = <-connection.channel:
+			ok = true
+		case <-connection.closing:
+			return weightedInputs // <-- todo: think about this later, won't need ok
+		}
+
+		if ok {
 			if len(inputs) == 0 {
 				msg := fmt.Sprintf("%v got empty inputs", neuron)
 				panic(msg)

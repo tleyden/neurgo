@@ -7,6 +7,7 @@ import (
 type connection struct {
 	other   *Node
 	channel VectorChannel
+	closing chan bool
 	weights []float64
 }
 
@@ -21,7 +22,7 @@ type Node struct {
 func (node *Node) Run() {
 	for {
 		if !node.processor.canPropagateSignal(node) {
-			time.Sleep(1 * 1e9)
+			time.Sleep(time.Second) // <-- watch advanced concurrency talk and remove
 		} else {
 			node.processor.propagateSignal(node)
 		}
@@ -34,7 +35,13 @@ func (node *Node) String() string {
 
 func (node *Node) scatterOutput(outputs []float64) {
 	for _, outboundConnection := range node.outbound {
-		outboundConnection.channel <- outputs
+		// TODO: wrap in a select, on read from the closing
+		select {
+		case outboundConnection.channel <- outputs:
+		case <-outboundConnection.closing: // only exists to be close
+			return
+		}
+
 	}
 }
 
@@ -49,12 +56,12 @@ func (node *Node) ConnectBidirectionalWeighted(target *Node, weights []float64) 
 }
 
 func (node *Node) connectOutboundWithChannel(target *Node, channel VectorChannel) {
-	connection := &connection{channel: channel, other: target}
+	connection := &connection{channel: channel, other: target, closing: make(chan bool)}
 	node.outbound = append(node.outbound, connection)
 }
 
 func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel, weights []float64) {
-	connection := &connection{channel: channel, weights: weights, other: source}
+	connection := &connection{channel: channel, weights: weights, other: source, closing: make(chan bool)}
 	node.inbound = append(node.inbound, connection)
 }
 
@@ -66,9 +73,8 @@ func (node *Node) DisconnectBidirectional(target *Node) {
 func (node *Node) disconnectOutbound(target *Node) {
 	for i, connection := range node.outbound {
 		if connection.other == target {
-			channel := node.outbound[i].channel
+			close(node.outbound[i].closing)
 			node.outbound = removeConnection(node.outbound, i)
-			close(channel)
 		}
 	}
 }
