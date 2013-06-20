@@ -34,7 +34,7 @@ func TestNetworkVerify(t *testing.T) {
 	// spinup node goroutines
 	nodes := []*Node{neuron1, neuron2, sensor, actuator}
 	for _, node := range nodes {
-		go Run(node.processor, node)
+		go node.Run()
 	}
 
 	// verify neural network
@@ -97,7 +97,7 @@ func TestXnorNetwork(t *testing.T) {
 	// spinup node goroutines
 	nodes := []*Node{input_neuron1, input_neuron2, hidden_neuron1, hidden_neuron2, output_neuron, sensor1, sensor2, actuator}
 	for _, node := range nodes {
-		go Run(node.processor, node)
+		go node.Run()
 	}
 
 	// verify neural network
@@ -136,7 +136,7 @@ func xnorCondensedNetwork() *NeuralNetwork {
 	// spinup node goroutines
 	nodes := []*Node{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
 	for _, node := range nodes {
-		go Run(node.processor, node)
+		go node.Run()
 	}
 
 	return neuralNet

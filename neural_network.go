@@ -89,7 +89,7 @@ func (neuralNet *NeuralNetwork) Run() {
 
 	// call Run() on each node
 	for node, _ := range nodes {
-		Run(node.processor, node)
+		go node.Run()
 	}
 
 }

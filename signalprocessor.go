@@ -1,8 +1,6 @@
 package neurgo
 
-import (
-	"time"
-)
+import ()
 
 type SignalProcessor interface {
 
@@ -15,18 +13,4 @@ type SignalProcessor interface {
 
 	// create a copy of this signalprocessor
 	copy() SignalProcessor
-}
-
-// continually propagate incoming signals -> outgoing signals
-func Run(processor SignalProcessor, node *Node) {
-
-	for {
-		if !processor.canPropagateSignal(node) {
-			time.Sleep(1 * 1e9)
-		} else {
-			processor.propagateSignal(node)
-		}
-
-	}
-
 }

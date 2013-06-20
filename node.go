@@ -1,6 +1,8 @@
 package neurgo
 
-import ()
+import (
+	"time"
+)
 
 type connection struct {
 	other   *Node
@@ -13,6 +15,17 @@ type Node struct {
 	inbound   []*connection
 	outbound  []*connection
 	processor SignalProcessor
+}
+
+// continually propagate incoming signals -> outgoing signals
+func (node *Node) Run() {
+	for {
+		if !node.processor.canPropagateSignal(node) {
+			time.Sleep(1 * 1e9)
+		} else {
+			node.processor.propagateSignal(node)
+		}
+	}
 }
 
 func (node *Node) String() string {
