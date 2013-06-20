@@ -209,7 +209,8 @@ func TestCopy(t *testing.T) {
 	assert.Equals(t, otherNeuron.Bias, otherNeuronCopy.Bias)
 	assert.Equals(t, otherNeuron.ActivationFunction(1), otherNeuronCopy.ActivationFunction(1))
 
-	// TODO: in the copy, the sesnsor and actuator nodes have no processors!  test should check for that
+	assert.True(t, neuralNetCopy.sensors[0].processor != nil)
+	assert.True(t, neuralNetCopy.actuators[0].processor != nil)
 
 	// TODO: can't do this because the network is not running
 
