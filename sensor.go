@@ -5,6 +5,11 @@ import ()
 type Sensor struct {
 }
 
+func (sensor *Sensor) copy() SignalProcessor {
+	sensorCopy := &Sensor{}
+	return sensorCopy
+}
+
 func (sensor *Sensor) canPropagateSignal(node *Node) bool {
 	return len(node.inbound) == 1
 }

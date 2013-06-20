@@ -17,6 +17,13 @@ type weightedInput struct {
 	inputs  []float64
 }
 
+func (neuron *Neuron) copy() SignalProcessor {
+	neuronCopy := &Neuron{}
+	neuronCopy.Bias = neuron.Bias
+	neuronCopy.ActivationFunction = neuron.ActivationFunction
+	return neuronCopy
+}
+
 func (neuron *Neuron) canPropagateSignal(node *Node) bool {
 	return len(node.inbound) > 0
 }

@@ -120,7 +120,7 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 	for _, sensor := range neuralNet.sensors {
 		sensorCopy := new(Node)
-		// TODO: copy processor
+		sensorCopy.processor = sensor.processor.copy()
 		nodeScaffold[sensor] = sensorCopy
 		sensorCopy.Name = sensor.Name
 		neuralNetCopy.sensors = append(neuralNetCopy.sensors, sensorCopy)
@@ -128,7 +128,7 @@ func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 	for _, actuator := range neuralNet.actuators {
 		actuatorCopy := new(Node)
-		// TODO: copy processor
+		actuatorCopy.processor = actuator.processor.copy()
 		nodeScaffold[actuator] = actuatorCopy
 		actuatorCopy.Name = actuator.Name
 		neuralNetCopy.actuators = append(neuralNetCopy.actuators, actuatorCopy)
@@ -226,6 +226,8 @@ func createConnectionTargetCopy(cxnTargetOriginal *Node, nodeScaffold map[*Node]
 		node := &Node{}
 		node.Name = cxnTargetOriginal.Name
 		cxnTargetCopy = node
+		cxnTargetCopy.processor = cxnTargetOriginal.processor.copy()
+
 		nodeScaffold[cxnTargetOriginal] = cxnTargetCopy
 
 	}

@@ -7,6 +7,11 @@ import (
 type Actuator struct {
 }
 
+func (actuator *Actuator) copy() SignalProcessor {
+	actuatorCopy := &Actuator{}
+	return actuatorCopy
+}
+
 func (actuator *Actuator) canPropagateSignal(node *Node) bool {
 	return len(node.inbound) > 0
 }
