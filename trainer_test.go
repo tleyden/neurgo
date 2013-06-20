@@ -1,29 +1,28 @@
 package neurgo
 
 import (
-	"testing"
 	"github.com/couchbaselabs/go.assert"
+	"testing"
 )
 
-
-// create netwwork with topology capable of solving XNOR, but which 
+// create netwwork with topology capable of solving XNOR, but which
 // has not been trained yet
 func xnorNetworkUntrained() *NeuralNetwork {
 
 	// create network nodes
-	hn1_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}  
+	hn1_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}
 	hidden_neuron1 := &Node{Name: "hidden_neuron1", processor: hn1_processor}
-	
-	hn2_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}  
+
+	hn2_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}
 	hidden_neuron2 := &Node{Name: "hidden_neuron2", processor: hn2_processor}
 
-	outn_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}  
+	outn_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}
 	output_neuron := &Node{Name: "output_neuron", processor: outn_processor}
 
 	sensor := &Node{Name: "sensor", processor: &Sensor{}}
 	actuator := &Node{Name: "actuator", processor: &Actuator{}}
 
-	// connect nodes together 
+	// connect nodes together
 	sensor.ConnectBidirectionalWeighted(hidden_neuron1, []float64{0, 0})
 	sensor.ConnectBidirectionalWeighted(hidden_neuron2, []float64{0, 0})
 	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{0})
@@ -31,7 +30,7 @@ func xnorNetworkUntrained() *NeuralNetwork {
 	output_neuron.ConnectBidirectional(actuator)
 
 	// create neural network
-	sensors := []*Node{sensor}	
+	sensors := []*Node{sensor}
 	actuators := []*Node{actuator}
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
@@ -40,7 +39,7 @@ func xnorNetworkUntrained() *NeuralNetwork {
 	for _, node := range nodes {
 		go Run(node.processor, node)
 	}
-	
+
 	return neuralNet
 
 }
@@ -66,12 +65,10 @@ func TestWeightTraining(t *testing.T) {
 
 	// create stochastic hill climber trainer
 
-	// train the network 
-
+	// train the network
 
 	// verify it can now solve the training set
 	verified = neuralNet.Verify(examples)
 	assert.True(t, verified)
-
 
 }
