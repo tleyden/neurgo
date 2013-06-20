@@ -81,6 +81,21 @@ func (node *Node) disconnectInbound(source *Node) {
 	}
 }
 
+func removeConnection(connections []*connection, index int) []*connection {
+
+	newConnections := make([]*connection, len(connections)-1)
+	newConnectionsIndex := 0
+
+	for i, connection := range connections {
+		if i != index {
+			newConnections[newConnectionsIndex] = connection
+			newConnectionsIndex += 1
+		}
+	}
+	return newConnections
+
+}
+
 func (node *Node) outboundConnections() []*connection {
 	return node.outbound
 }
