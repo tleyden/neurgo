@@ -1,6 +1,8 @@
 
 # Neurgo
 
+[![Build Status](https://drone.io/github.com/tleyden/neurgo/status.png)](https://drone.io/github.com/tleyden/neurgo/latest)
+
 A library for constructing Neural Networks in [Go](http://golang.org/)
 
 ![architecture_diagram.png](http://cl.ly/image/143P2G2i3i1a/neurgo.png)
