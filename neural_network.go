@@ -98,38 +98,16 @@ func (neuralNet *NeuralNetwork) Run() {
 
 }
 
-func (neuralNet *NeuralNetwork) MarshalJson() {
+func (neuralNet *NeuralNetwork) MarshalJSON() ([]byte, error) {
 
 	// get list of unique nodes in network
 	nodes := neuralNet.uniqueNodeMap()
-
-	/*cxn := neuralNet.sensors[0].outbound[0].other.inbound[0]
-	js, _ := json.Marshal(cxn)
-	log.Printf("cxn json: %s", js)
-
-	node := neuralNet.sensors[0]
-	js_node, _ := json.Marshal(node)
-	log.Printf("node json: %s", js_node)
-
-	processor := neuralNet.sensors[0].outbound[0].other.processor
-	js_processor, _ := json.Marshal(processor)
-	log.Printf("processor json: %s", js_processor)*/
-
-	/*
-		for node, _ := range nodes {
-			js, _ := json.Marshal(node)
-			log.Printf("node as json: %s", js)
-		}
-	*/
 
 	nodeSlice := make([]*Node, 0)
 	for node, _ := range nodes {
 		nodeSlice = append(nodeSlice, node)
 	}
-
-	js, _ := json.Marshal(nodeSlice)
-	log.Printf("neural net as json: %s", js)
-
+	return json.Marshal(nodeSlice)
 }
 
 func (neuralNet *NeuralNetwork) uniqueNodeMap() NodeMap {

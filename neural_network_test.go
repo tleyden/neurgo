@@ -1,6 +1,8 @@
 package neurgo
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/couchbaselabs/go.assert"
 	"log"
 	"testing"
@@ -215,8 +217,14 @@ func TestCopy(t *testing.T) {
 	assert.True(t, neuralNetCopy.sensors[0].processor != nil)
 	assert.True(t, neuralNetCopy.actuators[0].processor != nil)
 
-	neuralNet.MarshalJson()
-	neuralNetCopy.MarshalJson()
+	nnJson, _ := json.Marshal(neuralNet)
+	nnJsonString := fmt.Sprintf("%s", nnJson)
+	log.Printf("neuralNet: %s", nnJson)
+
+	nnCopyJson, _ := json.Marshal(neuralNetCopy)
+	nnCopyJsonString := fmt.Sprintf("%s", nnCopyJson)
+	log.Printf("neuralNetCopy: %s", nnCopyJson)
+	assert.Equals(t, nnJsonString, nnCopyJsonString)
 
 	/* TODO: fix this so it works!!
 	neuralNetCopy.Run()
