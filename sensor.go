@@ -20,7 +20,18 @@ func (sensor *Sensor) propagateSignal(node *Node) {
 	// at some point, sensors will act as proxies to real virtual sensors,
 	// and probably be reading their inputs from sockets.
 
-	if value, ok := <-node.inbound[0].channel; ok {
+	var value []float64
+	var ok bool
+
+	connection := node.inbound[0]
+
+	select {
+	case value = <-connection.channel:
+		ok = true
+	case <-connection.closing:
+	}
+
+	if ok {
 		node.scatterOutput(value)
 	}
 

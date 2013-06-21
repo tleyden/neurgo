@@ -31,10 +31,20 @@ func (actuator *Actuator) gatherInputs(node *Node) []float64 {
 
 	outputVector := make([]float64, 0)
 
-	for _, inboundConnection := range node.inbound {
-		if inputVector, ok := <-inboundConnection.channel; ok {
-			actuator.validateInputs(inputVector)
-			inputValue := inputVector[0]
+	for _, connection := range node.inbound {
+
+		var inputs []float64
+		var ok bool
+
+		select {
+		case inputs = <-connection.channel:
+			ok = true
+		case <-connection.closing:
+		}
+
+		if ok {
+			actuator.validateInputs(inputs)
+			inputValue := inputs[0]
 			outputVector = append(outputVector, inputValue)
 		}
 	}

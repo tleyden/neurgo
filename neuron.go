@@ -43,7 +43,6 @@ func (neuron *Neuron) weightedInputs(node *Node) []*weightedInput {
 	weightedInputs := make([]*weightedInput, 0)
 	for _, connection := range node.inbound {
 
-		// change this to a select
 		var inputs []float64
 		var ok bool
 
@@ -51,7 +50,6 @@ func (neuron *Neuron) weightedInputs(node *Node) []*weightedInput {
 		case inputs = <-connection.channel:
 			ok = true
 		case <-connection.closing:
-			return weightedInputs // <-- todo!! think about this later, won't need ok
 		}
 
 		if ok {

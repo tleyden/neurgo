@@ -35,10 +35,9 @@ func (node *Node) String() string {
 
 func (node *Node) scatterOutput(outputs []float64) {
 	for _, outboundConnection := range node.outbound {
-		// TODO: wrap in a select, on read from the closing
 		select {
 		case outboundConnection.channel <- outputs:
-		case <-outboundConnection.closing: // only exists to be close
+		case <-outboundConnection.closing:
 			return
 		}
 
@@ -51,17 +50,27 @@ func (node *Node) ConnectBidirectional(target *Node) {
 
 func (node *Node) ConnectBidirectionalWeighted(target *Node, weights []float64) {
 	channel := make(VectorChannel)
-	node.connectOutboundWithChannel(target, channel)
-	target.connectInboundWithChannel(node, channel, weights)
+	closing := make(chan bool)
+	node.connectOutboundWithChannel(target, channel, closing)
+	target.connectInboundWithChannel(node, channel, closing, weights)
 }
 
-func (node *Node) connectOutboundWithChannel(target *Node, channel VectorChannel) {
-	connection := &connection{channel: channel, other: target, closing: make(chan bool)}
+func (node *Node) connectOutboundWithChannel(target *Node, channel VectorChannel, closing chan bool) {
+	connection := &connection{
+		channel: channel,
+		other:   target,
+		closing: closing,
+	}
 	node.outbound = append(node.outbound, connection)
 }
 
-func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel, weights []float64) {
-	connection := &connection{channel: channel, weights: weights, other: source, closing: make(chan bool)}
+func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel, closing chan bool, weights []float64) {
+	connection := &connection{
+		channel: channel,
+		weights: weights,
+		other:   source,
+		closing: closing,
+	}
 	node.inbound = append(node.inbound, connection)
 }
 
