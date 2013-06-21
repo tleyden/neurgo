@@ -1,21 +1,32 @@
 package neurgo
 
 import (
+	"encoding/json"
 	"time"
 )
-
-type connection struct {
-	other   *Node
-	channel VectorChannel
-	closing chan bool
-	weights []float64
-}
 
 type Node struct {
 	Name      string
 	inbound   []*connection
 	outbound  []*connection
 	processor SignalProcessor
+}
+
+func (node *Node) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			Type      string          `json:"type"`
+			Name      string          `json:"name"`
+			Outbound  []*connection   `json:"outbound"`
+			Inbound   []*connection   `json:"inbound"`
+			Processor SignalProcessor `json:"processor"`
+		}{
+			Type:      "Node",
+			Name:      node.Name,
+			Outbound:  node.outbound,
+			Inbound:   node.inbound,
+			Processor: node.processor,
+		})
 }
 
 // continually propagate incoming signals -> outgoing signals

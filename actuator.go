@@ -1,10 +1,20 @@
 package neurgo
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
 type Actuator struct {
+}
+
+func (actuator *Actuator) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			Type string `json:"type"`
+		}{
+			Type: "Actuator",
+		})
 }
 
 func (actuator *Actuator) copy() SignalProcessor {

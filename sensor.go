@@ -1,8 +1,19 @@
 package neurgo
 
-import ()
+import (
+	"encoding/json"
+)
 
 type Sensor struct {
+}
+
+func (sensor *Sensor) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			Type string `json:"type"`
+		}{
+			Type: "Sensor",
+		})
 }
 
 func (sensor *Sensor) copy() SignalProcessor {

@@ -215,6 +215,9 @@ func TestCopy(t *testing.T) {
 	assert.True(t, neuralNetCopy.sensors[0].processor != nil)
 	assert.True(t, neuralNetCopy.actuators[0].processor != nil)
 
+	neuralNet.MarshalJson()
+	neuralNetCopy.MarshalJson()
+
 	/* TODO: fix this so it works!!
 	neuralNetCopy.Run()
 

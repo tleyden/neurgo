@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/proxypoke/vector"
 )
@@ -15,6 +16,17 @@ type Neuron struct {
 type weightedInput struct {
 	weights []float64
 	inputs  []float64
+}
+
+func (neuron *Neuron) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			Type string  `json:"type"`
+			Bias float64 `json:"bias"`
+		}{
+			Type: "Neuron",
+			Bias: neuron.Bias,
+		})
 }
 
 func (neuron *Neuron) copy() SignalProcessor {
