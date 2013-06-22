@@ -65,14 +65,12 @@ func TestNetworkFitness(t *testing.T) {
 
 	// get network fitness
 	fitness := neuralNet.Fitness(examples)
-	log.Printf("fitness: %f", fitness)
 	assert.True(t, fitness > 10000000)
 
 	// inputs + crazy outputs
 	badExamples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{-1000, -1000}}}}
 
 	lowFitness := neuralNet.Fitness(badExamples)
-	log.Printf("lowFitness: %f", lowFitness)
 	assert.True(t, equalsWithMaxDelta(lowFitness, 0.0, .01))
 
 }
