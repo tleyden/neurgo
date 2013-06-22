@@ -55,6 +55,15 @@ func (node *Node) scatterOutput(outputs []float64) {
 	}
 }
 
+func (node *Node) hasOutboundConnectionTo(other *Node) bool {
+	for _, outboundConnection := range node.outbound {
+		if outboundConnection.other == other {
+			return true
+		}
+	}
+	return false
+}
+
 func (node *Node) ConnectBidirectional(target *Node) {
 	node.ConnectBidirectionalWeighted(target, nil)
 }

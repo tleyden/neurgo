@@ -7,6 +7,23 @@ import (
 	"time"
 )
 
+func TestConnectedTo(t *testing.T) {
+
+	// create nodes
+	neuron := &Node{Name: "neuron", processor: &Neuron{}}
+	sensor := &Node{Name: "sensor", processor: &Sensor{}}
+
+	// assert not connected
+	assert.False(t, neuron.hasOutboundConnectionTo(sensor))
+
+	// make connection
+	sensor.ConnectBidirectionalWeighted(neuron, []float64{0})
+
+	// assert connected
+	assert.True(t, sensor.hasOutboundConnectionTo(neuron))
+
+}
+
 func TestConnectBidirectional(t *testing.T) {
 
 	// create nodes
