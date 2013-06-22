@@ -9,6 +9,13 @@ func sigmoid(x float64) float64 {
 	return 1.0 / (1.0 + math.Pow(math.E, -1*x))
 }
 
+func SafeScalarInverse(x float64) float64 {
+	if x == 0 {
+		x += 0.000000001
+	}
+	return 1.0 / x
+}
+
 // http://en.wikipedia.org/wiki/Residual_sum_of_squares
 func SumOfSquaresError(expected []float64, actual []float64) float64 {
 

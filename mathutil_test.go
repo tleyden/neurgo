@@ -2,7 +2,6 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
-	"log"
 	"testing"
 )
 
@@ -38,4 +37,10 @@ func TestSumOfSquaresError(t *testing.T) {
 	error := SumOfSquaresError(expected, actual)
 	nearlyEqualsPoint25 := equalsWithMaxDelta(error, 0.25, .01)
 	assert.True(t, nearlyEqualsPoint25)
+}
+
+func TestSafeScalarInverse(t *testing.T) {
+	value := SafeScalarInverse(0)
+	assert.True(t, value > 1000000)
+	assert.True(t, equalsWithMaxDelta(SafeScalarInverse(1), 1.0, .0001))
 }
