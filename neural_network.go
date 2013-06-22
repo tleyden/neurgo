@@ -20,6 +20,68 @@ type copyScaffold struct {
 
 type NodeMap map[*Node]*Node
 
+func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
+
+	errorAccumulated := float64(0)
+
+	// make as many injectors as there are sensors
+	injectors := make([]*Node, len(neuralNet.sensors))
+	for i, _ := range injectors {
+		injectors[i] = &Node{}
+		injectors[i].Name = fmt.Sprintf("injector-%d", i+1)
+		injectors[i].ConnectBidirectional(neuralNet.sensors[i])
+	}
+
+	// make as many wiretaps as actuators
+	wiretaps := make([]*Node, len(neuralNet.actuators))
+	for i, _ := range wiretaps {
+		wiretaps[i] = &Node{}
+		wiretaps[i].Name = fmt.Sprintf("wiretap-%d", i+1)
+		neuralNet.actuators[i].ConnectBidirectional(wiretaps[i])
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	wg.Add(1)
+
+	// inject values into sensors
+	go func() {
+		for _, sample := range samples {
+			for j, inputsForSensor := range sample.sampleInputs {
+				injectors[j].outbound[0].channel <- inputsForSensor
+			}
+		}
+		wg.Done()
+	}()
+
+	// read the value from wiretap (which taps into actuator)
+	go func() {
+
+		for _, sample := range samples {
+			for j, expectedOutputs := range sample.expectedOutputs {
+				resultVector := <-wiretaps[j].inbound[0].channel
+				error := SumOfSquaresError(expectedOutputs, resultVector)
+				errorAccumulated += error
+			}
+		}
+
+		wg.Done()
+	}()
+
+	wg.Wait()
+
+	// disconnect injectors and wiretaps to leave it in the same state!
+	for i, injector := range injectors {
+		injector.DisconnectBidirectional(neuralNet.sensors[i])
+	}
+	for i, actuator := range neuralNet.actuators {
+		actuator.DisconnectBidirectional(wiretaps[i])
+	}
+
+	return float64(1) / errorAccumulated
+
+}
+
 // Make sure the neural network gives expected output for the given
 // training samples.
 func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {

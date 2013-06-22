@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestNetworkVerify(t *testing.T) {
+func simpleNetwork() *NeuralNetwork {
 
 	// create network nodes
 	neuronProcessor1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
@@ -25,9 +25,6 @@ func TestNetworkVerify(t *testing.T) {
 	neuron1.ConnectBidirectional(actuator)
 	neuron2.ConnectBidirectional(actuator)
 
-	// inputs + expected outputs
-	examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{110, 110}}}}
-
 	// create neural network
 	sensors := []*Node{sensor}
 	actuators := []*Node{actuator}
@@ -39,17 +36,48 @@ func TestNetworkVerify(t *testing.T) {
 		go node.Run()
 	}
 
+	return neuralNet
+}
+
+func TestNetworkVerify(t *testing.T) {
+
+	neuralNet := simpleNetwork()
+
+	// inputs + expected outputs
+	examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{110, 110}}}}
+
 	// verify neural network
 	verified := neuralNet.Verify(examples)
 	assert.True(t, verified)
 
 	// make sure injectors/wiretaps have been removed
-	assert.Equals(t, len(sensor.inbound), 0)
-	assert.Equals(t, len(actuator.outbound), 0)
+	assert.Equals(t, len(neuralNet.sensors[0].inbound), 0)
+	assert.Equals(t, len(neuralNet.actuators[0].outbound), 0)
 
 }
 
-func TestXnorNetwork(t *testing.T) {
+func TestNetworkFitness(t *testing.T) {
+
+	neuralNet := simpleNetwork()
+
+	// inputs + expected outputs
+	examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{110, 110}}}}
+
+	// get network fitness
+	fitness := neuralNet.Fitness(examples)
+	log.Printf("fitness: %f", fitness)
+	assert.True(t, fitness > 10000000)
+
+	// inputs + crazy outputs
+	badExamples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{-1000, -1000}}}}
+
+	lowFitness := neuralNet.Fitness(badExamples)
+	log.Printf("lowFitness: %f", lowFitness)
+	assert.True(t, equalsWithMaxDelta(lowFitness, 0.0, .01))
+
+}
+
+func TestXnorTwoSensorNetwork(t *testing.T) {
 
 	// create network nodes
 	n1_processor := &Neuron{Bias: 0, ActivationFunction: identity_activation}
