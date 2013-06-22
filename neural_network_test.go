@@ -248,20 +248,17 @@ func TestCopy(t *testing.T) {
 
 	nnJson, _ := json.Marshal(neuralNet)
 	nnJsonString := fmt.Sprintf("%s", nnJson)
-	log.Printf("neuralNet: %s", nnJson)
 
 	nnCopyJson, _ := json.Marshal(neuralNetCopy)
 	nnCopyJsonString := fmt.Sprintf("%s", nnCopyJson)
-	log.Printf("neuralNetCopy: %s", nnCopyJson)
 	assert.Equals(t, nnJsonString, nnCopyJsonString)
 
-	/* TODO: fix this so it works!!
 	neuralNetCopy.Run()
 
 	examples := xnorTrainingSamples()
 	verified := neuralNetCopy.Verify(examples)
 	assert.True(t, verified)
-	*/
+
 	log.Printf("")
 
 }
