@@ -217,6 +217,9 @@ func TestCopy(t *testing.T) {
 	assert.True(t, neuralNetCopy.sensors[0].processor != nil)
 	assert.True(t, neuralNetCopy.actuators[0].processor != nil)
 
+	outputNeuron := neuralNetCopy.actuators[0].inbound[0].other
+	assert.Equals(t, len(outputNeuron.outbound), 1)
+
 	nnJson, _ := json.Marshal(neuralNet)
 	nnJsonString := fmt.Sprintf("%s", nnJson)
 	log.Printf("neuralNet: %s", nnJson)

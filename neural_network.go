@@ -178,7 +178,7 @@ func recreateInboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, sca
 	for _, inboundConnection := range nodeOriginal.inboundConnections() {
 
 		cxnTargetOriginal := inboundConnection.other
-		cxnTargetCopy := createConnectionTargetCopy(cxnTargetOriginal, nodeScaffold)
+		cxnTargetCopy := createOrReuseConnectionTargetCopy(cxnTargetOriginal, nodeScaffold)
 
 		newCxn := &connection{}
 		newCxn.other = cxnTargetCopy
@@ -208,19 +208,25 @@ func recreateOutboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, sc
 	for _, outboundConnection := range nodeOriginal.outboundConnections() {
 
 		cxnTargetOriginal := outboundConnection.other
-		cxnTargetCopy := createConnectionTargetCopy(cxnTargetOriginal, nodeScaffold)
 
-		newCxn := &connection{}
-		newCxn.other = cxnTargetCopy
+		cxnTargetCopy := createOrReuseConnectionTargetCopy(cxnTargetOriginal, nodeScaffold)
 
-		channelCopy := createChannelCopy(outboundConnection.channel, channelScaffold)
-		newCxn.channel = channelCopy
+		if !nodeCopy.hasOutboundConnectionTo(cxnTargetCopy) {
 
-		nodeCopy.appendOutboundConnection(newCxn)
+			newCxn := &connection{}
+			newCxn.other = cxnTargetCopy
+
+			channelCopy := createChannelCopy(outboundConnection.channel, channelScaffold)
+			newCxn.channel = channelCopy
+
+			nodeCopy.appendOutboundConnection(newCxn)
+
+		}
 
 		if len(cxnTargetOriginal.outboundConnections()) > 0 {
 			recreateOutboundConnectionsRecursive(cxnTargetOriginal, cxnTargetCopy, scaffold)
 		}
+
 	}
 }
 
@@ -237,7 +243,7 @@ func createChannelCopy(channelOriginal VectorChannel, channelScaffold map[Vector
 
 }
 
-func createConnectionTargetCopy(cxnTargetOriginal *Node, nodeScaffold map[*Node]*Node) *Node {
+func createOrReuseConnectionTargetCopy(cxnTargetOriginal *Node, nodeScaffold map[*Node]*Node) *Node {
 
 	var cxnTargetCopy *Node
 	if cxnTargetCopyTemp, ok := nodeScaffold[cxnTargetOriginal]; ok { // TODO: hack
