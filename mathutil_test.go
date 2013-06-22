@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
+	"log"
 	"testing"
 )
 
@@ -29,4 +30,12 @@ func TestVectorEqualsWithMaxDelta(t *testing.T) {
 	yValues = []float64{1.00000, 1.00000}
 
 	assert.False(t, vectorEqualsWithMaxDelta(xValues, yValues, .01))
+}
+
+func TestSumOfSquaresError(t *testing.T) {
+	expected := []float64{.5}
+	actual := []float64{1}
+	error := SumOfSquaresError(expected, actual)
+	nearlyEqualsPoint25 := equalsWithMaxDelta(error, 0.25, .01)
+	assert.True(t, nearlyEqualsPoint25)
 }
