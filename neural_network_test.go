@@ -210,6 +210,12 @@ func TestUniqueNodeMap(t *testing.T) {
 	assert.Equals(t, len(nodes), 5)
 }
 
+func TestGetNeurons(t *testing.T) {
+	neuralNet := xnorCondensedNetwork()
+	neurons := neuralNet.neurons()
+	assert.Equals(t, len(neurons), 3)
+}
+
 func TestCopy(t *testing.T) {
 
 	neuralNet := xnorCondensedNetwork()

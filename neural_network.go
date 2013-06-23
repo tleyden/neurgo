@@ -114,6 +114,18 @@ func (neuralNet *NeuralNetwork) MarshalJSON() ([]byte, error) {
 	return json.Marshal(nodeSlice)
 }
 
+func (neuralNet *NeuralNetwork) neurons() []*Node {
+
+	neurons := make([]*Node, 0)
+	nodes := neuralNet.uniqueNodeMap()
+	for _, node := range nodes {
+		if node.processor.hasBias() { // <-- mild hack
+			neurons = append(neurons, node)
+		}
+	}
+	return neurons
+}
+
 func (neuralNet *NeuralNetwork) uniqueNodeMap() NodeMap {
 	uniqueNodeMap := make(NodeMap)
 	for _, sensor := range neuralNet.sensors {
