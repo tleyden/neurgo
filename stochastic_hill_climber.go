@@ -1,9 +1,6 @@
 package neurgo
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"math"
 	"math/rand"
 )
@@ -19,7 +16,6 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 
 	// Apply NN to problem and save fitness
 	fitness := fittestNeuralNet.Fitness(examples)
-	log.Printf("initial fitness: %f", fitness)
 
 	if fitness > FITNESS_THRESHOLD {
 		return fittestNeuralNet
@@ -36,24 +32,16 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 
 		// Re-Apply NN to problem
 		candidateFitness := candidateNeuralNet.Fitness(examples)
-		log.Printf("candidateFitness: %f", candidateFitness)
 
 		// If the fitness of the perturbed NN is higher, discard original NN and keep
 		// the new.  If the fitness of original is higher, discard perturbed and keep
 		// the old.
 		if candidateFitness > fitness {
-			log.Printf("candidateFitness > fitness, setting candidate to fittest")
 			fittestNeuralNet = candidateNeuralNet
 			fitness = candidateFitness
-		} else {
-			log.Printf("candidateFitness < fitness, discarding")
 		}
 
 		if candidateFitness > FITNESS_THRESHOLD {
-			log.Printf("candidateFitness > FITNESS_THRESHOLD.  Done")
-			jsonBytes, _ := json.Marshal(fittestNeuralNet)
-			jsonString := fmt.Sprintf("%s", jsonBytes)
-			log.Printf("fittestNeuralNet: %s", jsonString)
 			break
 		}
 
