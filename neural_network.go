@@ -3,6 +3,7 @@ package neurgo
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sync"
 )
 
@@ -87,7 +88,8 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 // training samples.
 func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 	fitness := neuralNet.Fitness(samples)
-	return fitness > FITNESS_THRESHOLD
+	log.Printf("Verify() got fitness: %f", fitness)
+	return fitness >= FITNESS_THRESHOLD
 }
 
 func (neuralNet *NeuralNetwork) Run() {

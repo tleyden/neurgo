@@ -1,6 +1,9 @@
 package neurgo
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"math"
 	"math/rand"
 )
@@ -12,34 +15,52 @@ type StochasticHillClimber struct {
 
 func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*TrainingSample) *NeuralNetwork {
 
-	/*
-		// Repeat
+	fittestNeuralNet := neuralNet
 
-		// Apply NN to problem and save fitness
-		fitness = fittestNeuralNet.Fitness(examples)
+	// Apply NN to problem and save fitness
+	fitness := fittestNeuralNet.Fitness(examples)
+	log.Printf("initial fitness: %f", fitness)
+
+	if fitness > FITNESS_THRESHOLD {
+		return fittestNeuralNet
+	}
+
+	for {
 
 		// Save the genotype
 		candidateNeuralNet := fittestNeuralNet.Copy()
+		candidateNeuralNet.Run()
 
 		// Perturb synaptic weights and biases
 		shc.perturbParameters(candidateNeuralNet)
 
 		// Re-Apply NN to problem
 		candidateFitness := candidateNeuralNet.Fitness(examples)
+		log.Printf("candidateFitness: %f", candidateFitness)
 
 		// If the fitness of the perturbed NN is higher, discard original NN and keep
 		// the new.  If the fitness of original is higher, discard perturbed and keep
 		// the old.
 		if candidateFitness > fitness {
+			log.Printf("candidateFitness > fitness, setting candidate to fittest")
 			fittestNeuralNet = candidateNeuralNet
+			fitness = candidateFitness
+		} else {
+			log.Printf("candidateFitness < fitness, discarding")
 		}
 
-		// Until - acceptable solution is found, or stopping condition reached
+		if candidateFitness > FITNESS_THRESHOLD {
+			log.Printf("candidateFitness > FITNESS_THRESHOLD.  Done")
+			jsonBytes, _ := json.Marshal(fittestNeuralNet)
+			jsonString := fmt.Sprintf("%s", jsonBytes)
+			log.Printf("fittestNeuralNet: %s", jsonString)
+			break
+		}
 
-		// Return - genotype with the fittest combination of weights
-	*/
+	}
 
-	return &NeuralNetwork{}
+	return fittestNeuralNet
+
 }
 
 // 1. Each neuron in the neural net (weight or bias) will be chosen for perturbation

@@ -1,7 +1,10 @@
 package neurgo
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/couchbaselabs/go.assert"
+	"log"
 	"testing"
 )
 
@@ -61,14 +64,14 @@ func TestWeightTraining(t *testing.T) {
 	verified := neuralNet.Verify(examples)
 	assert.False(t, verified)
 
-	// TODO - shutdown the network so we can re-use it
-
-	// create stochastic hill climber trainer
-
-	// train the network
+	shc := new(StochasticHillClimber)
+	neuralNetTrained := shc.Train(neuralNet, examples)
+	jsonBytes, _ := json.Marshal(neuralNetTrained)
+	jsonString := fmt.Sprintf("%s", jsonBytes)
+	log.Printf("trainedNet: %v", jsonString)
 
 	// verify it can now solve the training set
-	verified = neuralNet.Verify(examples)
+	verified = neuralNetTrained.Verify(examples)
 	assert.True(t, verified)
 
 }
