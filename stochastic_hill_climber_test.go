@@ -14,14 +14,15 @@ func TestPerturbParameters(t *testing.T) {
 
 	nnJson, _ := json.Marshal(neuralNet)
 	nnJsonString := fmt.Sprintf("%s", nnJson)
+	log.Printf("before perturb: %v", nnJsonString)
 
 	shc := new(StochasticHillClimber)
 
-	log.Printf("neuralNet.sensors: %v", neuralNet.sensors)
 	shc.perturbParameters(neuralNet)
 
 	nnJsonAfter, _ := json.Marshal(neuralNet)
 	nnJsonStringAfter := fmt.Sprintf("%s", nnJsonAfter)
+	log.Printf("after perturb: %v", nnJsonStringAfter)
 
 	// the json should be different after we perturb it
 	assert.NotEquals(t, nnJsonString, nnJsonStringAfter)

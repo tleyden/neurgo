@@ -3,6 +3,7 @@ package neurgo
 import (
 	"fmt"
 	"math"
+	"math/rand"
 )
 
 func sigmoid(x float64) float64 {
@@ -49,4 +50,8 @@ func vectorEqualsWithMaxDelta(xValues, yValues []float64, maxDelta float64) bool
 		}
 	}
 	return equals
+}
+
+func RandomInRange(min, max float64) float64 {
+	return rand.Float64()*(max-min) + min
 }

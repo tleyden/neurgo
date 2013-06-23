@@ -150,7 +150,7 @@ func (shc *StochasticHillClimber) possiblyPerturbBias(node *Node, probability fl
 
 func (shc *StochasticHillClimber) perturbParameter(parameter float64) float64 {
 
-	// TODO
-	return 0
+	parameter += RandomInRange(-3.14, 3.14)
+	return parameter
 
 }

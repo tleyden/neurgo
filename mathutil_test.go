@@ -42,3 +42,8 @@ func TestSafeScalarInverse(t *testing.T) {
 	assert.True(t, value > 1000000)
 	assert.True(t, equalsWithMaxDelta(SafeScalarInverse(1), 1.0, .0001))
 }
+
+func TestRandomInRange(t *testing.T) {
+	assert.True(t, RandomInRange(-3.14, 3.14) <= 3.14)
+	assert.True(t, RandomInRange(-3.14, 3.14) >= -3.14)
+}
