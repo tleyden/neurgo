@@ -18,6 +18,18 @@ type weightedInput struct {
 	inputs  []float64
 }
 
+func (neuron *Neuron) hasBias() bool {
+	return true
+}
+
+func (neuron *Neuron) bias() float64 {
+	return neuron.Bias
+}
+
+func (neuron *Neuron) setBias(newBias float64) {
+	neuron.Bias = newBias
+}
+
 func (neuron *Neuron) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		struct {

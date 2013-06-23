@@ -17,6 +17,18 @@ func (actuator *Actuator) MarshalJSON() ([]byte, error) {
 		})
 }
 
+func (actuator *Actuator) hasBias() bool {
+	return false
+}
+
+func (actuator *Actuator) bias() float64 {
+	panic("Actuators don't have bias parameter")
+}
+
+func (actuator *Actuator) setBias(newBias float64) {
+	panic("Actuators don't have bias parameter")
+}
+
 func (actuator *Actuator) copy() SignalProcessor {
 	actuatorCopy := &Actuator{}
 	return actuatorCopy

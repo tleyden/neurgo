@@ -13,4 +13,11 @@ type SignalProcessor interface {
 
 	// create a copy of this signalprocessor
 	copy() SignalProcessor
+
+	// does this signal processor have a "bias"
+	hasBias() bool
+
+	bias() float64
+
+	setBias(newBias float64)
 }

@@ -7,6 +7,18 @@ import (
 type Sensor struct {
 }
 
+func (sensor *Sensor) hasBias() bool {
+	return false
+}
+
+func (sensor *Sensor) bias() float64 {
+	panic("Sensors don't have bias parameter")
+}
+
+func (sensor *Sensor) setBias(newBias float64) {
+	panic("Sensors don't have bias parameter")
+}
+
 func (sensor *Sensor) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		struct {
