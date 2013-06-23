@@ -44,7 +44,7 @@ func xnorNetworkUntrained() *NeuralNetwork {
 
 }
 
-func DisableTestWeightTraining(t *testing.T) {
+func TestWeightTraining(t *testing.T) {
 
 	// training set
 	examples := []*TrainingSample{
