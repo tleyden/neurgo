@@ -38,10 +38,7 @@ func xnorNetworkUntrained() *NeuralNetwork {
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
 	// spinup node goroutines
-	nodes := []*Node{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
-	for _, node := range nodes {
-		go node.Run()
-	}
+	neuralNet.Run()
 
 	return neuralNet
 
