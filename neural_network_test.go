@@ -31,10 +31,7 @@ func simpleNetwork() *NeuralNetwork {
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
 	// spinup node goroutines
-	nodes := []*Node{neuron1, neuron2, sensor, actuator}
-	for _, node := range nodes {
-		go node.Run()
-	}
+	neuralNet.Run()
 
 	return neuralNet
 }
@@ -122,11 +119,8 @@ func TestXnorTwoSensorNetwork(t *testing.T) {
 		{sampleInputs: [][]float64{[]float64{1}, []float64{0}}, expectedOutputs: [][]float64{[]float64{0}}},
 		{sampleInputs: [][]float64{[]float64{0}, []float64{0}}, expectedOutputs: [][]float64{[]float64{1}}}}
 
-	// spinup node goroutines
-	nodes := []*Node{input_neuron1, input_neuron2, hidden_neuron1, hidden_neuron2, output_neuron, sensor1, sensor2, actuator}
-	for _, node := range nodes {
-		go node.Run()
-	}
+	// spin up node goroutines
+	neuralNet.Run()
 
 	// verify neural network
 	verified := neuralNet.Verify(examples)
@@ -162,10 +156,7 @@ func xnorCondensedNetwork() *NeuralNetwork {
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
 	// spinup node goroutines
-	nodes := []*Node{sensor, hidden_neuron1, hidden_neuron2, output_neuron, actuator}
-	for _, node := range nodes {
-		go node.Run()
-	}
+	neuralNet.Run()
 
 	return neuralNet
 }
@@ -214,6 +205,10 @@ func TestGetNeurons(t *testing.T) {
 	neuralNet := xnorCondensedNetwork()
 	neurons := neuralNet.neurons()
 	assert.Equals(t, len(neurons), 3)
+}
+
+func TestShutdown(t *testing.T) {
+
 }
 
 func TestCopy(t *testing.T) {
