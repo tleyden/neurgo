@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/proxypoke/vector"
-	"log"
 )
 
 type activationFunction func(float64) float64
@@ -55,7 +54,6 @@ func (neuron *Neuron) canPropagateSignal(node *Node) bool {
 
 func (neuron *Neuron) propagateSignal(node *Node) bool {
 	weightedInputs, isShutdown := neuron.weightedInputs(node)
-	log.Printf("isShutdown: %v", isShutdown)
 	if isShutdown {
 		return true
 	}
@@ -81,7 +79,6 @@ func (neuron *Neuron) weightedInputs(node *Node) (weightedInputs []*weightedInpu
 			ok = true
 		case <-connection.closing: // skip this connection since its closed
 		case <-node.closing:
-			log.Printf("node.closing")
 			isShutdown = true
 			return
 		}

@@ -2,7 +2,6 @@ package neurgo
 
 import (
 	"encoding/json"
-	"log"
 	"time"
 )
 
@@ -43,10 +42,7 @@ func (node *Node) Run() {
 		} else {
 			isShutdown := node.processor.propagateSignal(node)
 			if isShutdown {
-				log.Printf("isShutdown=true, breaking out of goroutine")
 				break
-			} else {
-				log.Printf("isShutdown!=true")
 			}
 		}
 	}
