@@ -37,7 +37,7 @@ func (sensor *Sensor) canPropagateSignal(node *Node) bool {
 	return len(node.inbound) == 1
 }
 
-func (sensor *Sensor) propagateSignal(node *Node) {
+func (sensor *Sensor) propagateSignal(node *Node) bool {
 
 	// this implemenation is just a stub which makes it easy to test for now.
 	// at some point, sensors will act as proxies to real virtual sensors,
@@ -51,11 +51,15 @@ func (sensor *Sensor) propagateSignal(node *Node) {
 	select {
 	case value = <-connection.channel:
 		ok = true
-	case <-connection.closing:
+	case <-connection.closing: // skip this connection since its closed
+	case <-node.closing:
+		return true
 	}
 
 	if ok {
 		node.scatterOutput(value)
 	}
+
+	return false
 
 }

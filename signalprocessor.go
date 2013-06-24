@@ -5,8 +5,9 @@ import ()
 type SignalProcessor interface {
 
 	// read inputs from inbound connections, calculate output, then
-	// propagate the output to outbound connections
-	propagateSignal(node *Node)
+	// propagate the output to outbound connections.
+	// returns true if the node was detected to be shutdown
+	propagateSignal(node *Node) bool
 
 	// is this signaller actually able to propagate a signal?
 	canPropagateSignal(node *Node) bool

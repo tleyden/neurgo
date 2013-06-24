@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"encoding/json"
+	"log"
 	"time"
 )
 
@@ -10,6 +11,7 @@ type Node struct {
 	inbound   []*connection
 	outbound  []*connection
 	processor SignalProcessor
+	closing   chan bool
 }
 
 func (node *Node) MarshalJSON() ([]byte, error) {
@@ -31,17 +33,27 @@ func (node *Node) MarshalJSON() ([]byte, error) {
 
 // continually propagate incoming signals -> outgoing signals
 func (node *Node) Run() {
+
+	node.closing = make(chan bool)
+
 	for {
+
 		if !node.processor.canPropagateSignal(node) {
 			time.Sleep(time.Second) // <-- watch advanced concurrency talk and remove
 		} else {
-			node.processor.propagateSignal(node)
+			isShutdown := node.processor.propagateSignal(node)
+			if isShutdown {
+				log.Printf("isShutdown=true, breaking out of goroutine")
+				break
+			} else {
+				log.Printf("isShutdown!=true")
+			}
 		}
 	}
 }
 
 func (node *Node) Shutdown() {
-
+	close(node.closing)
 }
 
 func (node *Node) String() string {

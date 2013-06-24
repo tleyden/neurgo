@@ -109,7 +109,7 @@ func TestRemoveConnectionFromRunningNeuron(t *testing.T) {
 	go func() {
 		sensor2.outbound[0].channel <- []float64{0}
 	}()
-	weightedInputs := neuronProcessor.weightedInputs(neuron)
+	weightedInputs, _ := neuronProcessor.weightedInputs(neuron)
 	assert.Equals(t, len(weightedInputs), 2)
 
 	// close one channel while a neuron is reading from
@@ -119,7 +119,7 @@ func TestRemoveConnectionFromRunningNeuron(t *testing.T) {
 	wg.Add(1)
 
 	go func() {
-		weightedInputs := neuronProcessor.weightedInputs(neuron)
+		weightedInputs, _ := neuronProcessor.weightedInputs(neuron)
 		assert.Equals(t, len(weightedInputs), 1)
 		wg.Done()
 	}()
@@ -158,7 +158,7 @@ func TestRemoveConnectionFromRunningActuator(t *testing.T) {
 	wg.Add(1)
 
 	go func() {
-		inputs := actuatorProcessor.gatherInputs(actuator)
+		inputs, _ := actuatorProcessor.gatherInputs(actuator)
 		assert.Equals(t, len(inputs), 1)
 		wg.Done()
 	}()
@@ -187,17 +187,28 @@ func TestNodeShutdown(t *testing.T) {
 	injector.Name = "injector"
 	injector.ConnectBidirectionalWeighted(neuron1, []float64{0})
 
+	log.Printf("call neuron1.Run()")
 	go neuron1.Run()
+	log.Printf("called neuron1.Run()")
+
+	time.Sleep(time.Second / 100) // TODO: modify node.Run() to spawn goroutine internally.  First it creates a closing channel.  Remove sleep() hack
+
+	log.Printf("shutting down neuron")
 	neuron1.Shutdown()
+	log.Printf("shut down neuron")
 
 	timeoutChannel := time.After(time.Second / 100)
 	doneChannel := make(chan bool)
 
 	go func() {
+		log.Printf("injecting value")
 		injector.outbound[0].channel <- []float64{0}
+		log.Printf("injected value")
+		// time.Sleep(time.Second * 10)
 		doneChannel <- true
 	}()
 
+	log.Printf("select()")
 	select {
 	case <-doneChannel:
 		// neuron is shutdown, not expecting to propagate value

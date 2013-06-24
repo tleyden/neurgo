@@ -38,20 +38,25 @@ func (actuator *Actuator) canPropagateSignal(node *Node) bool {
 	return len(node.inbound) > 0
 }
 
-func (actuator *Actuator) propagateSignal(node *Node) {
+func (actuator *Actuator) propagateSignal(node *Node) bool {
 
 	// this implemenation is just a stub which makes it easy to test.
 	// at some point, actuators will act as proxies to real virtual actuators
 	// and probably be pushing their outputs to sockets.
 
-	gatheredInputs := actuator.gatherInputs(node)
+	gatheredInputs, isShutdown := actuator.gatherInputs(node)
+	if isShutdown {
+		return true
+	}
+
 	node.scatterOutput(gatheredInputs)
+	return false
 
 }
 
-func (actuator *Actuator) gatherInputs(node *Node) []float64 {
+func (actuator *Actuator) gatherInputs(node *Node) (outputVector []float64, isShutdown bool) {
 
-	outputVector := make([]float64, 0)
+	outputVector = make([]float64, 0)
 
 	for _, connection := range node.inbound {
 
@@ -61,7 +66,10 @@ func (actuator *Actuator) gatherInputs(node *Node) []float64 {
 		select {
 		case inputs = <-connection.channel:
 			ok = true
-		case <-connection.closing:
+		case <-connection.closing: // skip this connection since its closed
+		case <-node.closing:
+			isShutdown = true
+			return
 		}
 
 		if ok {
@@ -71,7 +79,7 @@ func (actuator *Actuator) gatherInputs(node *Node) []float64 {
 		}
 	}
 
-	return outputVector
+	return
 
 }
 

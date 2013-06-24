@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/proxypoke/vector"
+	"log"
 )
 
 type activationFunction func(float64) float64
@@ -52,19 +53,24 @@ func (neuron *Neuron) canPropagateSignal(node *Node) bool {
 	return len(node.inbound) > 0
 }
 
-func (neuron *Neuron) propagateSignal(node *Node) {
-	weightedInputs := neuron.weightedInputs(node)
+func (neuron *Neuron) propagateSignal(node *Node) bool {
+	weightedInputs, isShutdown := neuron.weightedInputs(node)
+	log.Printf("isShutdown: %v", isShutdown)
+	if isShutdown {
+		return true
+	}
 	scalarOutput := neuron.computeScalarOutput(weightedInputs)
 	outputs := []float64{scalarOutput}
 	node.scatterOutput(outputs)
+	return false
 }
 
 // read each inbound channel and get the inputs, and pair this vector
 // with the weight vector for that inbound channel, then return the
 // list of those weight/input pairings.
-func (neuron *Neuron) weightedInputs(node *Node) []*weightedInput {
+func (neuron *Neuron) weightedInputs(node *Node) (weightedInputs []*weightedInput, isShutdown bool) {
 
-	weightedInputs := make([]*weightedInput, 0)
+	weightedInputs = make([]*weightedInput, 0)
 	for _, connection := range node.inbound {
 
 		var inputs []float64
@@ -73,7 +79,11 @@ func (neuron *Neuron) weightedInputs(node *Node) []*weightedInput {
 		select {
 		case inputs = <-connection.channel:
 			ok = true
-		case <-connection.closing:
+		case <-connection.closing: // skip this connection since its closed
+		case <-node.closing:
+			log.Printf("node.closing")
+			isShutdown = true
+			return
 		}
 
 		if ok {
@@ -86,7 +96,7 @@ func (neuron *Neuron) weightedInputs(node *Node) []*weightedInput {
 		}
 	}
 
-	return weightedInputs
+	return
 }
 
 func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float64 {
