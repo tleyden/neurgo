@@ -6,6 +6,7 @@ import (
 	"github.com/couchbaselabs/go.assert"
 	"log"
 	"testing"
+	"time"
 )
 
 func simpleNetwork() *NeuralNetwork {
@@ -208,6 +209,24 @@ func TestGetNeurons(t *testing.T) {
 }
 
 func TestShutdown(t *testing.T) {
+
+	neuralNet := xnorCondensedNetwork()
+	neuralNet.Shutdown()
+
+	doneChannel := make(chan bool)
+	timeoutChannel := time.After(time.Second * 2) // <-- TODO: why so much time needed?
+	go func() {
+		examples := xnorTrainingSamples()
+		neuralNet.Verify(examples)
+		doneChannel <- true
+	}()
+
+	select {
+	case <-doneChannel:
+		assert.True(t, false)
+	case <-timeoutChannel:
+		assert.True(t, true)
+	}
 
 }
 

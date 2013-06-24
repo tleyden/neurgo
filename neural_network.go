@@ -104,6 +104,10 @@ func (neuralNet *NeuralNetwork) Run() {
 
 }
 
+func (neuralNet *NeuralNetwork) Shutdown() {
+
+}
+
 func (neuralNet *NeuralNetwork) MarshalJSON() ([]byte, error) {
 
 	// get list of unique nodes in network
