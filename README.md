@@ -13,7 +13,8 @@ A library for constructing Neural Networks in [Go](http://golang.org/)
 * Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang)
 * Support traditional Backpropagation learning methods, in addition to Evolutionary based methods
 * 100% test coverage
-* Thorough documentation & examples
+* Message passing architecture 
+* Complete documentation & examples
 
 # Example code
 
@@ -50,15 +51,36 @@ assert.True(t, verified)
         
 ```
 
+# Getting Started
+
+* [Install Go](http://golang.org/doc/install)
+
+* Clone repository with `$ git clone git://github.com/tleyden/neurgo.git`
+
+* Run tests with `$ go test`
+
+* To write code that uses neurgo, your code will need `import "github.com/tleyden/neurgo"` as described in the [API documentation](http://godoc.org/github.com/tleyden/neurgo)
+
+# Documentation
+
+* This README file
+
+* [API documentation](http://godoc.org/github.com/tleyden/neurgo)
+
+
 # Status
 
 * Feedforward operation is complete
-* Learning algorithms (Stochastic Hill Climbing) in progress.
-* Stay tuned!
+* Learning via Stochastic Hill Climbing complete (w/ test that trains network to solve XNOR)
+* In progress: ability to cleanly shutdown network
+* Coming soon: Learning via network topology evolution
 
 # Understanding the codebase
 
-Start with TestNetwork in neural_network_test.go
+Start by reading the tests in:
+
+* `neural_network_test.go`
+* `stochastic_hill_climber_test.go`
 
 # Related Work
 
