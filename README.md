@@ -10,7 +10,7 @@ A library for constructing Neural Networks in [Go](http://golang.org/)
 
 # Project Goals:
 
-* Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a topology and weight evolving neural network in Erlang)
+* Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang)
 * Support traditional Backpropagation learning methods, in addition to Evolutionary based methods
 * 100% test coverage
 * Thorough documentation & examples
@@ -50,7 +50,7 @@ Start with TestNetwork in neural_network_test.go
 
 # Related Work
 
-[DXNN2](https://github.com/CorticalComputer/DXNN2) - Pure Erlang TWEANN (Topology WEight Adapting Neural Network).  
+[DXNN2](https://github.com/CorticalComputer/DXNN2) - Pure Erlang TPEULN (Topology & Parameter Evolving Universal Learning Network).  
 
 # Related Publications
 
