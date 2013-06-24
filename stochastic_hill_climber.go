@@ -37,8 +37,11 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 		// the new.  If the fitness of original is higher, discard perturbed and keep
 		// the old.
 		if candidateFitness > fitness {
+			fittestNeuralNet.Shutdown()
 			fittestNeuralNet = candidateNeuralNet
 			fitness = candidateFitness
+		} else {
+			candidateNeuralNet.Shutdown()
 		}
 
 		if candidateFitness > FITNESS_THRESHOLD {
