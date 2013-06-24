@@ -62,6 +62,8 @@ func (node *Node) scatterOutput(outputs []float64) {
 		case outboundConnection.channel <- outputs:
 		case <-outboundConnection.closing:
 			return
+		case <-node.closing:
+			return
 		}
 
 	}
