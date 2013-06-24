@@ -106,6 +106,14 @@ func (neuralNet *NeuralNetwork) Run() {
 
 func (neuralNet *NeuralNetwork) Shutdown() {
 
+	// get list of unique nodes in network
+	nodes := neuralNet.uniqueNodeMap()
+
+	// call Run() on each node
+	for node, _ := range nodes {
+		node.Shutdown()
+	}
+
 }
 
 func (neuralNet *NeuralNetwork) MarshalJSON() ([]byte, error) {

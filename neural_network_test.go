@@ -211,6 +211,9 @@ func TestGetNeurons(t *testing.T) {
 func TestShutdown(t *testing.T) {
 
 	neuralNet := xnorCondensedNetwork()
+
+	time.Sleep(time.Second / 100) // TODO: modify node.Run() to spawn goroutine internally.  First it creates a closing channel.  Remove sleep() hack
+
 	neuralNet.Shutdown()
 
 	doneChannel := make(chan bool)
