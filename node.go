@@ -40,6 +40,10 @@ func (node *Node) Run() {
 	}
 }
 
+func (node *Node) Shutdown() {
+
+}
+
 func (node *Node) String() string {
 	return node.Name
 }

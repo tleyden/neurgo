@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
+	"log"
 	"sync"
 	"testing"
 	"time"
@@ -174,6 +175,38 @@ func TestRemoveConnectionFromRunningActuator(t *testing.T) {
 	}()
 
 	wg.Wait()
+
+}
+
+func TestNodeShutdown(t *testing.T) {
+
+	neuronProcessor1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
+	neuron1 := &Node{Name: "neuron1", processor: neuronProcessor1}
+
+	injector := &Node{}
+	injector.Name = "injector"
+	injector.ConnectBidirectionalWeighted(neuron1, []float64{0})
+
+	go neuron1.Run()
+	neuron1.Shutdown()
+
+	timeoutChannel := time.After(time.Second / 100)
+	doneChannel := make(chan bool)
+
+	go func() {
+		injector.outbound[0].channel <- []float64{0}
+		doneChannel <- true
+	}()
+
+	select {
+	case <-doneChannel:
+		// neuron is shutdown, not expecting to propagate value
+		assert.True(t, false)
+	case <-timeoutChannel:
+		// neuron is shutdown, expecting timeout
+		assert.True(t, true)
+	}
+	log.Printf(".")
 
 }
 
