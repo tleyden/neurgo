@@ -19,23 +19,35 @@ A library for constructing Neural Networks in [Go](http://golang.org/)
 
 ```
 // create network nodes
-neuron1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
-neuron2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
-sensor := &Sensor{}
-actuator := &Actuator{}
+neuronProcessor1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
+neuronProcessor2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
+neuron1 := &Node{Name: "neuron1", processor: neuronProcessor1}
+neuron2 := &Node{Name: "neuron2", processor: neuronProcessor2}
+sensor := &Node{Name: "sensor", processor: &Sensor{}}
+actuator := &Node{Name: "actuator", processor: &Actuator{}}
 
 // connect nodes together
-weights := []float64{20,20,20,20,20}
+weights := []float64{20, 20, 20, 20, 20}
 sensor.ConnectBidirectionalWeighted(neuron1, weights)
 sensor.ConnectBidirectionalWeighted(neuron2, weights)
 neuron1.ConnectBidirectional(actuator)
 neuron2.ConnectBidirectional(actuator)
 
-// spinup node goroutines
-go Run(neuron1)
-go Run(neuron2)
-go Run(sensor)
-go Run(actuator)
+// create neural network
+sensors := []*Node{sensor}
+actuators := []*Node{actuator}
+neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
+
+// spin up node goroutines
+neuralNet.Run()
+
+// inputs + expected outputs
+examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{110, 110}}}}
+
+// verify neural network
+verified := neuralNet.Verify(examples)
+assert.True(t, verified)
+        
 ```
 
 # Status
