@@ -82,10 +82,17 @@ Start by reading the tests in:
 * `neural_network_test.go`
 * `stochastic_hill_climber_test.go`
 
+# Contributing
+
+Wanted: contribution of an implementation of Backpropagation training which follows the `Trainer` interface.
+
+
 # Related Work
 
 [DXNN2](https://github.com/CorticalComputer/DXNN2) - Pure Erlang TPEULN (Topology & Parameter Evolving Universal Learning Network).  
 
+
 # Related Publications
 
 [Handbook of Neuroevolution Through Erlang](http://www.amazon.com/Handbook-Neuroevolution-Through-Erlang-Gene/dp/1461444624) _by Gene Sher_.
+
