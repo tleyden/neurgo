@@ -49,7 +49,7 @@ func (neuron *Neuron) copy() SignalProcessor {
 	return neuronCopy
 }
 
-func (neuron *Neuron) canPropagateSignal(node *Node) (isShutdown bool) {
+func (neuron *Neuron) waitCanPropagate(node *Node) (isShutdown bool) {
 
 	if len(node.inbound) == 0 {
 		log.Printf("%v call waitForInboundChannel", node)

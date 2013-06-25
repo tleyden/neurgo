@@ -34,7 +34,7 @@ func (sensor *Sensor) copy() SignalProcessor {
 	return sensorCopy
 }
 
-func (sensor *Sensor) canPropagateSignal(node *Node) (isShutdown bool) {
+func (sensor *Sensor) waitCanPropagate(node *Node) (isShutdown bool) {
 	if len(node.inbound) > 1 {
 		log.Panicf("%v has more than one inbound, this is unexpected", node)
 	}

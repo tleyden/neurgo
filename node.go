@@ -45,7 +45,8 @@ func (node *Node) Run() {
 	log.Printf("%v Run()", node)
 
 	for {
-		if isShutdown := node.processor.canPropagateSignal(node); isShutdown {
+		log.Printf("%v Run() top of loop", node)
+		if isShutdown := node.processor.waitCanPropagate(node); isShutdown {
 			log.Printf("%v was shutdown whle calling canPropagate()", node)
 			break
 		} else {
@@ -57,6 +58,7 @@ func (node *Node) Run() {
 		}
 
 	}
+	log.Printf("%v Run() finished", node)
 }
 
 func (node *Node) Shutdown() {
@@ -65,18 +67,24 @@ func (node *Node) Shutdown() {
 
 func (node *Node) waitForInboundChannel() (isShutdown bool) {
 	for {
+		log.Printf("%v waitForInboundChannel()", node)
 		select {
 		case controlMessage := <-node.control:
 			if controlMessage == CTL_MSG_INBOUND_ADDED {
+				log.Printf("%v got CTL_MSG_INBOUND_ADDED", node)
 				isShutdown = false
-				break
+				return
+			} else {
+				log.Printf("%v got controlMessage: %v", node, controlMessage)
 			}
 		case <-node.closing:
+			log.Printf("%v got closing message", node)
 			isShutdown = true
-			break
+			return
 		}
 
 	}
+	log.Printf("%v finished waitForInboundChannel()", node)
 	return
 
 }
@@ -135,10 +143,14 @@ func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel,
 		closing: closing,
 	}
 	node.inbound = append(node.inbound, connection)
+	log.Printf("connectInboundWithChannel calling select()")
 	select {
 	case node.control <- CTL_MSG_INBOUND_ADDED:
+		log.Printf("sent CTL_MSG_INBOUND_ADDED")
 	default:
+		log.Printf("unable to send CTL_MSG_INBOUND_ADDED")
 	}
+	log.Printf("connectInboundWithChannel select() finished")
 
 }
 

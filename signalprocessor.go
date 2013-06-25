@@ -10,7 +10,7 @@ type SignalProcessor interface {
 	propagateSignal(node *Node) bool
 
 	// is this signaller actually able to propagate a signal?
-	canPropagateSignal(node *Node) bool
+	waitCanPropagate(node *Node) bool
 
 	// create a copy of this signalprocessor
 	copy() SignalProcessor
