@@ -35,7 +35,7 @@ func (sensor *Sensor) copy() SignalProcessor {
 }
 
 func (sensor *Sensor) waitCanPropagate(node *Node) (isShutdown bool) {
-	if len(node.inbound) > 1 {
+	if len(node.inbound) > 1 { // FIXME: data race #1
 		log.Panicf("%v has more than one inbound, this is unexpected", node)
 	}
 

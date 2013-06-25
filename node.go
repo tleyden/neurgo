@@ -145,7 +145,7 @@ func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel,
 		other:   source,
 		closing: closing,
 	}
-	node.inbound = append(node.inbound, connection)
+	node.inbound = append(node.inbound, connection) // FIXME: data race #1
 	select {
 	case node.control <- CTL_MSG_INBOUND_ADDED:
 	default:
