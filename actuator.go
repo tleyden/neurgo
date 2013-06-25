@@ -3,7 +3,6 @@ package neurgo
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 )
 
 type Actuator struct {
@@ -36,16 +35,11 @@ func (actuator *Actuator) copy() SignalProcessor {
 }
 
 func (actuator *Actuator) waitCanPropagate(node *Node) (isShutdown bool) {
-	log.Printf("%v waitCanPropagate called", node)
 	if len(node.inbound) == 0 {
-		log.Printf("no inbound, %v call waitForInboundChannel", node)
 		isShutdown = node.waitForInboundChannel()
-		log.Printf("%v called waitForInboundChannel, isShutdown: %v", node, isShutdown)
 	} else {
-		log.Printf("%v already has inbound", node)
 		isShutdown = false
 	}
-	log.Printf("%v waitCanPropagate returning %v", node, isShutdown)
 	return
 }
 
