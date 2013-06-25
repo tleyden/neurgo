@@ -40,9 +40,16 @@ func (node *Node) MarshalJSON() ([]byte, error) {
 // continually propagate incoming signals -> outgoing signals
 func (node *Node) Run() {
 
+	log.Printf("%v Run() called", node)
 	node.closing = make(chan bool)
 	node.control = make(chan ControlMessage)
-	log.Printf("%v Run()", node)
+	log.Printf("%v Run() spawning goroutine", node)
+
+	go node.runGoroutine()
+
+}
+
+func (node *Node) runGoroutine() {
 
 	for {
 		log.Printf("%v Run() top of loop", node)
@@ -58,7 +65,8 @@ func (node *Node) Run() {
 		}
 
 	}
-	log.Printf("%v Run() finished", node)
+	log.Printf("%v runGoroutine() finished", node)
+
 }
 
 func (node *Node) Shutdown() {

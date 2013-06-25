@@ -17,13 +17,13 @@ func TestCanPropagateSignal(t *testing.T) {
 	actuatorProcessor := &Actuator{}
 	actuator := &Node{Name: "actuator", processor: actuatorProcessor}
 
-	go actuator.Run()
+	actuator.Run()
 
 	// this hack is needed ... I think because the closing channels
 	// aren't setup yet and it breaks things.  TODO: modify
 	// node.Run() to be synchronous and kick off go routine internally
 	// after closing channels have been setup
-	time.Sleep(time.Second / 100)
+	// time.Sleep(time.Second / 100)
 
 	// connect nodes together
 	neuron1.ConnectBidirectional(actuator)

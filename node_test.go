@@ -188,10 +188,8 @@ func TestNodeShutdown(t *testing.T) {
 	injector.ConnectBidirectionalWeighted(neuron1, []float64{0})
 
 	log.Printf("call neuron1.Run()")
-	go neuron1.Run()
+	neuron1.Run()
 	log.Printf("called neuron1.Run()")
-
-	time.Sleep(time.Second / 100) // TODO: modify node.Run() to spawn goroutine internally.  First it creates a closing channel.  Remove sleep() hack
 
 	log.Printf("shutting down neuron")
 	neuron1.Shutdown()
