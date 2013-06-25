@@ -208,39 +208,28 @@ func TestGetNeurons(t *testing.T) {
 	assert.Equals(t, len(neurons), 3)
 }
 
-func DisableTestShutdown(t *testing.T) {
+func TestShutdown(t *testing.T) {
 
-	// neuralNet := xnorCondensedNetwork()
+	neuralNet := xnorCondensedNetwork()
 
-	time.Sleep(time.Second) // TODO: modify node.Run() to spawn goroutine internally.  First it creates a closing channel.  Remove sleep() hack
+	neuralNet.Shutdown()
 
 	doneChannel := make(chan bool)
-
+	timeoutChannel := time.After(time.Second / 100)
 	go func() {
-
-		log.Printf("call shutdown()")
-		// neuralNet.Shutdown()
-		log.Printf("called shutdown()")
-
-		log.Printf("go routine")
-		// examples := xnorTrainingSamples()
-		log.Printf("calling verify")
-		// neuralNet.Verify(examples)
-		time.Sleep(time.Second)
-		log.Printf("called verify")
+		examples := xnorTrainingSamples()
+		neuralNet.Verify(examples) // expected to block, since network shutdown
 		doneChannel <- true
 	}()
 
-	timeoutChannel := time.After(time.Second * 2) // <-- TODO: why so much time needed?
-	log.Printf("call select()")
 	select {
 	case <-doneChannel:
+		// not expecting anything on doneChannel
 		assert.True(t, false)
 	case <-timeoutChannel:
-		log.Printf("timeout!")
+		// expect it to timeout
 		assert.True(t, true)
 	}
-	log.Printf("called select()")
 
 }
 
