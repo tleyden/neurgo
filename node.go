@@ -80,15 +80,11 @@ func (node *Node) waitForInboundChannel() (isShutdown bool) {
 		case controlMessage := <-node.control:
 			if controlMessage == CTL_MSG_INBOUND_ADDED {
 				isShutdown = false
-				break
+				return
 			}
 		case <-node.closing:
 			isShutdown = true
-			break
-		}
-
-		if isShutdown == true {
-			break
+			return
 		}
 
 	}
