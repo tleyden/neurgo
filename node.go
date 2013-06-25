@@ -2,7 +2,13 @@ package neurgo
 
 import (
 	"encoding/json"
-	"time"
+	"log"
+)
+
+type ControlMessage int
+
+const (
+	CTL_MSG_INBOUND_ADDED = ControlMessage(iota)
 )
 
 type Node struct {
@@ -11,6 +17,7 @@ type Node struct {
 	outbound  []*connection
 	processor SignalProcessor
 	closing   chan bool
+	control   chan ControlMessage
 }
 
 func (node *Node) MarshalJSON() ([]byte, error) {
@@ -34,22 +41,44 @@ func (node *Node) MarshalJSON() ([]byte, error) {
 func (node *Node) Run() {
 
 	node.closing = make(chan bool)
+	node.control = make(chan ControlMessage)
+	log.Printf("%v Run()", node)
 
 	for {
-
-		if !node.processor.canPropagateSignal(node) {
-			time.Sleep(time.Second) // <-- watch advanced concurrency talk and remove
+		if isShutdown := node.processor.canPropagateSignal(node); isShutdown {
+			log.Printf("%v was shutdown whle calling canPropagate()", node)
+			break
 		} else {
-			isShutdown := node.processor.propagateSignal(node)
+			isShutdown = node.processor.propagateSignal(node)
 			if isShutdown {
+				log.Printf("%v was shutdown whle calling propagateSignal()", node)
 				break
 			}
 		}
+
 	}
 }
 
 func (node *Node) Shutdown() {
 	close(node.closing)
+}
+
+func (node *Node) waitForInboundChannel() (isShutdown bool) {
+	for {
+		select {
+		case controlMessage := <-node.control:
+			if controlMessage == CTL_MSG_INBOUND_ADDED {
+				isShutdown = false
+				break
+			}
+		case <-node.closing:
+			isShutdown = true
+			break
+		}
+
+	}
+	return
+
 }
 
 func (node *Node) String() string {
@@ -106,6 +135,11 @@ func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel,
 		closing: closing,
 	}
 	node.inbound = append(node.inbound, connection)
+	select {
+	case node.control <- CTL_MSG_INBOUND_ADDED:
+	default:
+	}
+
 }
 
 func (node *Node) DisconnectBidirectional(target *Node) {

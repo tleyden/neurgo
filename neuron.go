@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/proxypoke/vector"
+	"log"
 )
 
 type activationFunction func(float64) float64
@@ -48,13 +49,24 @@ func (neuron *Neuron) copy() SignalProcessor {
 	return neuronCopy
 }
 
-func (neuron *Neuron) canPropagateSignal(node *Node) bool {
-	return len(node.inbound) > 0
+func (neuron *Neuron) canPropagateSignal(node *Node) (isShutdown bool) {
+
+	if len(node.inbound) == 0 {
+		log.Printf("%v call waitForInboundChannel", node)
+		isShutdown = node.waitForInboundChannel()
+		log.Printf("%v called waitForInboundChannel.  isShutdown: %v", node, isShutdown)
+	} else {
+		log.Printf("%v has %v inbound connection, canPropagate signal", node, len(node.inbound))
+		isShutdown = false
+	}
+	return
+
 }
 
 func (neuron *Neuron) propagateSignal(node *Node) bool {
 	weightedInputs, isShutdown := neuron.weightedInputs(node)
 	if isShutdown {
+		log.Printf("%v was shutdown calling weightedInputs()", node)
 		return true
 	}
 	scalarOutput := neuron.computeScalarOutput(weightedInputs)
