@@ -27,23 +27,15 @@ func TestCanPropagateSignalShutdown(t *testing.T) {
 	assert.False(t, isShutdown)
 
 	go func() {
-		log.Printf("goroutine sleeping")
 		time.Sleep(time.Second / 100)
-		log.Printf("goroutine calling actuator.Shutdown()")
 		actuator.Shutdown()
-		log.Printf("Shutdown() finished")
 	}()
 
-	log.Printf("-- disconnect nodes from actuator")
 	neuron1.DisconnectBidirectional(actuator)
 	neuron2.DisconnectBidirectional(actuator)
 
-	log.Printf("-- call waitCanPropagate()")
 	isShutdown = actuator.processor.waitCanPropagate(actuator)
-	log.Printf("called waitCanPropagate() and got isShutdown: %v", isShutdown)
 	assert.True(t, isShutdown)
-
-	log.Printf("done")
 
 }
 
@@ -67,18 +59,14 @@ func TestCanPropagateSignalReAddConnection(t *testing.T) {
 	assert.False(t, isShutdown)
 
 	go func() {
-		log.Printf("goroutine sleeping")
 		time.Sleep(time.Second / 100)
 		neuron1.ConnectBidirectional(actuator)
 	}()
 
-	log.Printf("-- disconnect nodes from actuator")
 	neuron1.DisconnectBidirectional(actuator)
 	neuron2.DisconnectBidirectional(actuator)
 
-	log.Printf("-- call waitCanPropagate()")
 	isShutdown = actuator.processor.waitCanPropagate(actuator)
-	log.Printf("called waitCanPropagate() and got isShutdown: %v", isShutdown)
 	assert.False(t, isShutdown)
 
 	log.Printf("done")
