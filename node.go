@@ -66,6 +66,14 @@ func (node *Node) Shutdown() {
 }
 
 func (node *Node) waitForInboundChannel() (isShutdown bool) {
+
+	if node.closing == nil {
+		panic("node.closing == nil")
+	}
+	if node.control == nil {
+		panic("node.control == nil")
+	}
+
 	for {
 		log.Printf("%v waitForInboundChannel()", node)
 		select {
@@ -146,9 +154,9 @@ func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel,
 	log.Printf("connectInboundWithChannel calling select()")
 	select {
 	case node.control <- CTL_MSG_INBOUND_ADDED:
-		log.Printf("sent CTL_MSG_INBOUND_ADDED")
+		log.Printf("%v sent CTL_MSG_INBOUND_ADDED", node)
 	default:
-		log.Printf("unable to send CTL_MSG_INBOUND_ADDED")
+		log.Printf("%v unable to send CTL_MSG_INBOUND_ADDED", node)
 	}
 	log.Printf("connectInboundWithChannel select() finished")
 

@@ -37,6 +37,7 @@ func TestCanPropagateSignal(t *testing.T) {
 		time.Sleep(time.Second / 100)
 		log.Printf("goroutine calling actuator.Shutdown()")
 		actuator.Shutdown()
+		log.Printf("Shutdown() finished")
 	}()
 
 	log.Printf("-- disconnect nodes from actuator")
@@ -45,7 +46,7 @@ func TestCanPropagateSignal(t *testing.T) {
 
 	log.Printf("-- call waitCanPropagate()")
 	isShutdown = actuator.processor.waitCanPropagate(actuator)
-	log.Printf("called waitCanPropagate()")
+	log.Printf("called waitCanPropagate() and got isShutdown: %v", isShutdown)
 	assert.True(t, isShutdown)
 
 	log.Printf("done")
