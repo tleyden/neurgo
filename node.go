@@ -89,14 +89,18 @@ func (node *Node) waitForInboundChannel() (isShutdown bool) {
 			if controlMessage == CTL_MSG_INBOUND_ADDED {
 				log.Printf("%v got CTL_MSG_INBOUND_ADDED", node)
 				isShutdown = false
-				return
+				break
 			} else {
 				log.Printf("%v got controlMessage: %v", node, controlMessage)
 			}
 		case <-node.closing:
 			log.Printf("%v got closing message", node)
 			isShutdown = true
-			return
+			break
+		}
+
+		if isShutdown == true {
+			break
 		}
 
 	}
