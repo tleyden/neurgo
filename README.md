@@ -5,9 +5,7 @@
 
 A library for constructing Neural Networks in [Go](http://golang.org/)
 
-![architecture_diagram.png](http://cl.ly/image/143P2G2i3i1a/neurgo.png)
-
-
+<iframe src="http://prezi.com/embed/cldumvoxwsxj/?bgcolor=ffffff&amp;lock_to_path=0&amp;autoplay=0&amp;autohide_ctrls=0&amp;features=undefined&amp;disabled_features=undefined" width="550" height="400" frameBorder="0"></iframe>
 # Project Goals:
 
 * Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang)
@@ -77,10 +75,11 @@ assert.True(t, verified)
 
 # Understanding the codebase
 
-Start by reading the tests in:
+Start by reading the code in:
 
+* `stochastic_hill_climber.go`
+* `trainer_test.go`
 * `neural_network_test.go`
-* `stochastic_hill_climber_test.go`
 
 # Contributing
 
