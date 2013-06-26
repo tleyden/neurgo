@@ -5,7 +5,10 @@
 
 A library for constructing Neural Networks in [Go](http://golang.org/)
 
-<iframe src="http://prezi.com/embed/cldumvoxwsxj/?bgcolor=ffffff&amp;lock_to_path=0&amp;autoplay=0&amp;autohide_ctrls=0&amp;features=undefined&amp;disabled_features=undefined" width="550" height="400" frameBorder="0"></iframe>
+![architecture_diagram.png](http://cl.ly/image/143P2G2i3i1a/neurgo.png)
+
+For a more detailed architecture diagram, see the [Neurgo Architecture Prezi](http://prezi.com/cldumvoxwsxj/?utm_campaign=share&utm_medium=copy)
+
 # Project Goals:
 
 * Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang)
