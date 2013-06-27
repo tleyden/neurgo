@@ -46,6 +46,8 @@ func (node *Node) runGoroutine() {
 
 	}
 
+	node.closing <- true
+
 }
 
 func (node *Node) hasBeenShutdown() bool {
@@ -59,6 +61,8 @@ func (node *Node) hasBeenShutdown() bool {
 }
 
 func (node *Node) Shutdown() {
+	node.closing <- true
+	<-node.closing
 	close(node.closing)
 }
 
