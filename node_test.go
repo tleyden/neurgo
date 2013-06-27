@@ -2,7 +2,6 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
-	"log"
 	"testing"
 	"time"
 )
@@ -96,26 +95,18 @@ func TestNodeShutdown(t *testing.T) {
 	injector.Name = "injector"
 	injector.ConnectBidirectionalWeighted(neuron1, []float64{0})
 
-	log.Printf("call neuron1.Run()")
 	neuron1.Run()
-	log.Printf("called neuron1.Run()")
 
-	log.Printf("shutting down neuron")
 	neuron1.Shutdown()
-	log.Printf("shut down neuron")
 
 	timeoutChannel := time.After(time.Second / 100)
 	doneChannel := make(chan bool)
 
 	go func() {
-		log.Printf("injecting value")
 		injector.outbound[0].channel <- []float64{0}
-		log.Printf("injected value")
-		// time.Sleep(time.Second * 10)
 		doneChannel <- true
 	}()
 
-	log.Printf("select()")
 	select {
 	case <-doneChannel:
 		// neuron is shutdown, not expecting to propagate value
@@ -124,7 +115,6 @@ func TestNodeShutdown(t *testing.T) {
 		// neuron is shutdown, expecting timeout
 		assert.True(t, true)
 	}
-	log.Printf(".")
 
 }
 

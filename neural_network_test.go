@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/couchbaselabs/go.assert"
-	"log"
 	"testing"
 )
 
@@ -252,7 +251,5 @@ func TestCopy(t *testing.T) {
 	examples := xnorTrainingSamples()
 	verified := neuralNetCopy.Verify(examples)
 	assert.True(t, verified)
-
-	log.Printf("")
 
 }

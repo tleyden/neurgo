@@ -2,7 +2,6 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
-	"log"
 	"testing"
 )
 
@@ -32,6 +31,5 @@ func TestCopyNeuron(t *testing.T) {
 	neuronCopy := neuronCopyProcessor.(*Neuron)
 	assert.Equals(t, neuron.Bias, neuronCopy.Bias)
 	assert.Equals(t, neuron.ActivationFunction(1.0), neuronCopy.ActivationFunction(1.0))
-	log.Printf("neuronCopy: %v", neuronCopy)
 
 }
