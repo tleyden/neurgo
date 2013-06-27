@@ -17,6 +17,9 @@ type Node struct {
 // continually propagate incoming signals -> outgoing signals
 func (node *Node) Run() {
 
+	// create the closing channel before goroutine kicked off
+	// to solve a potential race condition where someone tries
+	// to shutdown a not-yet-running node
 	node.closing = make(chan bool)
 
 	go node.runGoroutine()
@@ -46,7 +49,7 @@ func (node *Node) runGoroutine() {
 
 	}
 
-	node.closing <- true
+	node.closing <- true // confirm that we are closed
 
 }
 
@@ -61,9 +64,9 @@ func (node *Node) hasBeenShutdown() bool {
 }
 
 func (node *Node) Shutdown() {
-	node.closing <- true
-	<-node.closing
-	close(node.closing)
+	node.closing <- true // tell node to close
+	<-node.closing       // wait for confirmation
+	close(node.closing)  // <-- TODO: do we actually need this?
 }
 
 func (node *Node) String() string {
