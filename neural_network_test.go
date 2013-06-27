@@ -6,7 +6,6 @@ import (
 	"github.com/couchbaselabs/go.assert"
 	"log"
 	"testing"
-	"time"
 )
 
 func simpleNetwork() *NeuralNetwork {
@@ -187,9 +186,6 @@ func TestXnorCondensedNetwork(t *testing.T) {
 func TestUniqueNodeMap(t *testing.T) {
 	neuralNet := xnorCondensedNetwork()
 	nodes := neuralNet.uniqueNodeMap()
-	for node, _ := range nodes {
-		log.Printf("node: %v", node)
-	}
 	assert.Equals(t, len(nodes), 5)
 }
 
@@ -202,15 +198,11 @@ func TestGetNeurons(t *testing.T) {
 func TestShutdown(t *testing.T) {
 
 	neuralNet := xnorCondensedNetwork()
-
-	neuralNet.Run()
-	neuralNet.Shutdown()
-
-	time.Sleep(time.Second / 100) // TODO: fix root of problem of why this is needed
-
 	examples := xnorTrainingSamples()
-	verify := neuralNet.Verify(examples) // expected to block, since network shutdown
-	assert.True(t, verify)
+	for i := 0; i < 25; i++ {
+		verify := neuralNet.Verify(examples)
+		assert.True(t, verify)
+	}
 
 }
 
