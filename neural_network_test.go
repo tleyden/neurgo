@@ -31,9 +31,6 @@ func simpleNetwork() *NeuralNetwork {
 	actuators := []*Node{actuator}
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
-	// spinup node goroutines
-	neuralNet.Run()
-
 	return neuralNet
 }
 
@@ -120,9 +117,6 @@ func TestXnorTwoSensorNetwork(t *testing.T) {
 		{sampleInputs: [][]float64{[]float64{1}, []float64{0}}, expectedOutputs: [][]float64{[]float64{0}}},
 		{sampleInputs: [][]float64{[]float64{0}, []float64{0}}, expectedOutputs: [][]float64{[]float64{1}}}}
 
-	// spin up node goroutines
-	neuralNet.Run()
-
 	// verify neural network
 	verified := neuralNet.Verify(examples)
 	assert.True(t, verified)
@@ -155,9 +149,6 @@ func xnorCondensedNetwork() *NeuralNetwork {
 	sensors := []*Node{sensor}
 	actuators := []*Node{actuator}
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
-
-	// spinup node goroutines
-	neuralNet.Run()
 
 	return neuralNet
 }
@@ -212,6 +203,7 @@ func TestShutdown(t *testing.T) {
 
 	neuralNet := xnorCondensedNetwork()
 
+	neuralNet.Run()
 	neuralNet.Shutdown()
 
 	doneChannel := make(chan bool)
@@ -275,8 +267,6 @@ func TestCopy(t *testing.T) {
 	nnCopyJson, _ := json.Marshal(neuralNetCopy)
 	nnCopyJsonString := fmt.Sprintf("%s", nnCopyJson)
 	assert.Equals(t, nnJsonString, nnCopyJsonString)
-
-	neuralNetCopy.Run()
 
 	examples := xnorTrainingSamples()
 	verified := neuralNetCopy.Verify(examples)

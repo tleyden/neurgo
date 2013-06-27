@@ -2,7 +2,6 @@ package neurgo
 
 import (
 	"encoding/json"
-	"log"
 )
 
 type Sensor struct {
@@ -34,17 +33,10 @@ func (sensor *Sensor) copy() SignalProcessor {
 	return sensorCopy
 }
 
-func (sensor *Sensor) waitCanPropagate(node *Node) (isShutdown bool) {
-	if len(node.inbound) > 1 { // FIXME: data race #1
-		log.Panicf("%v has more than one inbound, this is unexpected", node)
-	}
+func (sensor *Sensor) canPropagate(node *Node) bool {
 
-	if len(node.inbound) == 0 {
-		isShutdown = node.waitForInboundChannel()
-	} else {
-		isShutdown = false
-	}
-	return
+	return len(node.inbound) == 1
+
 }
 
 func (sensor *Sensor) propagateSignal(node *Node) bool {

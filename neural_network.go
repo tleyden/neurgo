@@ -30,6 +30,7 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 	injectors := make([]*Node, len(neuralNet.sensors))
 	for i, _ := range injectors {
 		injectors[i] = &Node{}
+		injectors[i].setInvisible(true)
 		injectors[i].Name = fmt.Sprintf("injector-%d", i+1)
 		injectors[i].ConnectBidirectional(neuralNet.sensors[i])
 	}
@@ -38,9 +39,13 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 	wiretaps := make([]*Node, len(neuralNet.actuators))
 	for i, _ := range wiretaps {
 		wiretaps[i] = &Node{}
+		wiretaps[i].setInvisible(true)
 		wiretaps[i].Name = fmt.Sprintf("wiretap-%d", i+1)
 		neuralNet.actuators[i].ConnectBidirectional(wiretaps[i])
 	}
+
+	log.Printf("neuralNet.Run()")
+	neuralNet.Run()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -72,6 +77,10 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 
 	wg.Wait()
 
+	log.Printf("neuralNet.Shutdown()")
+	neuralNet.Shutdown()
+	log.Printf("finish neuralNet.Shutdown()")
+
 	// disconnect injectors and wiretaps to leave it in the same state!
 	for i, injector := range injectors {
 		injector.DisconnectBidirectional(neuralNet.sensors[i])
@@ -99,7 +108,9 @@ func (neuralNet *NeuralNetwork) Run() {
 
 	// call Run() on each node
 	for node, _ := range nodes {
-		node.Run()
+		if node.isInvisible() == false {
+			node.Run()
+		}
 	}
 
 }
@@ -150,7 +161,9 @@ func (neuralNet *NeuralNetwork) uniqueNodeMap() NodeMap {
 
 func (neuralNet *NeuralNetwork) addUniqueNodeRecursive(node *Node, uniqueNodeMap NodeMap) {
 	if _, ok := uniqueNodeMap[node]; !ok {
-		uniqueNodeMap[node] = node
+		if node.isInvisible() == false {
+			uniqueNodeMap[node] = node
+		}
 	}
 	for _, connection := range node.outbound {
 		neuralNet.addUniqueNodeRecursive(connection.other, uniqueNodeMap)

@@ -25,7 +25,6 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 
 		// Save the genotype
 		candidateNeuralNet := fittestNeuralNet.Copy()
-		candidateNeuralNet.Run()
 
 		// Perturb synaptic weights and biases
 		shc.perturbParameters(candidateNeuralNet)
@@ -37,11 +36,8 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 		// the new.  If the fitness of original is higher, discard perturbed and keep
 		// the old.
 		if candidateFitness > fitness {
-			fittestNeuralNet.Shutdown()
 			fittestNeuralNet = candidateNeuralNet
 			fitness = candidateFitness
-		} else {
-			candidateNeuralNet.Shutdown()
 		}
 
 		if candidateFitness > FITNESS_THRESHOLD {

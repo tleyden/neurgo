@@ -37,9 +37,6 @@ func xnorNetworkUntrained() *NeuralNetwork {
 	actuators := []*Node{actuator}
 	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
 
-	// spinup node goroutines
-	neuralNet.Run()
-
 	return neuralNet
 
 }

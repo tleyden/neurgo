@@ -34,13 +34,10 @@ func (actuator *Actuator) copy() SignalProcessor {
 	return actuatorCopy
 }
 
-func (actuator *Actuator) waitCanPropagate(node *Node) (isShutdown bool) {
-	if len(node.inbound) == 0 {
-		isShutdown = node.waitForInboundChannel()
-	} else {
-		isShutdown = false
-	}
-	return
+func (actuator *Actuator) canPropagate(node *Node) bool {
+
+	return len(node.inbound) > 0
+
 }
 
 func (actuator *Actuator) propagateSignal(node *Node) bool {

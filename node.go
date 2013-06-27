@@ -2,12 +2,7 @@ package neurgo
 
 import (
 	"encoding/json"
-)
-
-type ControlMessage int
-
-const (
-	CTL_MSG_INBOUND_ADDED = ControlMessage(iota)
+	"log"
 )
 
 type Node struct {
@@ -16,31 +11,13 @@ type Node struct {
 	outbound  []*connection
 	processor SignalProcessor
 	closing   chan bool
-	control   chan ControlMessage
-}
-
-func (node *Node) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
-		struct {
-			Type      string          `json:"type"`
-			Name      string          `json:"name"`
-			Outbound  []*connection   `json:"outbound"`
-			Inbound   []*connection   `json:"inbound"`
-			Processor SignalProcessor `json:"processor"`
-		}{
-			Type:      "Node",
-			Name:      node.Name,
-			Outbound:  node.outbound,
-			Inbound:   node.inbound,
-			Processor: node.processor,
-		})
+	invisible bool
 }
 
 // continually propagate incoming signals -> outgoing signals
 func (node *Node) Run() {
 
 	node.closing = make(chan bool)
-	node.control = make(chan ControlMessage)
 
 	go node.runGoroutine()
 
@@ -48,48 +25,48 @@ func (node *Node) Run() {
 
 func (node *Node) runGoroutine() {
 
+	if node.processor == nil {
+		log.Panicf("%v does not have a signal processor", node)
+	}
+
 	for {
-		if isShutdown := node.processor.waitCanPropagate(node); isShutdown {
+		log.Printf("%v top of runGoroutine()", node)
+
+		if node.hasBeenShutdown() {
+			log.Printf("%v has been shutdown", node)
 			break
+		}
+
+		if node.processor.canPropagate(node) == false {
+			log.Panicf("%v cannot propagate any signals", node)
 		} else {
-			isShutdown = node.processor.propagateSignal(node)
+			isShutdown := node.processor.propagateSignal(node)
 			if isShutdown {
+				log.Printf("%v isShutdown == true", node)
 				break
 			}
 		}
 
 	}
 
+	log.Printf("%v goRoutine finished", node)
+
+}
+
+func (node *Node) hasBeenShutdown() bool {
+	select {
+	case <-node.closing:
+		return true
+	default:
+		return false
+	}
+
 }
 
 func (node *Node) Shutdown() {
+	log.Printf("%v Shutdown() called, calling close()", node)
 	close(node.closing)
-}
-
-func (node *Node) waitForInboundChannel() (isShutdown bool) {
-
-	if node.closing == nil {
-		panic("node.closing == nil")
-	}
-	if node.control == nil {
-		panic("node.control == nil")
-	}
-
-	for {
-		select {
-		case controlMessage := <-node.control:
-			if controlMessage == CTL_MSG_INBOUND_ADDED {
-				isShutdown = false
-				return
-			}
-		case <-node.closing:
-			isShutdown = true
-			return
-		}
-
-	}
-	return
-
+	log.Printf("%v called close()", node)
 }
 
 func (node *Node) String() string {
@@ -107,6 +84,14 @@ func (node *Node) scatterOutput(outputs []float64) {
 		}
 
 	}
+}
+
+func (node *Node) isInvisible() bool {
+	return node.invisible
+}
+
+func (node *Node) setInvisible(val bool) {
+	node.invisible = val
 }
 
 func (node *Node) hasOutboundConnectionTo(other *Node) bool {
@@ -146,11 +131,6 @@ func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel,
 		closing: closing,
 	}
 	node.inbound = append(node.inbound, connection) // FIXME: data race #1
-	select {
-	case node.control <- CTL_MSG_INBOUND_ADDED:
-	default:
-	}
-
 }
 
 func (node *Node) DisconnectBidirectional(target *Node) {
@@ -204,4 +184,21 @@ func (node *Node) appendOutboundConnection(target *connection) {
 
 func (node *Node) appendInboundConnection(source *connection) {
 	node.inbound = append(node.inbound, source)
+}
+
+func (node *Node) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			Type      string          `json:"type"`
+			Name      string          `json:"name"`
+			Outbound  []*connection   `json:"outbound"`
+			Inbound   []*connection   `json:"inbound"`
+			Processor SignalProcessor `json:"processor"`
+		}{
+			Type:      "Node",
+			Name:      node.Name,
+			Outbound:  node.outbound,
+			Inbound:   node.inbound,
+			Processor: node.processor,
+		})
 }
