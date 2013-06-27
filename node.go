@@ -30,10 +30,8 @@ func (node *Node) runGoroutine() {
 	}
 
 	for {
-		log.Printf("%v top of runGoroutine()", node)
 
 		if node.hasBeenShutdown() {
-			log.Printf("%v has been shutdown", node)
 			break
 		}
 
@@ -42,14 +40,11 @@ func (node *Node) runGoroutine() {
 		} else {
 			isShutdown := node.processor.propagateSignal(node)
 			if isShutdown {
-				log.Printf("%v isShutdown == true", node)
 				break
 			}
 		}
 
 	}
-
-	log.Printf("%v goRoutine finished", node)
 
 }
 
@@ -64,9 +59,7 @@ func (node *Node) hasBeenShutdown() bool {
 }
 
 func (node *Node) Shutdown() {
-	log.Printf("%v Shutdown() called, calling close()", node)
 	close(node.closing)
-	log.Printf("%v called close()", node)
 }
 
 func (node *Node) String() string {

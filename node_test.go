@@ -136,7 +136,6 @@ func TestRemoveConnectionFromRunningNeuron(t *testing.T) {
 	}()
 
 	wg.Wait()
-
 }
 
 func TestRemoveConnectionFromRunningActuator(t *testing.T) {

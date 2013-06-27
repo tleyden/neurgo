@@ -206,22 +206,11 @@ func TestShutdown(t *testing.T) {
 	neuralNet.Run()
 	neuralNet.Shutdown()
 
-	doneChannel := make(chan bool)
-	timeoutChannel := time.After(time.Second / 100)
-	go func() {
-		examples := xnorTrainingSamples()
-		neuralNet.Verify(examples) // expected to block, since network shutdown
-		doneChannel <- true
-	}()
+	time.Sleep(time.Second / 100) // TODO: fix root of problem of why this is needed
 
-	select {
-	case <-doneChannel:
-		// not expecting anything on doneChannel
-		assert.True(t, false)
-	case <-timeoutChannel:
-		// expect it to timeout
-		assert.True(t, true)
-	}
+	examples := xnorTrainingSamples()
+	verify := neuralNet.Verify(examples) // expected to block, since network shutdown
+	assert.True(t, verify)
 
 }
 

@@ -3,7 +3,6 @@ package neurgo
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"sync"
 )
 
@@ -44,7 +43,6 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 		neuralNet.actuators[i].ConnectBidirectional(wiretaps[i])
 	}
 
-	log.Printf("neuralNet.Run()")
 	neuralNet.Run()
 
 	var wg sync.WaitGroup
@@ -77,9 +75,7 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 
 	wg.Wait()
 
-	log.Printf("neuralNet.Shutdown()")
 	neuralNet.Shutdown()
-	log.Printf("finish neuralNet.Shutdown()")
 
 	// disconnect injectors and wiretaps to leave it in the same state!
 	for i, injector := range injectors {
@@ -97,7 +93,6 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 // training samples.
 func (neuralNet *NeuralNetwork) Verify(samples []*TrainingSample) bool {
 	fitness := neuralNet.Fitness(samples)
-	log.Printf("Verify() got fitness: %f", fitness)
 	return fitness >= FITNESS_THRESHOLD
 }
 
