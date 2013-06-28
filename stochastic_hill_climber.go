@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"log"
 	"math"
 	"math/rand"
 )
@@ -9,6 +10,8 @@ type StochasticHillClimber struct {
 	currentCandidate *NeuralNetwork
 	currentOptimal   *NeuralNetwork
 }
+
+const MAX_ITERATIONS_BEFORE_RESTART = 10000
 
 func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*TrainingSample) *NeuralNetwork {
 
@@ -21,7 +24,7 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 		return fittestNeuralNet
 	}
 
-	for {
+	for i := 0; ; i++ {
 
 		// Save the genotype
 		candidateNeuralNet := fittestNeuralNet.Copy()
@@ -31,6 +34,7 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 
 		// Re-Apply NN to problem
 		candidateFitness := candidateNeuralNet.Fitness(examples)
+		// log.Printf("fitness: %f", candidateFitness)
 
 		// If the fitness of the perturbed NN is higher, discard original NN and keep
 		// the new.  If the fitness of original is higher, discard perturbed and keep
@@ -38,6 +42,11 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 		if candidateFitness > fitness {
 			fittestNeuralNet = candidateNeuralNet
 			fitness = candidateFitness
+		}
+
+		if IntModuloProper(i, MAX_ITERATIONS_BEFORE_RESTART) {
+			log.Printf("reset params to random")
+			shc.resetParametersToRandom(fittestNeuralNet)
 		}
 
 		if candidateFitness > FITNESS_THRESHOLD {
@@ -63,6 +72,20 @@ func (shc *StochasticHillClimber) perturbParameters(neuralNet *NeuralNetwork) {
 
 	for _, neuron := range neurons {
 		shc.perturbNeuron(neuron)
+	}
+
+}
+
+func (shc *StochasticHillClimber) resetParametersToRandom(neuralNet *NeuralNetwork) {
+
+	neurons := neuralNet.neurons()
+	for _, neuronNode := range neurons {
+		for _, cxn := range neuronNode.inbound {
+			for j, _ := range cxn.weights {
+				cxn.weights[j] = RandomInRange(-1*math.Pi, math.Pi)
+			}
+		}
+		neuronNode.processor.setBias(RandomInRange(-1*math.Pi, math.Pi))
 	}
 
 }
@@ -158,7 +181,7 @@ func (shc *StochasticHillClimber) possiblyPerturbBias(node *Node, probability fl
 
 func (shc *StochasticHillClimber) perturbParameter(parameter float64) float64 {
 
-	parameter += RandomInRange(-3.14, 3.14)
+	parameter += RandomInRange(-1*math.Pi, math.Pi)
 	return parameter
 
 }
