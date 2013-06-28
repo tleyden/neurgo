@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
+	"math"
 	"testing"
 )
 
@@ -44,6 +45,6 @@ func TestSafeScalarInverse(t *testing.T) {
 }
 
 func TestRandomInRange(t *testing.T) {
-	assert.True(t, RandomInRange(-3.14, 3.14) <= 3.14)
-	assert.True(t, RandomInRange(-3.14, 3.14) >= -3.14)
+	assert.True(t, RandomInRange(-1*math.Pi, math.Pi) <= math.Pi)
+	assert.True(t, RandomInRange(-1*math.Pi, math.Pi) >= -1*math.Pi)
 }
