@@ -52,6 +52,13 @@ func vectorEqualsWithMaxDelta(xValues, yValues []float64, maxDelta float64) bool
 	return equals
 }
 
+func IntModuloProper(x, y int) bool {
+	if x > 0 && math.Mod(float64(x), float64(y)) == 0 {
+		return true
+	}
+	return false
+}
+
 func RandomInRange(min, max float64) float64 {
 	return rand.Float64()*(max-min) + min
 }
