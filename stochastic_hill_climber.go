@@ -1,7 +1,6 @@
 package neurgo
 
 import (
-	"log"
 	"math"
 	"math/rand"
 )
@@ -34,18 +33,15 @@ func (shc *StochasticHillClimber) Train(neuralNet *NeuralNetwork, examples []*Tr
 
 		// Re-Apply NN to problem
 		candidateFitness := candidateNeuralNet.Fitness(examples)
-		// log.Printf("fitness: %f", candidateFitness)
 
-		// If the fitness of the perturbed NN is higher, discard original NN and keep
-		// the new.  If the fitness of original is higher, discard perturbed and keep
-		// the old.
+		// If fitness of perturbed NN is higher, discard original NN and keep new
+		// If fitness of original is higher, discard perturbed and keep old.
 		if candidateFitness > fitness {
 			fittestNeuralNet = candidateNeuralNet
 			fitness = candidateFitness
 		}
 
 		if IntModuloProper(i, MAX_ITERATIONS_BEFORE_RESTART) {
-			log.Printf("reset params to random")
 			shc.resetParametersToRandom(fittestNeuralNet)
 		}
 
