@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
+	"math"
 	"testing"
 )
 
@@ -9,24 +10,46 @@ import (
 // has not been trained yet
 func xnorNetworkUntrained() *NeuralNetwork {
 
+	randBias_1 := RandomInRange(-1*math.Pi, math.Pi)
+	randBias_2 := RandomInRange(-1*math.Pi, math.Pi)
+	randBias_3 := RandomInRange(-1*math.Pi, math.Pi)
+
+	randWeights_1 := []float64{
+		RandomInRange(-1*math.Pi, math.Pi),
+		RandomInRange(-1*math.Pi, math.Pi),
+	}
+
+	randWeights_2 := []float64{
+		RandomInRange(-1*math.Pi, math.Pi),
+		RandomInRange(-1*math.Pi, math.Pi),
+	}
+
+	randWeights_3 := []float64{
+		RandomInRange(-1*math.Pi, math.Pi),
+	}
+
+	randWeights_4 := []float64{
+		RandomInRange(-1*math.Pi, math.Pi),
+	}
+
 	// create network nodes
-	hn1_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}
+	hn1_processor := &Neuron{Bias: randBias_1, ActivationFunction: sigmoid}
 	hidden_neuron1 := &Node{Name: "hidden_neuron1", processor: hn1_processor}
 
-	hn2_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}
+	hn2_processor := &Neuron{Bias: randBias_2, ActivationFunction: sigmoid}
 	hidden_neuron2 := &Node{Name: "hidden_neuron2", processor: hn2_processor}
 
-	outn_processor := &Neuron{Bias: 0, ActivationFunction: sigmoid}
+	outn_processor := &Neuron{Bias: randBias_3, ActivationFunction: sigmoid}
 	output_neuron := &Node{Name: "output_neuron", processor: outn_processor}
 
 	sensor := &Node{Name: "sensor", processor: &Sensor{}}
 	actuator := &Node{Name: "actuator", processor: &Actuator{}}
 
 	// connect nodes together
-	sensor.ConnectBidirectionalWeighted(hidden_neuron1, []float64{0, 0})
-	sensor.ConnectBidirectionalWeighted(hidden_neuron2, []float64{0, 0})
-	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{0})
-	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{0})
+	sensor.ConnectBidirectionalWeighted(hidden_neuron1, randWeights_1)
+	sensor.ConnectBidirectionalWeighted(hidden_neuron2, randWeights_2)
+	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, randWeights_3)
+	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, randWeights_4)
 	output_neuron.ConnectBidirectional(actuator)
 
 	// create neural network
