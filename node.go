@@ -130,7 +130,7 @@ func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel,
 		other:   source,
 		closing: closing,
 	}
-	node.inbound = append(node.inbound, connection) // FIXME: data race #1
+	node.inbound = append(node.inbound, connection)
 }
 
 func (node *Node) DisconnectBidirectional(target *Node) {
