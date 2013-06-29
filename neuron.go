@@ -18,15 +18,15 @@ type weightedInput struct {
 	inputs  []float64
 }
 
-func (neuron *Neuron) hasBias() bool {
+func (neuron *Neuron) HasBias() bool {
 	return true
 }
 
-func (neuron *Neuron) bias() float64 {
+func (neuron *Neuron) BiasValue() float64 {
 	return neuron.Bias
 }
 
-func (neuron *Neuron) setBias(newBias float64) {
+func (neuron *Neuron) SetBias(newBias float64) {
 	neuron.Bias = newBias
 }
 

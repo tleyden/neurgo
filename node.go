@@ -8,8 +8,8 @@ import (
 
 type Node struct {
 	Name      string
-	inbound   []*connection
-	outbound  []*connection
+	inbound   []*Connection
+	outbound  []*Connection
 	processor SignalProcessor
 	closing   chan bool
 	invisible bool
@@ -117,7 +117,7 @@ func (node *Node) ConnectBidirectionalWeighted(target *Node, weights []float64) 
 }
 
 func (node *Node) connectOutboundWithChannel(target *Node, channel VectorChannel, closing chan bool) {
-	connection := &connection{
+	connection := &Connection{
 		channel: channel,
 		other:   target,
 		closing: closing,
@@ -126,7 +126,7 @@ func (node *Node) connectOutboundWithChannel(target *Node, channel VectorChannel
 }
 
 func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel, closing chan bool, weights []float64) {
-	connection := &connection{
+	connection := &Connection{
 		channel: channel,
 		weights: weights,
 		other:   source,
@@ -157,9 +157,9 @@ func (node *Node) disconnectInbound(source *Node) {
 	}
 }
 
-func removeConnection(connections []*connection, index int) []*connection {
+func removeConnection(connections []*Connection, index int) []*Connection {
 
-	newConnections := make([]*connection, len(connections)-1)
+	newConnections := make([]*Connection, len(connections)-1)
 	newConnectionsIndex := 0
 
 	for i, connection := range connections {
@@ -172,20 +172,36 @@ func removeConnection(connections []*connection, index int) []*connection {
 
 }
 
-func (node *Node) outboundConnections() []*connection {
+func (node *Node) outboundConnections() []*Connection {
 	return node.outbound
 }
 
-func (node *Node) inboundConnections() []*connection {
+func (node *Node) inboundConnections() []*Connection {
 	return node.inbound
 }
 
-func (node *Node) appendOutboundConnection(target *connection) {
+func (node *Node) appendOutboundConnection(target *Connection) {
 	node.outbound = append(node.outbound, target)
 }
 
-func (node *Node) appendInboundConnection(source *connection) {
+func (node *Node) appendInboundConnection(source *Connection) {
 	node.inbound = append(node.inbound, source)
+}
+
+func (node *Node) Inbound() []*Connection {
+	return node.inbound
+}
+
+func (node *Node) Outbound() []*Connection {
+	return node.outbound
+}
+
+func (node *Node) Processor() SignalProcessor {
+	return node.processor
+}
+
+func (node *Node) SetProcessor(processor SignalProcessor) {
+	node.processor = processor
 }
 
 func (node *Node) MarshalJSON() ([]byte, error) {
@@ -193,8 +209,8 @@ func (node *Node) MarshalJSON() ([]byte, error) {
 		struct {
 			Type      string          `json:"type"`
 			Name      string          `json:"name"`
-			Outbound  []*connection   `json:"outbound"`
-			Inbound   []*connection   `json:"inbound"`
+			Outbound  []*Connection   `json:"outbound"`
+			Inbound   []*Connection   `json:"inbound"`
 			Processor SignalProcessor `json:"processor"`
 		}{
 			Type:      "Node",

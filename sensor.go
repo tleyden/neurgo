@@ -7,15 +7,15 @@ import (
 type Sensor struct {
 }
 
-func (sensor *Sensor) hasBias() bool {
+func (sensor *Sensor) HasBias() bool {
 	return false
 }
 
-func (sensor *Sensor) bias() float64 {
+func (sensor *Sensor) BiasValue() float64 {
 	panic("Sensors don't have bias parameter")
 }
 
-func (sensor *Sensor) setBias(newBias float64) {
+func (sensor *Sensor) SetBias(newBias float64) {
 	panic("Sensors don't have bias parameter")
 }
 

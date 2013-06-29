@@ -17,15 +17,15 @@ func (actuator *Actuator) MarshalJSON() ([]byte, error) {
 		})
 }
 
-func (actuator *Actuator) hasBias() bool {
+func (actuator *Actuator) HasBias() bool {
 	return false
 }
 
-func (actuator *Actuator) bias() float64 {
+func (actuator *Actuator) BiasValue() float64 {
 	panic("Actuators don't have bias parameter")
 }
 
-func (actuator *Actuator) setBias(newBias float64) {
+func (actuator *Actuator) SetBias(newBias float64) {
 	panic("Actuators don't have bias parameter")
 }
 

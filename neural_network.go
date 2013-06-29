@@ -52,7 +52,7 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 	// inject values into sensors
 	go func() {
 		for _, sample := range samples {
-			for j, inputsForSensor := range sample.sampleInputs {
+			for j, inputsForSensor := range sample.SampleInputs {
 				injectors[j].outbound[0].channel <- inputsForSensor
 			}
 		}
@@ -63,7 +63,7 @@ func (neuralNet *NeuralNetwork) Fitness(samples []*TrainingSample) float64 {
 	go func() {
 
 		for _, sample := range samples {
-			for j, expectedOutputs := range sample.expectedOutputs {
+			for j, expectedOutputs := range sample.ExpectedOutputs {
 				resultVector := <-wiretaps[j].inbound[0].channel
 				error := SumOfSquaresError(expectedOutputs, resultVector)
 				errorAccumulated += error
@@ -134,16 +134,24 @@ func (neuralNet *NeuralNetwork) MarshalJSON() ([]byte, error) {
 	return json.Marshal(nodeSlice)
 }
 
-func (neuralNet *NeuralNetwork) neurons() []*Node {
+func (neuralNet *NeuralNetwork) Neurons() []*Node {
 
 	neurons := make([]*Node, 0)
 	nodes := neuralNet.uniqueNodeMap()
 	for _, node := range nodes {
-		if node.processor.hasBias() { // <-- mild hack
+		if node.processor.HasBias() { // <-- mild hack
 			neurons = append(neurons, node)
 		}
 	}
 	return neurons
+}
+
+func (neuralNet *NeuralNetwork) SetSensors(sensors []*Node) {
+	neuralNet.sensors = sensors
+}
+
+func (neuralNet *NeuralNetwork) SetActuators(actuators []*Node) {
+	neuralNet.actuators = actuators
 }
 
 func (neuralNet *NeuralNetwork) uniqueNodeMap() NodeMap {
@@ -218,7 +226,7 @@ func recreateInboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, sca
 		cxnTargetOriginal := inboundConnection.other
 		cxnTargetCopy := createOrReuseConnectionTargetCopy(cxnTargetOriginal, nodeScaffold)
 
-		newCxn := &connection{}
+		newCxn := &Connection{}
 		newCxn.other = cxnTargetCopy
 
 		channelCopy := createChannelCopy(inboundConnection.channel, channelScaffold)
@@ -251,7 +259,7 @@ func recreateOutboundConnectionsRecursive(nodeOriginal *Node, nodeCopy *Node, sc
 
 		if !nodeCopy.hasOutboundConnectionTo(cxnTargetCopy) {
 
-			newCxn := &connection{}
+			newCxn := &Connection{}
 			newCxn.other = cxnTargetCopy
 
 			channelCopy := createChannelCopy(outboundConnection.channel, channelScaffold)
@@ -300,4 +308,34 @@ func createOrReuseConnectionTargetCopy(cxnTargetOriginal *Node, nodeScaffold map
 
 	return cxnTargetCopy
 
+}
+
+func XnorCondensedNetwork() *NeuralNetwork {
+
+	// create network nodes
+	hn1_processor := &Neuron{Bias: -30, ActivationFunction: Sigmoid}
+	hidden_neuron1 := &Node{Name: "hidden_neuron1", processor: hn1_processor}
+
+	hn2_processor := &Neuron{Bias: 10, ActivationFunction: Sigmoid}
+	hidden_neuron2 := &Node{Name: "hidden_neuron2", processor: hn2_processor}
+
+	outn_processor := &Neuron{Bias: -10, ActivationFunction: Sigmoid}
+	output_neuron := &Node{Name: "output_neuron", processor: outn_processor}
+
+	sensor := &Node{Name: "sensor", processor: &Sensor{}}
+	actuator := &Node{Name: "actuator", processor: &Actuator{}}
+
+	// connect nodes together
+	sensor.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20, 20})
+	sensor.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-20, -20})
+	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{20})
+	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{20})
+	output_neuron.ConnectBidirectional(actuator)
+
+	// create neural network
+	sensors := []*Node{sensor}
+	actuators := []*Node{actuator}
+	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
+
+	return neuralNet
 }

@@ -37,7 +37,7 @@ func TestNetworkVerify(t *testing.T) {
 	neuralNet := simpleNetwork()
 
 	// inputs + expected outputs
-	examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{110, 110}}}}
+	examples := []*TrainingSample{{SampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, ExpectedOutputs: [][]float64{[]float64{110, 110}}}}
 
 	// verify neural network
 	verified := neuralNet.Verify(examples)
@@ -54,14 +54,14 @@ func TestNetworkFitness(t *testing.T) {
 	neuralNet := simpleNetwork()
 
 	// inputs + expected outputs
-	examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{110, 110}}}}
+	examples := []*TrainingSample{{SampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, ExpectedOutputs: [][]float64{[]float64{110, 110}}}}
 
 	// get network fitness
 	fitness := neuralNet.Fitness(examples)
 	assert.True(t, fitness > 10000000)
 
 	// inputs + crazy outputs
-	badExamples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{-1000, -1000}}}}
+	badExamples := []*TrainingSample{{SampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, ExpectedOutputs: [][]float64{[]float64{-1000, -1000}}}}
 
 	lowFitness := neuralNet.Fitness(badExamples)
 	assert.True(t, equalsWithMaxDelta(lowFitness, 0.0, .01))
@@ -77,13 +77,13 @@ func TestXnorTwoSensorNetwork(t *testing.T) {
 	n2_processor := &Neuron{Bias: 0, ActivationFunction: identity_activation}
 	input_neuron2 := &Node{Name: "input_neuron2", processor: n2_processor}
 
-	hn1_processor := &Neuron{Bias: -30, ActivationFunction: sigmoid}
+	hn1_processor := &Neuron{Bias: -30, ActivationFunction: Sigmoid}
 	hidden_neuron1 := &Node{Name: "hidden_neuron1", processor: hn1_processor}
 
-	hn2_processor := &Neuron{Bias: 10, ActivationFunction: sigmoid}
+	hn2_processor := &Neuron{Bias: 10, ActivationFunction: Sigmoid}
 	hidden_neuron2 := &Node{Name: "hidden_neuron2", processor: hn2_processor}
 
-	outn_processor := &Neuron{Bias: -10, ActivationFunction: sigmoid}
+	outn_processor := &Neuron{Bias: -10, ActivationFunction: Sigmoid}
 	output_neuron := &Node{Name: "output_neuron", processor: outn_processor}
 
 	sensor1 := &Node{Name: "sensor1", processor: &Sensor{}}
@@ -110,45 +110,15 @@ func TestXnorTwoSensorNetwork(t *testing.T) {
 	examples := []*TrainingSample{
 
 		// TODO: how to wrap this?
-		{sampleInputs: [][]float64{[]float64{0}, []float64{1}}, expectedOutputs: [][]float64{[]float64{0}}},
-		{sampleInputs: [][]float64{[]float64{1}, []float64{1}}, expectedOutputs: [][]float64{[]float64{1}}},
-		{sampleInputs: [][]float64{[]float64{1}, []float64{0}}, expectedOutputs: [][]float64{[]float64{0}}},
-		{sampleInputs: [][]float64{[]float64{0}, []float64{0}}, expectedOutputs: [][]float64{[]float64{1}}}}
+		{SampleInputs: [][]float64{[]float64{0}, []float64{1}}, ExpectedOutputs: [][]float64{[]float64{0}}},
+		{SampleInputs: [][]float64{[]float64{1}, []float64{1}}, ExpectedOutputs: [][]float64{[]float64{1}}},
+		{SampleInputs: [][]float64{[]float64{1}, []float64{0}}, ExpectedOutputs: [][]float64{[]float64{0}}},
+		{SampleInputs: [][]float64{[]float64{0}, []float64{0}}, ExpectedOutputs: [][]float64{[]float64{1}}}}
 
 	// verify neural network
 	verified := neuralNet.Verify(examples)
 	assert.True(t, verified)
 
-}
-
-func xnorCondensedNetwork() *NeuralNetwork {
-
-	// create network nodes
-	hn1_processor := &Neuron{Bias: -30, ActivationFunction: sigmoid}
-	hidden_neuron1 := &Node{Name: "hidden_neuron1", processor: hn1_processor}
-
-	hn2_processor := &Neuron{Bias: 10, ActivationFunction: sigmoid}
-	hidden_neuron2 := &Node{Name: "hidden_neuron2", processor: hn2_processor}
-
-	outn_processor := &Neuron{Bias: -10, ActivationFunction: sigmoid}
-	output_neuron := &Node{Name: "output_neuron", processor: outn_processor}
-
-	sensor := &Node{Name: "sensor", processor: &Sensor{}}
-	actuator := &Node{Name: "actuator", processor: &Actuator{}}
-
-	// connect nodes together
-	sensor.ConnectBidirectionalWeighted(hidden_neuron1, []float64{20, 20})
-	sensor.ConnectBidirectionalWeighted(hidden_neuron2, []float64{-20, -20})
-	hidden_neuron1.ConnectBidirectionalWeighted(output_neuron, []float64{20})
-	hidden_neuron2.ConnectBidirectionalWeighted(output_neuron, []float64{20})
-	output_neuron.ConnectBidirectional(actuator)
-
-	// create neural network
-	sensors := []*Node{sensor}
-	actuators := []*Node{actuator}
-	neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
-
-	return neuralNet
 }
 
 func xnorTrainingSamples() []*TrainingSample {
@@ -157,10 +127,10 @@ func xnorTrainingSamples() []*TrainingSample {
 	examples := []*TrainingSample{
 
 		// TODO: how to wrap this?
-		{sampleInputs: [][]float64{[]float64{0, 1}}, expectedOutputs: [][]float64{[]float64{0}}},
-		{sampleInputs: [][]float64{[]float64{1, 1}}, expectedOutputs: [][]float64{[]float64{1}}},
-		{sampleInputs: [][]float64{[]float64{1, 0}}, expectedOutputs: [][]float64{[]float64{0}}},
-		{sampleInputs: [][]float64{[]float64{0, 0}}, expectedOutputs: [][]float64{[]float64{1}}}}
+		{SampleInputs: [][]float64{[]float64{0, 1}}, ExpectedOutputs: [][]float64{[]float64{0}}},
+		{SampleInputs: [][]float64{[]float64{1, 1}}, ExpectedOutputs: [][]float64{[]float64{1}}},
+		{SampleInputs: [][]float64{[]float64{1, 0}}, ExpectedOutputs: [][]float64{[]float64{0}}},
+		{SampleInputs: [][]float64{[]float64{0, 0}}, ExpectedOutputs: [][]float64{[]float64{1}}}}
 
 	return examples
 
@@ -171,7 +141,7 @@ func TestXnorCondensedNetwork(t *testing.T) {
 	// identical to TestXnorNetwork, but uses single sensor with vector outputs, removes
 	// the input layer neurons which are useless
 
-	neuralNet := xnorCondensedNetwork()
+	neuralNet := XnorCondensedNetwork()
 
 	// inputs + expected outputs
 	examples := xnorTrainingSamples()
@@ -183,20 +153,20 @@ func TestXnorCondensedNetwork(t *testing.T) {
 }
 
 func TestUniqueNodeMap(t *testing.T) {
-	neuralNet := xnorCondensedNetwork()
+	neuralNet := XnorCondensedNetwork()
 	nodes := neuralNet.uniqueNodeMap()
 	assert.Equals(t, len(nodes), 5)
 }
 
 func TestGetNeurons(t *testing.T) {
-	neuralNet := xnorCondensedNetwork()
-	neurons := neuralNet.neurons()
+	neuralNet := XnorCondensedNetwork()
+	neurons := neuralNet.Neurons()
 	assert.Equals(t, len(neurons), 3)
 }
 
 func TestShutdown(t *testing.T) {
 
-	neuralNet := xnorCondensedNetwork()
+	neuralNet := XnorCondensedNetwork()
 	examples := xnorTrainingSamples()
 	for i := 0; i < 25; i++ {
 		verify := neuralNet.Verify(examples)
@@ -207,7 +177,7 @@ func TestShutdown(t *testing.T) {
 
 func TestCopy(t *testing.T) {
 
-	neuralNet := xnorCondensedNetwork()
+	neuralNet := XnorCondensedNetwork()
 	neuralNetCopy := neuralNet.Copy()
 
 	assert.NotEquals(t, neuralNet, neuralNetCopy)
