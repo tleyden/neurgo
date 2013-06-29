@@ -11,7 +11,7 @@ type Node struct {
 	inbound   []*connection
 	outbound  []*connection
 	processor SignalProcessor
-	closing   <-chan bool
+	closing   chan bool
 	invisible bool
 	wg        sync.WaitGroup
 }
