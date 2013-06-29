@@ -3,6 +3,7 @@ package neurgo
 import (
 	"encoding/json"
 	"log"
+	"sync"
 )
 
 type Node struct {
@@ -10,8 +11,9 @@ type Node struct {
 	inbound   []*connection
 	outbound  []*connection
 	processor SignalProcessor
-	closing   chan bool
+	closing   <-chan bool
 	invisible bool
+	wg        sync.WaitGroup
 }
 
 // continually propagate incoming signals -> outgoing signals
@@ -21,12 +23,15 @@ func (node *Node) Run() {
 	// to solve a potential race condition where someone tries
 	// to shutdown a not-yet-running node
 	node.closing = make(chan bool)
+	node.wg.Add(1)
 
 	go node.runGoroutine()
 
 }
 
 func (node *Node) runGoroutine() {
+
+	defer node.wg.Done()
 
 	if node.processor == nil {
 		log.Panicf("%v does not have a signal processor", node)
@@ -49,8 +54,11 @@ func (node *Node) runGoroutine() {
 
 	}
 
-	node.closing <- true // confirm that we are closed
+}
 
+func (node *Node) Shutdown() {
+	close(node.closing)
+	node.wg.Wait()
 }
 
 func (node *Node) hasBeenShutdown() bool {
@@ -61,12 +69,6 @@ func (node *Node) hasBeenShutdown() bool {
 		return false
 	}
 
-}
-
-func (node *Node) Shutdown() {
-	node.closing <- true // tell node to close
-	<-node.closing       // wait for confirmation
-	close(node.closing)  // <-- TODO: do we actually need this?
 }
 
 func (node *Node) String() string {
