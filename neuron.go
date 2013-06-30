@@ -79,7 +79,6 @@ func (neuron *Neuron) weightedInputs(node *Node) (weightedInputs []*weightedInpu
 		select {
 		case inputs = <-connection.channel:
 			ok = true
-		case <-connection.closing: // skip this connection since its closed
 		case <-node.closing:
 			isShutdown = true
 			return

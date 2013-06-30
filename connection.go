@@ -7,7 +7,6 @@ import (
 type Connection struct {
 	other   *Node
 	channel VectorChannel
-	closing chan bool
 	weights []float64
 }
 
