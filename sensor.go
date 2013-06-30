@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type Sensor struct {
@@ -33,34 +34,16 @@ func (sensor *Sensor) copy() SignalProcessor {
 	return sensorCopy
 }
 
-func (sensor *Sensor) canPropagate(node *Node) bool {
+func (sensor *Sensor) CalculateOutput(weightedInputs []*weightedInput) []float64 {
 
-	return len(node.inbound) == 1
-
-}
-
-func (sensor *Sensor) propagateSignal(node *Node) bool {
-
-	// this implemenation is just a stub which makes it easy to test for now.
-	// at some point, sensors will act as proxies to real virtual sensors,
-	// and probably be reading their inputs from sockets.
-
-	var value []float64
-	var ok bool
-
-	connection := node.inbound[0]
-
-	select {
-	case value = <-connection.channel:
-		ok = true
-	case <-node.closing:
-		return true
+	// sensors will eventually be reading their input from sockets
+	// in the meantime, the should only have one input
+	if len(weightedInputs) != 1 {
+		msg := fmt.Sprintf("sensors should only have one input channel")
+		panic(msg)
 	}
 
-	if ok {
-		node.scatterOutput(value)
-	}
-
-	return false
+	outputs := weightedInputs[0].inputs
+	return outputs
 
 }

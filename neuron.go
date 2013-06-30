@@ -13,11 +13,6 @@ type Neuron struct {
 	ActivationFunction activationFunction
 }
 
-type weightedInput struct {
-	weights []float64
-	inputs  []float64
-}
-
 func (neuron *Neuron) HasBias() bool {
 	return true
 }
@@ -48,21 +43,10 @@ func (neuron *Neuron) copy() SignalProcessor {
 	return neuronCopy
 }
 
-func (neuron *Neuron) canPropagate(node *Node) bool {
-
-	return len(node.inbound) > 0
-
-}
-
-func (neuron *Neuron) propagateSignal(node *Node) bool {
-	weightedInputs, isShutdown := neuron.weightedInputs(node)
-	if isShutdown {
-		return true
-	}
+func (neuron *Neuron) CalculateOutput(weightedInputs []*weightedInput) []float64 {
 	scalarOutput := neuron.computeScalarOutput(weightedInputs)
 	outputs := []float64{scalarOutput}
-	node.scatterOutput(outputs)
-	return false
+	return outputs
 }
 
 // read each inbound channel and get the inputs, and pair this vector
