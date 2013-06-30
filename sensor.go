@@ -53,7 +53,6 @@ func (sensor *Sensor) propagateSignal(node *Node) bool {
 	select {
 	case value = <-connection.channel:
 		ok = true
-	case <-connection.closing: // skip this connection since its closed
 	case <-node.closing:
 		return true
 	}

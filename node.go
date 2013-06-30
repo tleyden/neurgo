@@ -79,8 +79,6 @@ func (node *Node) scatterOutput(outputs []float64) {
 	for _, outboundConnection := range node.outbound {
 		select {
 		case outboundConnection.channel <- outputs:
-		case <-outboundConnection.closing:
-			return
 		case <-node.closing:
 			return
 		}
@@ -111,26 +109,23 @@ func (node *Node) ConnectBidirectional(target *Node) {
 
 func (node *Node) ConnectBidirectionalWeighted(target *Node, weights []float64) {
 	channel := make(VectorChannel)
-	closing := make(chan bool)
-	node.connectOutboundWithChannel(target, channel, closing)
-	target.connectInboundWithChannel(node, channel, closing, weights)
+	node.connectOutboundWithChannel(target, channel)
+	target.connectInboundWithChannel(node, channel, weights)
 }
 
-func (node *Node) connectOutboundWithChannel(target *Node, channel VectorChannel, closing chan bool) {
+func (node *Node) connectOutboundWithChannel(target *Node, channel VectorChannel) {
 	connection := &Connection{
 		channel: channel,
 		other:   target,
-		closing: closing,
 	}
 	node.outbound = append(node.outbound, connection)
 }
 
-func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel, closing chan bool, weights []float64) {
+func (node *Node) connectInboundWithChannel(source *Node, channel VectorChannel, weights []float64) {
 	connection := &Connection{
 		channel: channel,
 		weights: weights,
 		other:   source,
-		closing: closing,
 	}
 	node.inbound = append(node.inbound, connection)
 }
@@ -143,7 +138,6 @@ func (node *Node) DisconnectBidirectional(target *Node) {
 func (node *Node) disconnectOutbound(target *Node) {
 	for i, connection := range node.outbound {
 		if connection.other == target {
-			close(node.outbound[i].closing)
 			node.outbound = removeConnection(node.outbound, i)
 		}
 	}
