@@ -193,7 +193,7 @@ func TestNodesByLayer(t *testing.T) {
 
 func TestNumLayers(t *testing.T) {
 	neuralNet := XnorCondensedNetwork()
-	assert.Equals(t, neuralNet.NumLayers(), 2)
+	assert.Equals(t, neuralNet.NumLayers(), 4)
 }
 
 func TestCopy(t *testing.T) {

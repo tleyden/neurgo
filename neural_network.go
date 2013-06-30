@@ -174,12 +174,7 @@ func (neuralNet *NeuralNetwork) addUniqueNodeRecursive(node *Node, uniqueNodeMap
 }
 
 func (neuralNet *NeuralNetwork) NumLayers() int {
-	// recursively walk the network starting at an actuator
-	// until a sensor is reached, and count each layer along
-	// the way (including the actuator and the sensor)
-	// actuator := neuralNet.actuators[0]
-
-	return len(neuralNet.Neurons()) // <-- fixme!!
+	return len(neuralNet.NodesByLayer())
 }
 
 // Get all the nodes of this network grouped by layer.  The slice
