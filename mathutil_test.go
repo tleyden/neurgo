@@ -49,6 +49,12 @@ func TestRandomInRange(t *testing.T) {
 	assert.True(t, RandomInRange(-1*math.Pi, math.Pi) >= -1*math.Pi)
 }
 
+func TestRandomIntInRange(t *testing.T) {
+	result := RandomIntInRange(1, 4)
+	assert.True(t, result >= 1)
+	assert.True(t, result <= 4)
+}
+
 func TestIntModuleProper(t *testing.T) {
 	assert.False(t, IntModuloProper(0, 100))
 	assert.True(t, IntModuloProper(500, 100))

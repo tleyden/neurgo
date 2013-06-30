@@ -62,3 +62,7 @@ func IntModuloProper(x, y int) bool {
 func RandomInRange(min, max float64) float64 {
 	return rand.Float64()*(max-min) + min
 }
+
+func RandomIntInRange(min, max int) int {
+	return rand.Intn(max-min) + min
+}
