@@ -198,7 +198,11 @@ func (neuralNet *NeuralNetwork) NodesByLayer() [][]*Node {
 	}
 
 	return nodesByLayer
-	// return [][]*Node{neuralNet.sensors, neuralNet.Neurons(), neuralNet.actuators}
+}
+
+func (neuralNet *NeuralNetwork) NodesInLayer(layerIndex int) []*Node {
+	nodesByLayer := neuralNet.NodesByLayer()
+	return nodesByLayer[layerIndex]
 }
 
 func (neuralNet *NeuralNetwork) nextLayerNodes(layerNodes []*Node) []*Node {

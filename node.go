@@ -204,6 +204,12 @@ func (node *Node) SetProcessor(processor SignalProcessor) {
 	node.processor = processor
 }
 
+func (node *Node) IsNeuron() bool {
+	// only neurons have bias, so do a quick hack which
+	// leverages that tidbit of knowledge.
+	return node.processor.HasBias()
+}
+
 func (node *Node) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		struct {

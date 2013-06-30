@@ -64,5 +64,8 @@ func RandomInRange(min, max float64) float64 {
 }
 
 func RandomIntInRange(min, max int) int {
+	if min == max {
+		return min
+	}
 	return rand.Intn(max-min) + min
 }
