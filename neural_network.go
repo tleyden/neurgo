@@ -173,6 +173,65 @@ func (neuralNet *NeuralNetwork) addUniqueNodeRecursive(node *Node, uniqueNodeMap
 	}
 }
 
+func (neuralNet *NeuralNetwork) NumLayers() int {
+	// recursively walk the network starting at an actuator
+	// until a sensor is reached, and count each layer along
+	// the way (including the actuator and the sensor)
+	// actuator := neuralNet.actuators[0]
+
+	return len(neuralNet.Neurons()) // <-- fixme!!
+}
+
+// Get all the nodes of this network grouped by layer.  The slice
+// that is returned has all the nodes for that layer index, eg,
+// [0] -> [sensor1, sensor2]
+// [1] -> [neuron1, neuron2]
+// [2] -> [actuator]
+func (neuralNet *NeuralNetwork) NodesByLayer() [][]*Node {
+
+	nodesByLayer := [][]*Node{neuralNet.sensors}
+
+	thisLayerNodes := neuralNet.sensors
+
+	for {
+		nextLayerNodes := neuralNet.nextLayerNodes(thisLayerNodes)
+		if len(nextLayerNodes) == 0 {
+			break
+		}
+		nodesByLayer = append(nodesByLayer, nextLayerNodes)
+		thisLayerNodes = nextLayerNodes
+	}
+
+	return nodesByLayer
+	// return [][]*Node{neuralNet.sensors, neuralNet.Neurons(), neuralNet.actuators}
+}
+
+func (neuralNet *NeuralNetwork) nextLayerNodes(layerNodes []*Node) []*Node {
+
+	uniqueNodeMap := make(NodeMap)
+	for _, node := range layerNodes {
+		for _, connection := range node.outbound {
+			outboundNode := connection.other
+			if _, ok := uniqueNodeMap[outboundNode]; !ok {
+				if outboundNode.isInvisible() == false {
+					uniqueNodeMap[outboundNode] = outboundNode
+				}
+			}
+
+		}
+	}
+
+	nextLayerNodes := make([]*Node, len(uniqueNodeMap))
+	i := 0
+	for key, _ := range uniqueNodeMap {
+		nextLayerNodes[i] = key
+		i++
+	}
+
+	return nextLayerNodes
+
+}
+
 func (neuralNet *NeuralNetwork) Copy() *NeuralNetwork {
 
 	// the source neural network provides a "scaffold" for building the

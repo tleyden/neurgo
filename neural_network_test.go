@@ -175,6 +175,27 @@ func TestShutdown(t *testing.T) {
 
 }
 
+func TestNextLayerNodes(t *testing.T) {
+	neuralNet := XnorCondensedNetwork()
+	sensors := neuralNet.sensors
+	nextLayerNodes := neuralNet.nextLayerNodes(sensors)
+	assert.Equals(t, len(nextLayerNodes), 2)
+}
+
+func TestNodesByLayer(t *testing.T) {
+	neuralNet := XnorCondensedNetwork()
+	byLayer := neuralNet.NodesByLayer()
+	assert.Equals(t, len(byLayer[0]), 1)
+	assert.Equals(t, len(byLayer[1]), 2)
+	assert.Equals(t, len(byLayer[2]), 1)
+	assert.Equals(t, len(byLayer[3]), 1)
+}
+
+func TestNumLayers(t *testing.T) {
+	neuralNet := XnorCondensedNetwork()
+	assert.Equals(t, neuralNet.NumLayers(), 2)
+}
+
 func TestCopy(t *testing.T) {
 
 	neuralNet := XnorCondensedNetwork()
