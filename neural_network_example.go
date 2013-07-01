@@ -1,5 +1,18 @@
 package neurgo
 
+func XnorTrainingSamples() []*TrainingSample {
+
+	examples := []*TrainingSample{
+		// TODO: how to wrap this?
+		{SampleInputs: [][]float64{[]float64{0, 1}}, ExpectedOutputs: [][]float64{[]float64{0}}},
+		{SampleInputs: [][]float64{[]float64{1, 1}}, ExpectedOutputs: [][]float64{[]float64{1}}},
+		{SampleInputs: [][]float64{[]float64{1, 0}}, ExpectedOutputs: [][]float64{[]float64{0}}},
+		{SampleInputs: [][]float64{[]float64{0, 0}}, ExpectedOutputs: [][]float64{[]float64{1}}}}
+
+	return examples
+
+}
+
 func XnorCondensedNetwork() *NeuralNetwork {
 
 	// create network nodes
