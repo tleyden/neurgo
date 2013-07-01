@@ -85,8 +85,8 @@ func TestRemoveConnection(t *testing.T) {
 	sensor.ConnectBidirectionalWeighted(neuron2, weights)
 
 	// remove connections
-	neuron1.inbound = removeConnection(neuron1.inbound, 0)
-	sensor.outbound = removeConnection(sensor.outbound, 0)
+	neuron1.inbound = removeConnection(neuron1.inbound, neuron1.inbound[0])
+	sensor.outbound = removeConnection(sensor.outbound, sensor.outbound[0])
 
 	// assert that it worked
 	assert.Equals(t, len(neuron1.inbound), 0)

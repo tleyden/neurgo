@@ -160,21 +160,37 @@ func (node *Node) DisconnectAllBidirectional() {
 }
 
 func (node *Node) disconnectOutbound(target *Node) {
-	for i, connection := range node.outbound {
+	for _, connection := range node.outbound {
 		if connection.other == target {
-			node.outbound = removeConnection(node.outbound, i)
+			node.outbound = removeConnection(node.outbound, connection)
 		}
 	}
 }
 
 func (node *Node) disconnectInbound(source *Node) {
-	for i, connection := range node.inbound {
+
+	// TODO: find connections to remove in one step
+	// remove connections in another step (loop over each connection to remove)
+	// change removeConnection around to take a connection instance instead of index
+
+	for _, connection := range node.inbound {
 		if connection.other == source {
-			node.inbound = removeConnection(node.inbound, i)
+			node.inbound = removeConnection(node.inbound, connection)
 		}
 	}
 }
 
+func removeConnection(connections []*Connection, removing *Connection) []*Connection {
+	newConnections := make([]*Connection, 0)
+	for _, connection := range connections {
+		if connection != removing {
+			newConnections = append(newConnections, connection)
+		}
+	}
+	return newConnections
+}
+
+/*
 func removeConnection(connections []*Connection, index int) []*Connection {
 
 	newConnections := make([]*Connection, len(connections)-1)
@@ -189,6 +205,7 @@ func removeConnection(connections []*Connection, index int) []*Connection {
 	return newConnections
 
 }
+*/
 
 func (node *Node) outboundConnections() []*Connection {
 	return node.outbound
