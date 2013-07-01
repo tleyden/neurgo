@@ -50,9 +50,31 @@ func TestRandomInRange(t *testing.T) {
 }
 
 func TestRandomIntInRange(t *testing.T) {
+	SeedRandom()
 	result := RandomIntInRange(1, 4)
 	assert.True(t, result >= 1)
 	assert.True(t, result <= 4)
+
+	found0 := false
+	found1 := false
+	found2 := false
+	for i := 0; i < 1000; i++ {
+		randInt := RandomIntInRange(0, 2)
+		if randInt == 0 {
+			found0 = true
+		}
+		if randInt == 1 {
+			found1 = true
+		}
+		if randInt == 2 {
+			found2 = true
+		}
+
+	}
+	assert.True(t, found0)
+	assert.True(t, found1)
+	assert.False(t, found2)
+
 }
 
 func TestIntModuleProper(t *testing.T) {

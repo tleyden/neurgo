@@ -2,8 +2,10 @@ package neurgo
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
+	"time"
 )
 
 func Sigmoid(x float64) float64 {
@@ -60,12 +62,21 @@ func IntModuloProper(x, y int) bool {
 }
 
 func RandomInRange(min, max float64) float64 {
+
 	return rand.Float64()*(max-min) + min
 }
 
+// return a random number between min and max - 1
+// eg, if you call it with 0,1 it will always return 0
+// if you call it between 0,2 it will return 0 or 1
 func RandomIntInRange(min, max int) int {
 	if min == max {
+		log.Printf("min==max")
 		return min
 	}
 	return rand.Intn(max-min) + min
+}
+
+func SeedRandom() {
+	rand.Seed(time.Now().UTC().UnixNano())
 }
