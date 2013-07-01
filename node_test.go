@@ -23,6 +23,16 @@ func TestConnectedTo(t *testing.T) {
 
 }
 
+func TestDisconnectAllBidirectional(t *testing.T) {
+	neuralNet := XnorCondensedNetwork()
+	sensor := neuralNet.sensors[0]
+	sensor_outbound := sensor.outbound[0].other
+	num_inbound_before := len(sensor_outbound.inbound)
+	sensor.DisconnectAllBidirectional()
+	assert.Equals(t, len(sensor.outbound), 0)
+	assert.Equals(t, len(sensor_outbound.inbound), num_inbound_before-1)
+}
+
 func TestConnectBidirectional(t *testing.T) {
 
 	// create nodes

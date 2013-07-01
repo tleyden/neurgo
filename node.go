@@ -151,6 +151,14 @@ func (node *Node) DisconnectBidirectional(target *Node) {
 	target.disconnectInbound(node)
 }
 
+func (node *Node) DisconnectAllBidirectional() {
+	for _, connection := range node.outbound {
+		other := connection.other
+		node.disconnectOutbound(other)
+		other.disconnectInbound(node)
+	}
+}
+
 func (node *Node) disconnectOutbound(target *Node) {
 	for i, connection := range node.outbound {
 		if connection.other == target {
