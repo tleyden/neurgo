@@ -1,6 +1,6 @@
 package neurgo
 
-type Neuron struct {
+type Cortex struct {
 	Sensors   []NodeId
 	Neurons   []NodeId
 	Actuators []NodeId

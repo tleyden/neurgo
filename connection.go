@@ -1,11 +1,11 @@
 package neurgo
 
 type InboundConnection struct {
-	SourceNodeId NodeId
-	Weights      []float32
+	NodeId  *NodeId
+	Weights []float64
 }
 
 type OutboundConnection struct {
-	TargetNodeId NodeId
-	Data         chan DataMessage
+	NodeId *NodeId
+	Data   chan DataMessage
 }
