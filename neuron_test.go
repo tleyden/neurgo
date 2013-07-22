@@ -5,40 +5,16 @@ import (
 	"testing"
 )
 
-func TestComputeOutput(t *testing.T) {
+func TestComputeScalarOutput(t *testing.T) {
 
 	activation := func(x float64) float64 { return x }
-
-	nodeId_1 := &NodeId{UUID: "node-1", NodeType: "test-node"}
-	nodeId_2 := &NodeId{UUID: "node-2", NodeType: "test-node"}
-	nodeId_3 := &NodeId{UUID: "node-3", NodeType: "test-node"}
 
 	weights_1 := []float64{1, 1, 1, 1, 1}
 	weights_2 := []float64{1}
 	weights_3 := []float64{1}
 
-	inboundConnection1 := &InboundConnection{
-		NodeId:  nodeId_1,
-		Weights: weights_1,
-	}
-	inboundConnection2 := &InboundConnection{
-		NodeId:  nodeId_2,
-		Weights: weights_2,
-	}
-	inboundConnection3 := &InboundConnection{
-		NodeId:  nodeId_3,
-		Weights: weights_3,
-	}
-
-	inbound := []*InboundConnection{
-		inboundConnection1,
-		inboundConnection2,
-		inboundConnection3,
-	}
-
 	neuron := &Neuron{
 		ActivationFunction: activation,
-		Inbound:            inbound,
 		Bias:               0,
 	}
 
