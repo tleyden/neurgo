@@ -18,16 +18,14 @@ type Neuron struct {
 	ActivationFunction ActivationFunction
 }
 
-type weightedInput struct {
-	weights []float64
-	inputs  []float64
-}
-
 func (neuron *Neuron) Run() {
 
 	log.Printf("%v Run() called.", neuron)
 
 	neuron.checkRunnable()
+
+	weightedInputs := createEmptyWeightedInputs(neuron.Inbound)
+	log.Printf("weightedInputs: %v", weightedInputs)
 
 	closed := false
 
