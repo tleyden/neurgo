@@ -1,6 +1,6 @@
 package neurgo
 
 type DataMessage struct {
-	SenderId NodeId
-	Inputs   []float32
+	SenderId *NodeId
+	Inputs   []float64
 }
