@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
+	"log"
 	"testing"
 )
 
@@ -10,6 +11,8 @@ func identityActivationFunction() ActivationFunction {
 }
 
 func TestRunningNeuron(t *testing.T) {
+
+	log.Printf("TestRunningNeuron")
 
 	activation := identityActivationFunction()
 
@@ -40,7 +43,7 @@ func TestRunningNeuron(t *testing.T) {
 		inboundConnection3,
 	}
 
-	closing := make(chan bool)
+	closing := make(chan chan bool)
 	data := make(chan *DataMessage, len(inbound))
 
 	neuron := &Neuron{
@@ -54,6 +57,7 @@ func TestRunningNeuron(t *testing.T) {
 
 	go neuron.Run()
 
+	// send one input
 	inputs_1 := []float64{20, 20, 20, 20, 20}
 	dataMessage := &DataMessage{
 		SenderId: nodeId_1,
@@ -61,7 +65,21 @@ func TestRunningNeuron(t *testing.T) {
 	}
 	data <- dataMessage
 
-	// TODO: finish test
+	// wait for output - should timeout
+
+	// send rest of inputs
+
+	// get output - should send something
+
+	// make sure value is expected
+
+	// send val to closing channel
+
+	// make sure it's closed (need chan chan bool?)
+	closingResponse := make(chan bool)
+	closing <- closingResponse
+	response := <-closingResponse
+	assert.True(t, response)
 
 }
 

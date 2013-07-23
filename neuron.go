@@ -13,7 +13,7 @@ type Neuron struct {
 	Bias               float64
 	Inbound            []*InboundConnection
 	Outbound           []*OutboundConnection
-	Closing            chan bool
+	Closing            chan chan bool
 	Data               chan *DataMessage
 	ActivationFunction ActivationFunction
 }
@@ -25,29 +25,51 @@ type weightedInput struct {
 
 func (neuron *Neuron) Run() {
 
-	panicIfNil(neuron.Inbound)
-	panicIfNil(neuron.Closing)
-	panicIfNil(neuron.Data)
+	log.Printf("%v Run() called.", neuron)
+
+	neuron.checkRunnable()
 
 	closed := false
 
 	for {
 		select {
-		case <-neuron.Closing:
+		case responseChan := <-neuron.Closing:
 			log.Printf("%v got value on closing channel", neuron)
 			closed = true
+			responseChan <- true
 			break
 		case dataMessage := <-neuron.Data:
 			log.Printf("%v got data value %v", neuron, dataMessage)
 		}
 
 		if closed {
+			neuron.Closing = nil // TODO: move to defer()?
+			neuron.Data = nil
 			break
 		}
 
 	}
 
 	log.Printf("%v Run() finishing", neuron)
+
+}
+
+func (neuron *Neuron) checkRunnable() {
+
+	if neuron.Inbound == nil {
+		msg := fmt.Sprintf("not expecting neuron.Inbound to be nil")
+		panic(msg)
+	}
+
+	if neuron.Closing == nil {
+		msg := fmt.Sprintf("not expecting neuron.Closing to be nil")
+		panic(msg)
+	}
+
+	if neuron.Data == nil {
+		msg := fmt.Sprintf("not expecting neuron.Data to be nil")
+		panic(msg)
+	}
 
 }
 
