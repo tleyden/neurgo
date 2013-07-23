@@ -4,6 +4,7 @@ import (
 	"github.com/couchbaselabs/go.assert"
 	"log"
 	"testing"
+	"time"
 )
 
 func identityActivationFunction() ActivationFunction {
@@ -16,6 +17,7 @@ func TestRunningNeuron(t *testing.T) {
 
 	activation := identityActivationFunction()
 
+	neuronNodeId := &NodeId{UUID: "neuron", NodeType: "test-neuron"}
 	nodeId_1 := &NodeId{UUID: "node-1", NodeType: "test-node"}
 	nodeId_2 := &NodeId{UUID: "node-2", NodeType: "test-node"}
 	nodeId_3 := &NodeId{UUID: "node-3", NodeType: "test-node"}
@@ -48,6 +50,7 @@ func TestRunningNeuron(t *testing.T) {
 
 	neuron := &Neuron{
 		ActivationFunction: activation,
+		NodeId:             neuronNodeId,
 		Bias:               0,
 		LayerIndex:         0.5,
 		Inbound:            inbound,
@@ -66,6 +69,7 @@ func TestRunningNeuron(t *testing.T) {
 	data <- dataMessage
 
 	// wait for output - should timeout
+	time.Sleep(time.Second)
 
 	// send rest of inputs
 

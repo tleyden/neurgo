@@ -9,6 +9,7 @@ import (
 type ActivationFunction func(float64) float64
 
 type Neuron struct {
+	NodeId             *NodeId
 	LayerIndex         float64
 	Bias               float64
 	Inbound            []*InboundConnection
@@ -35,9 +36,11 @@ func (neuron *Neuron) Run() {
 			log.Printf("%v got value on closing channel", neuron)
 			closed = true
 			responseChan <- true
-			break
+			break // TODO: do we need this for anything??
 		case dataMessage := <-neuron.Data:
 			log.Printf("%v got data value %v", neuron, dataMessage)
+			neuron.recordInput(weightedInputs, dataMessage)
+			log.Printf("%v weightedInputs %v", neuron, weightedInputs)
 		}
 
 		if closed {
@@ -46,13 +49,47 @@ func (neuron *Neuron) Run() {
 			break
 		}
 
+		if len(weightedInputs) == len(neuron.Inbound) {
+			scalarOutput := neuron.computeScalarOutput(weightedInputs)
+
+			dataMessage := &DataMessage{
+				SenderId: neuron.NodeId,
+				Inputs:   []float64{scalarOutput},
+			}
+
+			neuron.scatterOutput(dataMessage)
+
+			weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
+		}
+
 	}
 
 	log.Printf("%v Run() finishing", neuron)
 
 }
 
+func (neuron *Neuron) recordInput(weightedInputs []*weightedInput, dataMessage *DataMessage) {
+	for _, weightedInput := range weightedInputs {
+		if weightedInput.senderNodeId == dataMessage.SenderId {
+			weightedInput.inputs = dataMessage.Inputs
+		}
+	}
+
+}
+
+func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
+	for _, outboundConnection := range neuron.Outbound {
+		dataChan := outboundConnection.DataChan
+		dataChan <- dataMessage
+	}
+}
+
 func (neuron *Neuron) checkRunnable() {
+
+	if neuron.NodeId == nil {
+		msg := fmt.Sprintf("not expecting neuron.NodeId to be nil")
+		panic(msg)
+	}
 
 	if neuron.Inbound == nil {
 		msg := fmt.Sprintf("not expecting neuron.Inbound to be nil")

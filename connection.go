@@ -6,8 +6,8 @@ type InboundConnection struct {
 }
 
 type OutboundConnection struct {
-	NodeId *NodeId
-	Data   chan DataMessage
+	NodeId   *NodeId
+	DataChan chan *DataMessage
 }
 
 type weightedInput struct {
