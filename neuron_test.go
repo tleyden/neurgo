@@ -17,7 +17,11 @@ func TestRunningNeuron(t *testing.T) {
 
 	activation := identityActivationFunction()
 
-	neuronNodeId := &NodeId{UUID: "neuron", NodeType: "test-neuron"}
+	neuronNodeId := &NodeId{
+		UUID:       "neuron",
+		NodeType:   "test-neuron",
+		LayerIndex: 0.5,
+	}
 	nodeId_1 := &NodeId{UUID: "node-1", NodeType: "test-node"}
 	nodeId_2 := &NodeId{UUID: "node-2", NodeType: "test-node"}
 	nodeId_3 := &NodeId{UUID: "node-3", NodeType: "test-node"}
@@ -48,12 +52,22 @@ func TestRunningNeuron(t *testing.T) {
 	closing := make(chan chan bool)
 	data := make(chan *DataMessage, len(inbound))
 
+	wiretapNodeId := &NodeId{UUID: "wireteap-node", NodeType: "wiretap"}
+	wiretapDataChan := make(chan *DataMessage, 1)
+	wiretapConnection := &OutboundConnection{
+		NodeId:   wiretapNodeId,
+		DataChan: wiretapDataChan,
+	}
+	outbound := []*OutboundConnection{
+		wiretapConnection,
+	}
+
 	neuron := &Neuron{
 		ActivationFunction: activation,
 		NodeId:             neuronNodeId,
 		Bias:               0,
-		LayerIndex:         0.5,
 		Inbound:            inbound,
+		Outbound:           outbound,
 		Closing:            closing,
 		Data:               data,
 	}
@@ -69,7 +83,12 @@ func TestRunningNeuron(t *testing.T) {
 	data <- dataMessage
 
 	// wait for output - should timeout
-	time.Sleep(time.Second)
+	select {
+	case output := <-wiretapDataChan:
+		assert.Errorf(t, "Got unexpected output: %v", output)
+	case <-time.After(time.Second):
+		log.Printf("timed out receiving data, as expected")
+	}
 
 	// send rest of inputs
 

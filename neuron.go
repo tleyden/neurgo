@@ -10,7 +10,6 @@ type ActivationFunction func(float64) float64
 
 type Neuron struct {
 	NodeId             *NodeId
-	LayerIndex         float64
 	Bias               float64
 	Inbound            []*InboundConnection
 	Outbound           []*OutboundConnection
@@ -49,7 +48,9 @@ func (neuron *Neuron) Run() {
 			break
 		}
 
-		if len(weightedInputs) == len(neuron.Inbound) {
+		if neuron.receiveBarrierSatisfied(weightedInputs) {
+
+			log.Printf("%v got enough inputs, going to scatter output", neuron)
 			scalarOutput := neuron.computeScalarOutput(weightedInputs)
 
 			dataMessage := &DataMessage{
@@ -60,12 +61,29 @@ func (neuron *Neuron) Run() {
 			neuron.scatterOutput(dataMessage)
 
 			weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
+
 		}
 
 	}
 
 	log.Printf("%v Run() finishing", neuron)
 
+}
+
+func (neuron *Neuron) String() string {
+	return fmt.Sprintf("%v", neuron.NodeId)
+}
+
+func (neuron *Neuron) receiveBarrierSatisfied(weightedInputs []*weightedInput) bool {
+	satisfied := false
+	for _, weightedInput := range weightedInputs {
+		if weightedInput.inputs == nil {
+			satisfied = false
+			break
+		}
+
+	}
+	return satisfied
 }
 
 func (neuron *Neuron) recordInput(weightedInputs []*weightedInput, dataMessage *DataMessage) {
