@@ -65,7 +65,7 @@ func TestRunningNeuron(t *testing.T) {
 	neuron := &Neuron{
 		ActivationFunction: activation,
 		NodeId:             neuronNodeId,
-		Bias:               0,
+		Bias:               20,
 		Inbound:            inbound,
 		Outbound:           outbound,
 		Closing:            closing,
@@ -109,7 +109,7 @@ func TestRunningNeuron(t *testing.T) {
 	case outputDataMessage := <-wiretapDataChan:
 		outputVector := outputDataMessage.Inputs
 		outputValue := outputVector[0]
-		assert.Equals(t, int(outputValue), int(140))
+		assert.Equals(t, int(outputValue), int(160))
 	case <-time.After(time.Second):
 		assert.Errorf(t, "Timed out waiting for output")
 	}
