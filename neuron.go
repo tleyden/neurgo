@@ -75,7 +75,7 @@ func (neuron *Neuron) String() string {
 }
 
 func (neuron *Neuron) receiveBarrierSatisfied(weightedInputs []*weightedInput) bool {
-	satisfied := false
+	satisfied := true
 	for _, weightedInput := range weightedInputs {
 		if weightedInput.inputs == nil {
 			satisfied = false

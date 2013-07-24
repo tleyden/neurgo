@@ -91,14 +91,31 @@ func TestRunningNeuron(t *testing.T) {
 	}
 
 	// send rest of inputs
+	inputs_2 := []float64{20}
+	dataMessage2 := &DataMessage{
+		SenderId: nodeId_2,
+		Inputs:   inputs_2,
+	}
+	data <- dataMessage2
+
+	inputs_3 := []float64{20}
+	dataMessage3 := &DataMessage{
+		SenderId: nodeId_3,
+		Inputs:   inputs_3,
+	}
+	data <- dataMessage3
 
 	// get output - should send something
+	select {
+	case outputDataMessage := <-wiretapDataChan:
+		outputVector := outputDataMessage.Inputs
+		outputValue := outputVector[0]
+		assert.Equals(t, int(outputValue), int(140))
+	case <-time.After(time.Second):
+		assert.Errorf(t, "Timed out waiting for output")
+	}
 
-	// make sure value is expected
-
-	// send val to closing channel
-
-	// make sure it's closed (need chan chan bool?)
+	// send val to closing channel and make sure its closed
 	closingResponse := make(chan bool)
 	closing <- closingResponse
 	response := <-closingResponse
