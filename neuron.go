@@ -20,37 +20,32 @@ type Neuron struct {
 
 func (neuron *Neuron) Run() {
 
-	log.Printf("%v Run() called.", neuron)
+	log.Printf("")
 
 	neuron.checkRunnable()
 
 	weightedInputs := createEmptyWeightedInputs(neuron.Inbound)
-	log.Printf("weightedInputs: %v", weightedInputs)
 
 	closed := false
 
 	for {
 		select {
 		case responseChan := <-neuron.Closing:
-			log.Printf("%v got value on closing channel", neuron)
 			closed = true
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case dataMessage := <-neuron.DataChan:
-			log.Printf("%v got data value %v", neuron, dataMessage)
 			neuron.recordInput(weightedInputs, dataMessage)
-			log.Printf("%v weightedInputs %v", neuron, weightedInputs)
 		}
 
 		if closed {
-			neuron.Closing = nil // TODO: move to defer()?
+			neuron.Closing = nil
 			neuron.DataChan = nil
 			break
 		}
 
 		if neuron.receiveBarrierSatisfied(weightedInputs) {
 
-			log.Printf("%v got enough inputs, going to scatter output", neuron)
 			scalarOutput := neuron.computeScalarOutput(weightedInputs)
 
 			dataMessage := &DataMessage{
@@ -65,8 +60,6 @@ func (neuron *Neuron) Run() {
 		}
 
 	}
-
-	log.Printf("%v Run() finishing", neuron)
 
 }
 

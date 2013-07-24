@@ -13,7 +13,7 @@ func identityActivationFunction() ActivationFunction {
 
 func TestRunningNeuron(t *testing.T) {
 
-	log.Printf("TestRunningNeuron")
+	log.Printf("")
 
 	activation := identityActivationFunction()
 
@@ -86,8 +86,7 @@ func TestRunningNeuron(t *testing.T) {
 	select {
 	case output := <-wiretapDataChan:
 		assert.Errorf(t, "Got unexpected output: %v", output)
-	case <-time.After(time.Second):
-		log.Printf("timed out receiving data, as expected")
+	case <-time.After(time.Second / 100):
 	}
 
 	// send rest of inputs
