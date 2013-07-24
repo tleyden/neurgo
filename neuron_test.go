@@ -69,7 +69,7 @@ func TestRunningNeuron(t *testing.T) {
 		Inbound:            inbound,
 		Outbound:           outbound,
 		Closing:            closing,
-		Data:               data,
+		DataChan:           data,
 	}
 
 	go neuron.Run()
@@ -105,7 +105,7 @@ func TestRunningNeuron(t *testing.T) {
 	}
 	data <- dataMessage3
 
-	// get output - should send something
+	// get output - should receive something
 	select {
 	case outputDataMessage := <-wiretapDataChan:
 		outputVector := outputDataMessage.Inputs

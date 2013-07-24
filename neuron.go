@@ -14,7 +14,7 @@ type Neuron struct {
 	Inbound            []*InboundConnection
 	Outbound           []*OutboundConnection
 	Closing            chan chan bool
-	Data               chan *DataMessage
+	DataChan           chan *DataMessage
 	ActivationFunction ActivationFunction
 }
 
@@ -36,7 +36,7 @@ func (neuron *Neuron) Run() {
 			closed = true
 			responseChan <- true
 			break // TODO: do we need this for anything??
-		case dataMessage := <-neuron.Data:
+		case dataMessage := <-neuron.DataChan:
 			log.Printf("%v got data value %v", neuron, dataMessage)
 			neuron.recordInput(weightedInputs, dataMessage)
 			log.Printf("%v weightedInputs %v", neuron, weightedInputs)
@@ -44,7 +44,7 @@ func (neuron *Neuron) Run() {
 
 		if closed {
 			neuron.Closing = nil // TODO: move to defer()?
-			neuron.Data = nil
+			neuron.DataChan = nil
 			break
 		}
 
@@ -119,8 +119,8 @@ func (neuron *Neuron) checkRunnable() {
 		panic(msg)
 	}
 
-	if neuron.Data == nil {
-		msg := fmt.Sprintf("not expecting neuron.Data to be nil")
+	if neuron.DataChan == nil {
+		msg := fmt.Sprintf("not expecting neuron.DataChan to be nil")
 		panic(msg)
 	}
 
