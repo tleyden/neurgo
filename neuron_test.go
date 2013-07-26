@@ -11,6 +11,126 @@ func identityActivationFunction() ActivationFunction {
 	return func(x float64) float64 { return x }
 }
 
+func TestRecurrentNeuron(t *testing.T) {
+
+	// injector -> n1 -> n2 -> wiretap where n2 has recurrent connection
+	// back to n1.  send a two passes of inputs, and make sure the
+	// wiretap gets a signal
+
+	activation := identityActivationFunction()
+
+	injectorNodeId_1 := &NodeId{UUID: "injector-1", NodeType: "injector"}
+	weights_1 := []float64{1}
+
+	neuron1NodeId := &NodeId{
+		UUID:       "neuron1",
+		NodeType:   "neuron",
+		LayerIndex: 0.0,
+	}
+
+	neuron2NodeId := &NodeId{
+		UUID:       "neuron2",
+		NodeType:   "neuron",
+		LayerIndex: 0.5,
+	}
+
+	inboundConnectionToN1 := &InboundConnection{
+		NodeId:  injectorNodeId_1,
+		Weights: weights_1,
+	}
+
+	recurrentInboundConnectionToN1 := &InboundConnection{
+		NodeId:  neuron2NodeId,
+		Weights: weights_1,
+	}
+
+	outboundConnectionToN2 := &OutboundConnection{
+		NodeId:   neuron2NodeId,
+		DataChan: make(chan *DataMessage, 1),
+	}
+
+	outbound := []*OutboundConnection{
+		outboundConnectionToN2,
+	}
+
+	inboundN1 := []*InboundConnection{
+		inboundConnectionToN1,
+		recurrentInboundConnectionToN1,
+	}
+
+	closing := make(chan chan bool)
+	data := make(chan *DataMessage, len(inboundN1))
+
+	neuronN1 := &Neuron{
+		ActivationFunction: activation,
+		NodeId:             neuron1NodeId,
+		Bias:               20,
+		Inbound:            inboundN1,
+		Outbound:           outbound,
+		Closing:            closing,
+		DataChan:           data,
+	}
+
+	inboundConnectionToN2 := &InboundConnection{
+		NodeId:  neuron1NodeId,
+		Weights: weights_1,
+	}
+	inboundN2 := []*InboundConnection{inboundConnectionToN2}
+
+	wiretapNodeId := &NodeId{UUID: "wireteap-node", NodeType: "wiretap"}
+	wiretapDataChan := make(chan *DataMessage, 1)
+	wiretapConnection := &OutboundConnection{
+		NodeId:   wiretapNodeId,
+		DataChan: wiretapDataChan,
+	}
+
+	n2ToN1DataChan := make(chan *DataMessage, 1)
+	n2ToN1Connection := &OutboundConnection{
+		NodeId:   neuron1NodeId,
+		DataChan: n2ToN1DataChan,
+	}
+
+	outboundN2 := []*OutboundConnection{
+		wiretapConnection,
+		n2ToN1Connection,
+	}
+
+	closingN2 := make(chan chan bool)
+	dataN2 := make(chan *DataMessage, len(inboundN2))
+
+	neuronN2 := &Neuron{
+		ActivationFunction: activation,
+		NodeId:             neuron2NodeId,
+		Bias:               20,
+		Inbound:            inboundN2,
+		Outbound:           outboundN2,
+		Closing:            closingN2,
+		DataChan:           dataN2,
+	}
+
+	go neuronN1.Run()
+	go neuronN2.Run()
+
+	// send one input
+	inputs_1 := []float64{20, 20, 20, 20, 20}
+	dataMessage := &DataMessage{
+		SenderId: injectorNodeId_1,
+		Inputs:   inputs_1,
+	}
+	neuronN1.DataChan <- dataMessage
+
+	// wait for output - should not timeout
+	select {
+	case outputDataMessage := <-wiretapDataChan:
+		outputVector := outputDataMessage.Inputs
+		outputValue := outputVector[0]
+		assert.Equals(t, int(outputValue), int(40)) // TODO: what should result be?
+	case <-time.After(time.Second / 100):
+		assert.Errorf(t, "Did not get result at wiretap")
+	}
+
+}
+
 func TestRunningNeuron(t *testing.T) {
 
 	log.Printf("")
@@ -20,7 +140,7 @@ func TestRunningNeuron(t *testing.T) {
 	neuronNodeId := &NodeId{
 		UUID:       "neuron",
 		NodeType:   "test-neuron",
-		LayerIndex: 0.5,
+		LayerIndex: 0.0,
 	}
 	nodeId_1 := &NodeId{UUID: "node-1", NodeType: "test-node"}
 	nodeId_2 := &NodeId{UUID: "node-2", NodeType: "test-node"}
