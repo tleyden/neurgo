@@ -90,7 +90,8 @@ func (neuron *Neuron) receiveBarrierSatisfied(weightedInputs []*weightedInput) b
 func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 
 	recurrentConnections := neuron.recurrentOutboundConnections()
-	for recurrentConnection := range recurrentConnections {
+	for _, _ = range recurrentConnections {
+
 		inputs := []float64{0}
 		dataMessage := &DataMessage{
 			SenderId: neuron.NodeId,
@@ -106,11 +107,12 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 // (eg, to the left) layer.
 func (neuron *Neuron) recurrentOutboundConnections() []*OutboundConnection {
 	result := make([]*OutboundConnection, 0)
-	for outboundConnection := range neuron.Outbound {
-		if outboundConnection.isRecurrent(neuron.NodeId) {
-			result = append(result, outboundConnection)
-		}
-	}
+	//for outboundConnection := range neuron.Outbound {
+	// TODO
+	//if outboundConnection.isRecurrent(neuron.NodeId) {
+	//	result = append(result, outboundConnection)
+	// }
+	// }
 	return result
 }
 
