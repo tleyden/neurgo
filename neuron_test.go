@@ -274,3 +274,8 @@ func TestComputeScalarOutput(t *testing.T) {
 	assert.Equals(t, result, float64(120))
 
 }
+
+func TestRecurrentOutboundConnections(t *testing.T) {
+	assert.Equals(t, 1, 2)
+
+}

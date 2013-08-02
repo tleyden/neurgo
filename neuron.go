@@ -24,6 +24,8 @@ func (neuron *Neuron) Run() {
 
 	neuron.checkRunnable()
 
+	neuron.sendEmptySignalRecurrentOutbound()
+
 	weightedInputs := createEmptyWeightedInputs(neuron.Inbound)
 
 	closed := false
@@ -77,6 +79,39 @@ func (neuron *Neuron) receiveBarrierSatisfied(weightedInputs []*weightedInput) b
 
 	}
 	return satisfied
+}
+
+// In order to prevent deadlock, any neurons we have recurrent outbound
+// connections to must be "primed" by sending an empty signal.  A recurrent
+// outbound connection simply means that it's a connection to ourself or
+// to a neuron in a previous (eg, to the left) layer.  If we didn't do this,
+// that previous neuron would be waiting forever for a signal that will
+// never come, because this neuron wouldn't fire until it got a signal.
+func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
+
+	recurrentConnections := neuron.recurrentOutboundConnections()
+	for recurrentConnection := range recurrentConnections {
+		inputs := []float64{0}
+		dataMessage := &DataMessage{
+			SenderId: neuron.NodeId,
+			Inputs:   inputs,
+		}
+		neuron.DataChan <- dataMessage
+	}
+
+}
+
+// Find the subset of outbound connections which are "recurrent" - meaning
+// that the connection is to this neuron itself, or to a neuron in a previous
+// (eg, to the left) layer.
+func (neuron *Neuron) recurrentOutboundConnections() []*OutboundConnection {
+	result := make([]*OutboundConnection, 0)
+	for outboundConnection := range neuron.Outbound {
+		if outboundConnection.isRecurrent(neuron.NodeId) {
+			result = append(result, outboundConnection)
+		}
+	}
+	return result
 }
 
 func (neuron *Neuron) recordInput(weightedInputs []*weightedInput, dataMessage *DataMessage) {
