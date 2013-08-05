@@ -1,5 +1,9 @@
 package neurgo
 
+import (
+	"fmt"
+)
+
 type InboundConnection struct {
 	NodeId  *NodeId
 	Weights []float64
@@ -29,4 +33,19 @@ func createEmptyWeightedInputs(inbound []*InboundConnection) []*weightedInput {
 	}
 	return weightedInputs
 
+}
+
+func (connection *OutboundConnection) String() string {
+	return fmt.Sprintf("node: %v, datachan: %v",
+		connection.NodeId,
+		connection.DataChan,
+	)
+}
+
+func (weightedInput *weightedInput) String() string {
+	return fmt.Sprintf("sender: %v, weights: %v, inputs: %v",
+		weightedInput.senderNodeId,
+		weightedInput.weights,
+		weightedInput.inputs,
+	)
 }
