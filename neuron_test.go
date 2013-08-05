@@ -128,7 +128,7 @@ func TestRecurrentNeuron(t *testing.T) {
 	}
 	neuronN1.DataChan <- dataMessage
 
-	// wait for output - should not timeout
+	// wait for output
 	log.Printf("wiretapDataChan: %v", wiretapDataChan)
 	select {
 	case outputDataMessage := <-wiretapDataChan:
@@ -139,6 +139,26 @@ func TestRecurrentNeuron(t *testing.T) {
 		assert.Equals(t, int(outputValue), expectedOut)
 	case <-time.After(time.Second):
 		assert.Errorf(t, "Did not get result at wiretap")
+	}
+
+	// send another input
+	inputs_2 := []float64{20, 20, 20, 20, 20}
+	dataMessage2 := &DataMessage{
+		SenderId: injectorNodeId_1,
+		Inputs:   inputs_2,
+	}
+	neuronN1.DataChan <- dataMessage2
+
+	// wait for output
+	select {
+	case outputDataMessage2 := <-wiretapDataChan:
+		outputVector2 := outputDataMessage2.Inputs
+		log.Printf("outputVector #2: %v", outputVector2)
+		outputValue2 := outputVector2[0]
+		expectedOut2 := (100 + 20 + 20) * 2
+		assert.Equals(t, int(outputValue2), expectedOut2)
+	case <-time.After(time.Second):
+		assert.Errorf(t, "Did not get result #2 at wiretap")
 	}
 
 }
