@@ -31,6 +31,9 @@ func (neuron *Neuron) Run() {
 	closed := false
 
 	for {
+
+		log.Printf("Neuron %v select().  datachan: %v", neuron, neuron.DataChan)
+
 		select {
 		case responseChan := <-neuron.Closing:
 			closed = true
@@ -48,6 +51,7 @@ func (neuron *Neuron) Run() {
 
 		if neuron.receiveBarrierSatisfied(weightedInputs) {
 
+			log.Printf("Neuron %v received inputs: %v", neuron, weightedInputs)
 			scalarOutput := neuron.computeScalarOutput(weightedInputs)
 
 			dataMessage := &DataMessage{
@@ -59,6 +63,8 @@ func (neuron *Neuron) Run() {
 
 			weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
 
+		} else {
+			log.Printf("Neuron %v receive barrier not satisfied", neuron)
 		}
 
 	}
@@ -90,14 +96,16 @@ func (neuron *Neuron) receiveBarrierSatisfied(weightedInputs []*weightedInput) b
 func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 
 	recurrentConnections := neuron.recurrentOutboundConnections()
-	for _, _ = range recurrentConnections {
+	log.Printf("Neuron %v recurrent connections: %v", neuron, recurrentConnections)
+	for _, recurrentConnection := range recurrentConnections {
 
 		inputs := []float64{0}
 		dataMessage := &DataMessage{
 			SenderId: neuron.NodeId,
 			Inputs:   inputs,
 		}
-		neuron.DataChan <- dataMessage
+		log.Printf("Neuron %v sending data %v to recurrent outbound: %v", neuron, dataMessage, recurrentConnection)
+		recurrentConnection.DataChan <- dataMessage
 	}
 
 }
@@ -139,6 +147,7 @@ func (neuron *Neuron) recordInput(weightedInputs []*weightedInput, dataMessage *
 func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 	for _, outboundConnection := range neuron.Outbound {
 		dataChan := outboundConnection.DataChan
+		log.Printf("Neuron %v scatter %v to: %v", neuron, dataMessage, outboundConnection)
 		dataChan <- dataMessage
 	}
 }
