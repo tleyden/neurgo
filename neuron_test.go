@@ -276,6 +276,41 @@ func TestComputeScalarOutput(t *testing.T) {
 }
 
 func TestRecurrentOutboundConnections(t *testing.T) {
-	assert.Equals(t, 1, 2)
+
+	// make a recurrent connection
+	neuron1NodeId := &NodeId{
+		UUID:       "neuron1",
+		NodeType:   "neuron",
+		LayerIndex: 0.0,
+	}
+
+	neuron2NodeId := &NodeId{
+		UUID:       "neuron2",
+		NodeType:   "neuron",
+		LayerIndex: 0.5,
+	}
+
+	outboundConnectionN2ToN1 := &OutboundConnection{
+		NodeId:   neuron1NodeId,
+		DataChan: make(chan *DataMessage, 1),
+	}
+
+	outboundN2 := []*OutboundConnection{
+		outboundConnectionN2ToN1,
+	}
+
+	neuronN2 := &Neuron{
+		ActivationFunction: nil,
+		NodeId:             neuron2NodeId,
+		Bias:               20,
+		Inbound:            nil,
+		Outbound:           outboundN2,
+		Closing:            nil,
+		DataChan:           nil,
+	}
+
+	recurrentConnections := neuronN2.recurrentOutboundConnections()
+
+	assert.Equals(t, len(recurrentConnections), 1)
 
 }

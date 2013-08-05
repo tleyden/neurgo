@@ -107,13 +107,24 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 // (eg, to the left) layer.
 func (neuron *Neuron) recurrentOutboundConnections() []*OutboundConnection {
 	result := make([]*OutboundConnection, 0)
-	//for outboundConnection := range neuron.Outbound {
-	// TODO
-	//if outboundConnection.isRecurrent(neuron.NodeId) {
-	//	result = append(result, outboundConnection)
-	// }
-	// }
+	for _, outboundConnection := range neuron.Outbound {
+		if neuron.isConnectionRecurrent(outboundConnection) {
+			result = append(result, outboundConnection)
+		}
+	}
 	return result
+}
+
+// a connection is considered recurrent if it has a connection
+// to itself or to a node in a previous layer.  Previous meaning
+// if you look at a feedforward from left to right, with the input
+// layer being on the far left, and output layer on the far right,
+// then any layer to the left is considered previous.
+func (neuron *Neuron) isConnectionRecurrent(connection *OutboundConnection) bool {
+	if connection.NodeId.LayerIndex <= neuron.NodeId.LayerIndex {
+		return true
+	}
+	return false
 }
 
 func (neuron *Neuron) recordInput(weightedInputs []*weightedInput, dataMessage *DataMessage) {
