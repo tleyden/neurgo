@@ -26,12 +26,15 @@ func (sensor *Sensor) Run() {
 
 	for {
 
+		log.Printf("Sensor Run() loop")
+
 		select {
 		case responseChan := <-sensor.Closing:
 			closed = true
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case _ = <-sensor.SyncChan:
+			log.Printf("Sensor got value from SyncChan")
 			input := sensor.SensorFunction(syncCounter)
 			syncCounter += 1
 			dataMessage := &DataMessage{
@@ -79,6 +82,11 @@ func (sensor *Sensor) checkRunnable() {
 
 	if sensor.SyncChan == nil {
 		msg := fmt.Sprintf("not expecting sensor.SyncChan to be nil")
+		panic(msg)
+	}
+
+	if sensor.SensorFunction == nil {
+		msg := fmt.Sprintf("not expecting sensor.SensorFunction to be nil")
 		panic(msg)
 	}
 

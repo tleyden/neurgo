@@ -31,9 +31,9 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 		sampleX := samples[syncCounter]
 		return sampleX.SampleInputs[0]
 	}
+	sensor.SensorFunction = sensorFunc
 
 	// install function to actuator which will collect outputs
-	sensor.SensorFunction = sensorFunc
 
 	/*for _, sample := range samples {
 		cortex.SyncSensors()
