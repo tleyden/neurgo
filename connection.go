@@ -14,6 +14,15 @@ type OutboundConnection struct {
 	DataChan chan *DataMessage
 }
 
+type OutboundConnectable interface {
+	nodeId() *NodeId
+	dataChan() chan *DataMessage
+}
+
+type InboundConnectable interface {
+	nodeId() *NodeId
+}
+
 type weightedInput struct {
 	senderNodeId *NodeId
 	weights      []float64

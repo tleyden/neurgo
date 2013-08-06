@@ -7,8 +7,8 @@ import (
 
 func TestCortex(t *testing.T) {
 
-	// xnorCortex := XnorCortex()
-
+	xnorCortex := XnorCortex(t)
+	assert.True(t, xnorCortex != nil)
 	// inputs + expected outputs
 	// examples := xnorTrainingSamples()
 
@@ -20,48 +20,59 @@ func TestCortex(t *testing.T) {
 
 }
 
-func XnorCortex() *Cortex {
+func XnorCortex(t *testing.T) *Cortex {
 
 	// create network nodes
-	/*
-		hiddenNeuron1NodeId := &NodeId{
-			UUID:       "hidden-neuron1",
-			NodeType:   NEURON,
-			LayerIndex: 0.25,
-		}
 
-		hiddenNeuron2NodeId := &NodeId{
-			UUID:       "hidden-neuron2",
-			NodeType:   NEURON,
-			LayerIndex: 0.25,
-		}
+	sensorNodeId := NewSensorId("sensor", 0.0)
+	hiddenNeuron1NodeId := NewNeuronId("hidden-neuron1", 0.25)
+	hiddenNeuron2NodeId := NewNeuronId("hidden-neuron2", 0.25)
+	actuatorNodeId := NewActuatorId("actuator", 0.5)
 
-		sensorNodeId := &NodeId{
-			UUID:       "sensor",
-			NodeType:   SENSOR,
-			LayerIndex: 0.0,
-		}
+	hiddenNeuron1 := &Neuron{
+		ActivationFunction: Sigmoid,
+		NodeId:             hiddenNeuron1NodeId,
+		Bias:               -30,
+	}
+	hiddenNeuron1.Init()
 
-		actuatorNodeId := &NodeId{
-			UUID:       "actuator",
-			NodeType:   ACTUATOR,
-			LayerIndex: 0.5,
-		}
+	hiddenNeuron2 := &Neuron{
+		ActivationFunction: Sigmoid,
+		NodeId:             hiddenNeuron2NodeId,
+		Bias:               10,
+	}
+	hiddenNeuron2.Init()
 
-		hiddenNeuron1 := &Neuron{
-			ActivationFunction: Sigmoid,
-			NodeId:             hiddenNeuron1NodeId,
-			Bias:               -30,
-		}
-		hiddenNeuron1.Init()
+	sensor := &Sensor{
+		NodeId:       sensorNodeId,
+		VectorLength: 2,
+	}
 
-		hiddenNeuron2 := &Neuron{
-			ActivationFunction: Sigmoid,
-			NodeId:             hiddenNeuron2NodeId,
-			Bias:               10,
-		}
-		hiddenNeuron1.Init()
-	*/
+	actuator := &Actuator{
+		NodeId:       actuatorNodeId,
+		VectorLength: 1,
+	}
+	actuator.Init()
+
+	sensor.ConnectOutbound(hiddenNeuron1)
+	hiddenNeuron1.ConnectInboundWeighted(sensor, []float64{20, 20})
+
+	sensor.ConnectOutbound(hiddenNeuron2)
+	hiddenNeuron2.ConnectInboundWeighted(sensor, []float64{-20, -20})
+
+	assert.Equals(t, len(sensor.Outbound), 2)
+	assert.Equals(t, len(hiddenNeuron1.Inbound), 1)
+	assert.Equals(t, len(hiddenNeuron2.Inbound), 1)
+
+	hiddenNeuron1.ConnectOutbound(actuator)
+	actuator.ConnectInbound(hiddenNeuron1)
+
+	hiddenNeuron2.ConnectOutbound(actuator)
+	actuator.ConnectInbound(hiddenNeuron2)
+
+	assert.Equals(t, len(hiddenNeuron1.Outbound), 1)
+	assert.Equals(t, len(hiddenNeuron2.Outbound), 1)
+	assert.Equals(t, len(actuator.Inbound), 2)
 
 	/*
 		hn1_processor := &Neuron{Bias: -30, ActivationFunction: Sigmoid}
@@ -90,7 +101,7 @@ func XnorCortex() *Cortex {
 
 		return neuralNet
 	*/
-	return nil
+	return &Cortex{}
 
 }
 

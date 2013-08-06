@@ -75,6 +75,29 @@ func (neuron *Neuron) String() string {
 	return fmt.Sprintf("%v", neuron.NodeId)
 }
 
+func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) {
+	if neuron.Outbound == nil {
+		neuron.Outbound = make([]*OutboundConnection, 0)
+	}
+	connection := &OutboundConnection{
+		NodeId:   connectable.nodeId(),
+		DataChan: connectable.dataChan(),
+	}
+	neuron.Outbound = append(neuron.Outbound, connection)
+}
+
+func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, weights []float64) {
+	if neuron.Inbound == nil {
+		neuron.Inbound = make([]*InboundConnection, 0)
+	}
+	connection := &InboundConnection{
+		NodeId:  connectable.nodeId(),
+		Weights: weights,
+	}
+	neuron.Inbound = append(neuron.Inbound, connection)
+
+}
+
 func (neuron *Neuron) receiveBarrierSatisfied(weightedInputs []*weightedInput) bool {
 	satisfied := true
 	for _, weightedInput := range weightedInputs {
@@ -222,4 +245,12 @@ func (neuron *Neuron) weightedInputDotProductSum(weightedInputs []*weightedInput
 
 	return dotProductSummation
 
+}
+
+func (neuron *Neuron) dataChan() chan *DataMessage {
+	return neuron.DataChan
+}
+
+func (neuron *Neuron) nodeId() *NodeId {
+	return neuron.NodeId
 }
