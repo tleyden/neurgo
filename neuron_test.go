@@ -21,19 +21,19 @@ func TestRecurrentNeuron(t *testing.T) {
 
 	injectorNodeId_1 := &NodeId{
 		UUID:       "injector-1",
-		NodeType:   "injector",
+		NodeType:   SENSOR,
 		LayerIndex: 0.0,
 	}
 
 	neuron1NodeId := &NodeId{
 		UUID:       "neuron1",
-		NodeType:   "neuron",
+		NodeType:   NEURON,
 		LayerIndex: 0.125,
 	}
 
 	neuron2NodeId := &NodeId{
 		UUID:       "neuron2",
-		NodeType:   "neuron",
+		NodeType:   NEURON,
 		LayerIndex: 0.25,
 	}
 
@@ -41,6 +41,7 @@ func TestRecurrentNeuron(t *testing.T) {
 		NodeId:  neuron1NodeId,
 		Weights: []float64{1},
 	}
+
 	inboundN2 := []*InboundConnection{inboundConnectionToN2}
 
 	closingN2 := make(chan chan bool)
@@ -85,7 +86,7 @@ func TestRecurrentNeuron(t *testing.T) {
 
 	wiretapNodeId := &NodeId{
 		UUID:       "wireteap-node",
-		NodeType:   "wiretap",
+		NodeType:   ACTUATOR,
 		LayerIndex: 0.5,
 	}
 	wiretapDataChan := make(chan *DataMessage, 1)
@@ -171,12 +172,12 @@ func TestRunningNeuron(t *testing.T) {
 
 	neuronNodeId := &NodeId{
 		UUID:       "neuron",
-		NodeType:   "test-neuron",
+		NodeType:   NEURON,
 		LayerIndex: 0.25,
 	}
-	nodeId_1 := &NodeId{UUID: "node-1", NodeType: "test-node", LayerIndex: 0.0}
-	nodeId_2 := &NodeId{UUID: "node-2", NodeType: "test-node", LayerIndex: 0.0}
-	nodeId_3 := &NodeId{UUID: "node-3", NodeType: "test-node", LayerIndex: 0.0}
+	nodeId_1 := &NodeId{UUID: "node-1", NodeType: SENSOR, LayerIndex: 0.0}
+	nodeId_2 := &NodeId{UUID: "node-2", NodeType: SENSOR, LayerIndex: 0.0}
+	nodeId_3 := &NodeId{UUID: "node-3", NodeType: SENSOR, LayerIndex: 0.0}
 
 	weights_1 := []float64{1, 1, 1, 1, 1}
 	weights_2 := []float64{1}
@@ -206,7 +207,7 @@ func TestRunningNeuron(t *testing.T) {
 
 	wiretapNodeId := &NodeId{
 		UUID:       "wireteap-node",
-		NodeType:   "wiretap",
+		NodeType:   ACTUATOR,
 		LayerIndex: 0.5,
 	}
 	wiretapDataChan := make(chan *DataMessage, 1)
@@ -316,13 +317,13 @@ func TestRecurrentOutboundConnections(t *testing.T) {
 	// make a recurrent connection
 	neuron1NodeId := &NodeId{
 		UUID:       "neuron1",
-		NodeType:   "neuron",
+		NodeType:   NEURON,
 		LayerIndex: 0.0,
 	}
 
 	neuron2NodeId := &NodeId{
 		UUID:       "neuron2",
-		NodeType:   "neuron",
+		NodeType:   NEURON,
 		LayerIndex: 0.5,
 	}
 

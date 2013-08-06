@@ -152,6 +152,22 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 	}
 }
 
+func (neuron *Neuron) Init() {
+	if neuron.Closing == nil {
+		neuron.Closing = make(chan chan bool)
+	} else {
+		msg := "Warn: %v Init() called, but already had closing channel"
+		log.Printf(msg, neuron)
+	}
+
+	if neuron.DataChan == nil {
+		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
+	} else {
+		msg := "Warn: %v Init() called, but already had data channel"
+		log.Printf(msg, neuron)
+	}
+}
+
 func (neuron *Neuron) checkRunnable() {
 
 	if neuron.NodeId == nil {

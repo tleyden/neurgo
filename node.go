@@ -2,6 +2,6 @@ package neurgo
 
 type NodeId struct {
 	UUID       string
-	NodeType   string
+	NodeType   NodeType
 	LayerIndex float64
 }
