@@ -24,7 +24,6 @@ func TestActuatorRun(t *testing.T) {
 	}
 	actuator.Init()
 	go actuator.Run()
-
 	// send it a message
 	fakeInput := []float64{1}
 	dataMessage := &DataMessage{
@@ -33,6 +32,8 @@ func TestActuatorRun(t *testing.T) {
 	}
 
 	actuator.DataChan <- dataMessage
+
+	actuator.Shutdown()
 
 	// make sure our actuator function was called
 	assert.Equals(t, collectedActuatorIndex, 1)

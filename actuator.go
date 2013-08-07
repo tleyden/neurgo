@@ -3,6 +3,7 @@ package neurgo
 import (
 	"fmt"
 	"log"
+	"sync"
 )
 
 type ActuatorFunction func(outputs []float64)
@@ -14,11 +15,12 @@ type Actuator struct {
 	DataChan         chan *DataMessage
 	VectorLength     uint
 	ActuatorFunction ActuatorFunction
+	wg               sync.WaitGroup
 }
 
 func (actuator *Actuator) Run() {
 
-	log.Printf("")
+	defer actuator.wg.Done()
 
 	actuator.checkRunnable()
 
@@ -60,6 +62,18 @@ func (actuator *Actuator) Run() {
 
 	}
 
+}
+
+func (actuator *Actuator) Shutdown() {
+
+	closingResponse := make(chan bool)
+	actuator.Closing <- closingResponse
+	response := <-closingResponse
+	if response != true {
+		log.Panicf("Got unexpected response on closing channel")
+	}
+
+	actuator.wg.Wait()
 }
 
 func (actuator *Actuator) computeScalarOutput(weightedInputs []*weightedInput) []float64 {
@@ -121,6 +135,9 @@ func (actuator *Actuator) Init() {
 		msg := "Warn: %v Init() called, but already had data channel"
 		log.Printf(msg, actuator)
 	}
+
+	actuator.wg.Add(1) // TODO: make sure Init() not called twice!
+
 }
 
 func (actuator *Actuator) ConnectInbound(connectable InboundConnectable) {
