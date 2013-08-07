@@ -118,6 +118,9 @@ func TestRecurrentNeuron(t *testing.T) {
 	recurrentConnections := neuronN2.recurrentOutboundConnections()
 	assert.Equals(t, len(recurrentConnections), 1)
 
+	neuronN1.Init()
+	neuronN2.Init()
+
 	go neuronN1.Run()
 	go neuronN2.Run()
 
@@ -161,6 +164,9 @@ func TestRecurrentNeuron(t *testing.T) {
 	case <-time.After(time.Second):
 		assert.Errorf(t, "Did not get result #2 at wiretap")
 	}
+
+	neuronN1.Shutdown()
+	neuronN2.Shutdown()
 
 }
 
@@ -229,6 +235,7 @@ func TestRunningNeuron(t *testing.T) {
 		DataChan:           data,
 	}
 
+	neuron.Init()
 	go neuron.Run()
 
 	// send one input
@@ -271,11 +278,7 @@ func TestRunningNeuron(t *testing.T) {
 		assert.Errorf(t, "Timed out waiting for output")
 	}
 
-	// send val to closing channel and make sure its closed
-	closingResponse := make(chan bool)
-	closing <- closingResponse
-	response := <-closingResponse
-	assert.True(t, response)
+	neuron.Shutdown()
 
 }
 

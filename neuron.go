@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/proxypoke/vector"
 	"log"
+	"sync"
 )
 
 type ActivationFunction func(float64) float64
@@ -16,11 +17,12 @@ type Neuron struct {
 	Closing            chan chan bool
 	DataChan           chan *DataMessage
 	ActivationFunction ActivationFunction
+	wg                 sync.WaitGroup
 }
 
 func (neuron *Neuron) Run() {
 
-	log.Printf("")
+	defer neuron.wg.Done()
 
 	neuron.checkRunnable()
 
@@ -168,6 +170,19 @@ func (neuron *Neuron) Init() {
 		msg := "Warn: %v Init() called, but already had data channel"
 		log.Printf(msg, neuron)
 	}
+	neuron.wg.Add(1) // TODO: make sure Init() not called twice!
+}
+
+func (neuron *Neuron) Shutdown() {
+
+	closingResponse := make(chan bool)
+	neuron.Closing <- closingResponse
+	response := <-closingResponse
+	if response != true {
+		log.Panicf("Got unexpected response on closing channel")
+	}
+
+	neuron.wg.Wait()
 }
 
 func (neuron *Neuron) checkRunnable() {
