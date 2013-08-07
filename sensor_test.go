@@ -58,4 +58,6 @@ func TestSensorRun(t *testing.T) {
 	}
 	assert.Equals(t, numTimesFuncCalled, 2)
 
+	sensor.Shutdown()
+
 }

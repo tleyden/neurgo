@@ -3,9 +3,8 @@ package neurgo
 import (
 	"fmt"
 	"log"
+	"sync"
 )
-
-// TODO: need a "function" which is called to gather actual data
 
 type SensorFunction func(int) []float64
 
@@ -16,18 +15,19 @@ type Sensor struct {
 	Closing        chan chan bool
 	SyncChan       chan bool
 	SensorFunction SensorFunction
+	wg             sync.WaitGroup
 }
 
 func (sensor *Sensor) Run() {
+
+	defer sensor.wg.Done()
+
 	sensor.checkRunnable()
 
 	closed := false
 	syncCounter := 0
 
 	for {
-
-		log.Printf("Sensor Run() loop")
-
 		select {
 		case responseChan := <-sensor.Closing:
 			closed = true
@@ -67,6 +67,19 @@ func (sensor *Sensor) Init() {
 		msg := "Warn: %v Init() called, but already had data channel"
 		log.Printf(msg, sensor)
 	}
+	sensor.wg.Add(1) // TODO: make sure Init() not called twice!
+}
+
+func (sensor *Sensor) Shutdown() {
+
+	closingResponse := make(chan bool)
+	sensor.Closing <- closingResponse
+	response := <-closingResponse
+	if response != true {
+		log.Panicf("Got unexpected response on closing channel")
+	}
+
+	sensor.wg.Wait()
 }
 
 func (sensor *Sensor) checkRunnable() {
