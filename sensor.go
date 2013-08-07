@@ -120,3 +120,7 @@ func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
 func (sensor *Sensor) nodeId() *NodeId {
 	return sensor.NodeId
 }
+
+func (sensor *Sensor) String() string {
+	return fmt.Sprintf("%v", sensor.NodeId)
+}

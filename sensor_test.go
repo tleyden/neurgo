@@ -17,7 +17,9 @@ func TestSensorRun(t *testing.T) {
 
 	sensorNodeId := NewSensorId("sensor", 0.0)
 
+	numTimesFuncCalled := 0
 	sensorFunc := func(syncCounter int) []float64 {
+		numTimesFuncCalled += 1
 		return []float64{float64(syncCounter)}
 	}
 
@@ -41,6 +43,7 @@ func TestSensorRun(t *testing.T) {
 	case <-time.After(time.Second):
 		assert.Errorf(t, "Got unexpected timeout")
 	}
+	assert.Equals(t, numTimesFuncCalled, 1)
 
 	// send it a sync message
 	sensor.SyncChan <- true
@@ -53,5 +56,6 @@ func TestSensorRun(t *testing.T) {
 	case <-time.After(time.Second):
 		assert.Errorf(t, "Got unexpected timeout")
 	}
+	assert.Equals(t, numTimesFuncCalled, 2)
 
 }

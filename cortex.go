@@ -24,9 +24,8 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 		log.Panicf("Must have exactly one actuator")
 	}
 
-	sensor := cortex.Sensors[0]
-
 	// install function to sensor which will stream training samples
+	sensor := cortex.Sensors[0]
 	sensorFunc := func(syncCounter int) []float64 {
 		sampleX := samples[syncCounter]
 		return sampleX.SampleInputs[0]
@@ -34,6 +33,14 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	sensor.SensorFunction = sensorFunc
 
 	// install function to actuator which will collect outputs
+	actuator := cortex.Actuators[0]
+	collectedActuatorVals := make([][]float64, len(samples))
+	collectedActuatorIndex := 0
+	actuatorFunc := func(outputs []float64) {
+		collectedActuatorVals[collectedActuatorIndex] = outputs
+		collectedActuatorIndex += 1
+	}
+	actuator.ActuatorFunction = actuatorFunc
 
 	/*for _, sample := range samples {
 		cortex.SyncSensors()

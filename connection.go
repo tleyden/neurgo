@@ -44,6 +44,26 @@ func createEmptyWeightedInputs(inbound []*InboundConnection) []*weightedInput {
 
 }
 
+func recordInput(weightedInputs []*weightedInput, dataMessage *DataMessage) {
+	for _, weightedInput := range weightedInputs {
+		if weightedInput.senderNodeId == dataMessage.SenderId {
+			weightedInput.inputs = dataMessage.Inputs
+		}
+	}
+}
+
+func receiveBarrierSatisfied(weightedInputs []*weightedInput) bool {
+	satisfied := true
+	for _, weightedInput := range weightedInputs {
+		if weightedInput.inputs == nil {
+			satisfied = false
+			break
+		}
+
+	}
+	return satisfied
+}
+
 func (connection *OutboundConnection) String() string {
 	return fmt.Sprintf("node: %v, datachan: %v",
 		connection.NodeId,

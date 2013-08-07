@@ -40,7 +40,7 @@ func (neuron *Neuron) Run() {
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case dataMessage := <-neuron.DataChan:
-			neuron.recordInput(weightedInputs, dataMessage)
+			recordInput(weightedInputs, dataMessage)
 		}
 
 		if closed {
@@ -49,7 +49,7 @@ func (neuron *Neuron) Run() {
 			break
 		}
 
-		if neuron.receiveBarrierSatisfied(weightedInputs) {
+		if receiveBarrierSatisfied(weightedInputs) {
 
 			log.Printf("Neuron %v received inputs: %v", neuron, weightedInputs)
 			scalarOutput := neuron.computeScalarOutput(weightedInputs)
@@ -98,18 +98,6 @@ func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, wei
 
 }
 
-func (neuron *Neuron) receiveBarrierSatisfied(weightedInputs []*weightedInput) bool {
-	satisfied := true
-	for _, weightedInput := range weightedInputs {
-		if weightedInput.inputs == nil {
-			satisfied = false
-			break
-		}
-
-	}
-	return satisfied
-}
-
 // In order to prevent deadlock, any neurons we have recurrent outbound
 // connections to must be "primed" by sending an empty signal.  A recurrent
 // outbound connection simply means that it's a connection to ourself or
@@ -156,15 +144,6 @@ func (neuron *Neuron) isConnectionRecurrent(connection *OutboundConnection) bool
 		return true
 	}
 	return false
-}
-
-func (neuron *Neuron) recordInput(weightedInputs []*weightedInput, dataMessage *DataMessage) {
-	for _, weightedInput := range weightedInputs {
-		if weightedInput.senderNodeId == dataMessage.SenderId {
-			weightedInput.inputs = dataMessage.Inputs
-		}
-	}
-
 }
 
 func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
