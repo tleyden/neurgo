@@ -82,18 +82,12 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
 	// install function to actuator which will collect outputs
 	actuator := cortex.Actuators[0]
-	collectedActuatorVals := make([][]float64, len(samples))
-	collectedActuatorIndex := 0
+	numTimesFuncCalled := 0
 	actuatorFunc := func(outputs []float64) {
-		log.Printf("actuator received output: %v w/ len: %d", outputs, len(outputs))
-		expected := samples[collectedActuatorIndex].ExpectedOutputs[0]
-		log.Printf("actuator expected output: %v", expected)
-
+		expected := samples[numTimesFuncCalled].ExpectedOutputs[0]
 		error := SumOfSquaresError(expected, outputs)
 		errorAccumulated += error
-
-		collectedActuatorVals[collectedActuatorIndex] = outputs
-		collectedActuatorIndex += 1
+		numTimesFuncCalled += 1
 		cortex.SyncChan <- actuator.NodeId
 	}
 	actuator.ActuatorFunction = actuatorFunc
@@ -109,7 +103,6 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	cortex.Shutdown()
 
 	// calculate fitness
-	log.Printf("collectedActuatorVals: %v", collectedActuatorVals)
 	log.Printf("errorAccumulated: %v", errorAccumulated)
 
 	return float64(1) / errorAccumulated
