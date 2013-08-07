@@ -2,13 +2,18 @@ package neurgo
 
 import (
 	"log"
+	"time"
 )
 
 type Cortex struct {
+	NodeId    *NodeId
 	Sensors   []*Sensor
 	Neurons   []*Neuron
 	Actuators []*Actuator
+	SyncChan  chan *NodeId
 }
+
+type ActuatorBarrier map[*NodeId]bool
 
 func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
@@ -39,15 +44,68 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	actuatorFunc := func(outputs []float64) {
 		collectedActuatorVals[collectedActuatorIndex] = outputs
 		collectedActuatorIndex += 1
+		cortex.SyncChan <- actuator.NodeId
 	}
 	actuator.ActuatorFunction = actuatorFunc
 
-	/*for _, sample := range samples {
-		cortex.SyncSensors()
-		cortex.SyncActuators()
-	}*/
+	/*
 
-	// make sure collected outputs match expected outputs
+		for _, sample := range samples {
+			cortex.SyncSensors()
+			cortex.SyncActuators()
+		}
 
-	return 0
+
+		// calculate fitness
+	*/
+
+	return 0 // return fitness
+}
+
+func (cortex *Cortex) SyncSensors() {
+	for _, sensor := range cortex.Sensors {
+		select {
+		case sensor.SyncChan <- true:
+			log.Printf("Sync -> %v", sensor)
+		case <-time.After(time.Second):
+			log.Panicf("Unable to send Sync message to sensor %v", sensor)
+		}
+	}
+
+}
+
+func (cortex *Cortex) SyncActuators() {
+	actuatorBarrier := cortex.createActuatorBarrier()
+	for {
+
+		select {
+		case senderNodeId := <-cortex.SyncChan:
+			log.Printf("Cortex received Sync from -> %v", senderNodeId)
+			actuatorBarrier[senderNodeId] = true
+		case <-time.After(time.Second):
+			log.Panicf("Timeout waiting for actuator sync message")
+		}
+
+		if cortex.isBarrierSatisfied(actuatorBarrier) {
+			break
+		}
+
+	}
+}
+
+func (cortex *Cortex) createActuatorBarrier() ActuatorBarrier {
+	actuatorBarrier := make(ActuatorBarrier)
+	for _, actuator := range cortex.Actuators {
+		actuatorBarrier[actuator.NodeId] = false
+	}
+	return actuatorBarrier
+}
+
+func (cortex *Cortex) isBarrierSatisfied(barrier ActuatorBarrier) bool {
+	for _, value := range barrier {
+		if value == false {
+			return false
+		}
+	}
+	return true
 }

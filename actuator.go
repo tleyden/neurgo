@@ -135,9 +135,7 @@ func (actuator *Actuator) Init() {
 		msg := "Warn: %v Init() called, but already had data channel"
 		log.Printf(msg, actuator)
 	}
-
 	actuator.wg.Add(1) // TODO: make sure Init() not called twice!
-
 }
 
 func (actuator *Actuator) ConnectInbound(connectable InboundConnectable) {

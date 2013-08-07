@@ -1,5 +1,14 @@
 package neurgo
 
+type NodeType int
+
+const (
+	SENSOR = iota
+	NEURON
+	ACTUATOR
+	CORTEX
+)
+
 type NodeId struct {
 	UUID       string
 	NodeType   NodeType
@@ -31,4 +40,11 @@ func NewActuatorId(UUID string, LayerIndex float64) *NodeId {
 		LayerIndex: LayerIndex,
 	}
 
+}
+
+func NewCortexId(UUID string) *NodeId {
+	return &NodeId{
+		UUID:     UUID,
+		NodeType: CORTEX,
+	}
 }

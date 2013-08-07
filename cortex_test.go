@@ -5,6 +5,29 @@ import (
 	"testing"
 )
 
+func TestSyncActuators(t *testing.T) {
+
+	actuatorNodeId := NewActuatorId("actuator", 0.5)
+	actuator := &Actuator{
+		NodeId:       actuatorNodeId,
+		VectorLength: 1,
+	}
+
+	syncChan := make(chan *NodeId, 1)
+
+	cortexNodeId := NewCortexId("cortex")
+	cortex := &Cortex{
+		NodeId:    cortexNodeId,
+		Actuators: []*Actuator{actuator},
+		SyncChan:  syncChan,
+	}
+
+	syncChan <- actuatorNodeId
+
+	cortex.SyncActuators()
+
+}
+
 func TestCortex(t *testing.T) {
 
 	xnorCortex := XnorCortex(t)
