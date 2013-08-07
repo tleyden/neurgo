@@ -1,12 +1,12 @@
 package neurgo
 
-type NodeType int
+type NodeType string
 
 const (
-	SENSOR = iota
-	NEURON
-	ACTUATOR
-	CORTEX
+	SENSOR   = "SENSOR"
+	NEURON   = "NEURON"
+	ACTUATOR = "ACTUATOR"
+	CORTEX   = "CORTEX"
 )
 
 type NodeId struct {
