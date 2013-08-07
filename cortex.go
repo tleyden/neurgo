@@ -15,6 +15,46 @@ type Cortex struct {
 
 type ActuatorBarrier map[*NodeId]bool
 
+func (cortex *Cortex) Run() {
+
+	cortex.checkRunnable()
+
+	for _, sensor := range cortex.Sensors {
+		go sensor.Run()
+	}
+	for _, neuron := range cortex.Neurons {
+		go neuron.Run()
+	}
+	for _, actuator := range cortex.Actuators {
+		go actuator.Run()
+	}
+}
+
+func (cortex *Cortex) Shutdown() {
+	for _, sensor := range cortex.Sensors {
+		sensor.Shutdown()
+	}
+	for _, neuron := range cortex.Neurons {
+		neuron.Shutdown()
+	}
+	for _, actuator := range cortex.Actuators {
+		actuator.Shutdown()
+	}
+	cortex.SyncChan = nil
+}
+
+func (cortex *Cortex) Init() {
+	if cortex.SyncChan == nil {
+		cortex.SyncChan = make(chan *NodeId, 1)
+	}
+}
+
+func (cortex *Cortex) checkRunnable() {
+	if cortex.SyncChan == nil {
+		log.Panicf("cortex.SyncChan is nil")
+	}
+}
+
 func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
 	errorAccumulated := float64(0)
@@ -48,16 +88,18 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	}
 	actuator.ActuatorFunction = actuatorFunc
 
-	/*
+	cortex.Init()
+	go cortex.Run()
 
-		for _, sample := range samples {
-			cortex.SyncSensors()
-			cortex.SyncActuators()
-		}
+	for _ = range samples {
+		cortex.SyncSensors()
+		cortex.SyncActuators()
+	}
 
+	cortex.Shutdown()
 
-		// calculate fitness
-	*/
+	// calculate fitness
+	log.Printf("collectedActuatorVals: %v", collectedActuatorVals)
 
 	return 0 // return fitness
 }

@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
+	"log"
 	"testing"
 )
 
@@ -21,6 +22,7 @@ func TestSyncActuators(t *testing.T) {
 		Actuators: []*Actuator{actuator},
 		SyncChan:  syncChan,
 	}
+	cortex.Init()
 
 	syncChan <- actuatorNodeId
 
@@ -28,17 +30,17 @@ func TestSyncActuators(t *testing.T) {
 
 }
 
-func TestCortex(t *testing.T) {
+func TestCortexFitness(t *testing.T) {
 
 	xnorCortex := XnorCortex(t)
 	assert.True(t, xnorCortex != nil)
 
 	// inputs + expected outputs
-	// examples := xnorTrainingSamples()
+	examples := xnorTrainingSamples()
 
-	// verify neural network
-	// verified := xnorCortex.Verify(examples)
-	// assert.True(t, verified)
+	// get the fitness
+	fitness := xnorCortex.Fitness(examples)
+	log.Printf("cortex fitness: %v", fitness)
 
 	assert.True(t, true)
 
@@ -71,6 +73,7 @@ func XnorCortex(t *testing.T) *Cortex {
 		NodeId:       sensorNodeId,
 		VectorLength: 2,
 	}
+	sensor.Init()
 
 	actuator := &Actuator{
 		NodeId:       actuatorNodeId,
