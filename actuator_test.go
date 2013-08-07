@@ -8,6 +8,7 @@ import (
 func TestActuatorRun(t *testing.T) {
 
 	fakeNodeId := NewNeuronId("fake-node", 0.25)
+
 	actuatorNodeId := NewActuatorId("actuator", 0.5)
 
 	collectedActuatorVals := make([][]float64, 1)
@@ -19,9 +20,10 @@ func TestActuatorRun(t *testing.T) {
 
 	actuator := &Actuator{
 		NodeId:           actuatorNodeId,
-		VectorLength:     2,
+		VectorLength:     0,
 		ActuatorFunction: actuatorFunc,
 	}
+
 	actuator.Init()
 	go actuator.Run()
 	// send it a message

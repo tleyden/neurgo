@@ -13,7 +13,7 @@ type Actuator struct {
 	Inbound          []*InboundConnection
 	Closing          chan chan bool
 	DataChan         chan *DataMessage
-	VectorLength     uint
+	VectorLength     int
 	ActuatorFunction ActuatorFunction
 	wg               sync.WaitGroup
 }
@@ -116,6 +116,13 @@ func (actuator *Actuator) checkRunnable() {
 
 	if actuator.ActuatorFunction == nil {
 		msg := fmt.Sprintf("not expecting actuator.ActuatorFunction to be nil")
+		panic(msg)
+	}
+
+	if len(actuator.Inbound) != actuator.VectorLength {
+		msg := fmt.Sprintf("# of inbound (%d) != VectorLength (%d)",
+			len(actuator.Inbound),
+			actuator.VectorLength)
 		panic(msg)
 	}
 

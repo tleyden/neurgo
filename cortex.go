@@ -19,6 +19,9 @@ func (cortex *Cortex) Run() {
 
 	cortex.checkRunnable()
 
+	// TODO: merge slices, create Runnable() interface
+	// and make into single loop
+
 	for _, sensor := range cortex.Sensors {
 		go sensor.Run()
 	}
@@ -82,6 +85,7 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	collectedActuatorVals := make([][]float64, len(samples))
 	collectedActuatorIndex := 0
 	actuatorFunc := func(outputs []float64) {
+		log.Printf("actuator received output: %v w/ len: %d", outputs, len(outputs))
 		collectedActuatorVals[collectedActuatorIndex] = outputs
 		collectedActuatorIndex += 1
 		cortex.SyncChan <- actuator.NodeId

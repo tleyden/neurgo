@@ -37,6 +37,7 @@ func TestCortexFitness(t *testing.T) {
 
 	// inputs + expected outputs
 	examples := xnorTrainingSamples()
+	log.Printf("training samples: %v", examples)
 
 	// get the fitness
 	fitness := xnorCortex.Fitness(examples)
@@ -53,6 +54,8 @@ func XnorCortex(t *testing.T) *Cortex {
 	sensorNodeId := NewSensorId("sensor", 0.0)
 	hiddenNeuron1NodeId := NewNeuronId("hidden-neuron1", 0.25)
 	hiddenNeuron2NodeId := NewNeuronId("hidden-neuron2", 0.25)
+	outputNeuronNodeIde := NewNeuronId("output-neuron", 0.35)
+
 	actuatorNodeId := NewActuatorId("actuator", 0.5)
 
 	hiddenNeuron1 := &Neuron{
@@ -68,6 +71,13 @@ func XnorCortex(t *testing.T) *Cortex {
 		Bias:               10,
 	}
 	hiddenNeuron2.Init()
+
+	outputNeuron := &Neuron{
+		ActivationFunction: Sigmoid,
+		NodeId:             outputNeuronNodeIde,
+		Bias:               -10,
+	}
+	outputNeuron.Init()
 
 	sensor := &Sensor{
 		NodeId:       sensorNodeId,
@@ -91,19 +101,24 @@ func XnorCortex(t *testing.T) *Cortex {
 	assert.Equals(t, len(hiddenNeuron1.Inbound), 1)
 	assert.Equals(t, len(hiddenNeuron2.Inbound), 1)
 
-	hiddenNeuron1.ConnectOutbound(actuator)
-	actuator.ConnectInbound(hiddenNeuron1)
+	hiddenNeuron1.ConnectOutbound(outputNeuron)
+	outputNeuron.ConnectInboundWeighted(hiddenNeuron1, []float64{20})
 
-	hiddenNeuron2.ConnectOutbound(actuator)
-	actuator.ConnectInbound(hiddenNeuron2)
+	hiddenNeuron2.ConnectOutbound(outputNeuron)
+	outputNeuron.ConnectInboundWeighted(hiddenNeuron2, []float64{20})
 
 	assert.Equals(t, len(hiddenNeuron1.Outbound), 1)
 	assert.Equals(t, len(hiddenNeuron2.Outbound), 1)
-	assert.Equals(t, len(actuator.Inbound), 2)
+	assert.Equals(t, len(outputNeuron.Inbound), 2)
+
+	outputNeuron.ConnectOutbound(actuator)
+	actuator.ConnectInbound(outputNeuron)
+	assert.Equals(t, len(outputNeuron.Outbound), 1)
+	assert.Equals(t, len(actuator.Inbound), 1)
 
 	cortex := &Cortex{
 		Sensors:   []*Sensor{sensor},
-		Neurons:   []*Neuron{hiddenNeuron1, hiddenNeuron2},
+		Neurons:   []*Neuron{hiddenNeuron1, hiddenNeuron2, outputNeuron},
 		Actuators: []*Actuator{actuator},
 	}
 
