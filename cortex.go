@@ -86,6 +86,12 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	collectedActuatorIndex := 0
 	actuatorFunc := func(outputs []float64) {
 		log.Printf("actuator received output: %v w/ len: %d", outputs, len(outputs))
+		expected := samples[collectedActuatorIndex].ExpectedOutputs[0]
+		log.Printf("actuator expected output: %v", expected)
+
+		error := SumOfSquaresError(expected, outputs)
+		errorAccumulated += error
+
 		collectedActuatorVals[collectedActuatorIndex] = outputs
 		collectedActuatorIndex += 1
 		cortex.SyncChan <- actuator.NodeId
@@ -104,8 +110,10 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
 	// calculate fitness
 	log.Printf("collectedActuatorVals: %v", collectedActuatorVals)
+	log.Printf("errorAccumulated: %v", errorAccumulated)
 
-	return 0 // return fitness
+	return float64(1) / errorAccumulated
+
 }
 
 func (cortex *Cortex) SyncSensors() {

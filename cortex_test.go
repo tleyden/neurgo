@@ -43,7 +43,7 @@ func TestCortexFitness(t *testing.T) {
 	fitness := xnorCortex.Fitness(examples)
 	log.Printf("cortex fitness: %v", fitness)
 
-	assert.True(t, true)
+	assert.True(t, fitness >= 1e8)
 
 }
 
