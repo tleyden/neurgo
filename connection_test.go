@@ -29,6 +29,6 @@ func TestCreateEmptyWeightedInputs(t *testing.T) {
 
 	weightedInputs := createEmptyWeightedInputs(inbound)
 	assert.Equals(t, len(inbound), len(weightedInputs))
-	assert.Equals(t, inbound[0].NodeId, weightedInputs[0].senderNodeId)
+	assert.Equals(t, inbound[0].NodeId.UUID, weightedInputs[0].senderNodeUUID)
 
 }

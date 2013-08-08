@@ -51,7 +51,7 @@ func (neuron *Neuron) Run() {
 
 	for {
 
-		log.Printf("Neuron %v select().  datachan: %v", neuron, neuron.DataChan)
+		log.Printf("Neuron %v select().  datachan: %v", neuron.NodeId.UUID, neuron.DataChan)
 
 		select {
 		case responseChan := <-neuron.Closing:
@@ -59,7 +59,9 @@ func (neuron *Neuron) Run() {
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case dataMessage := <-neuron.DataChan:
+			log.Printf("Neuron %v recording input: %v", neuron.NodeId.UUID, dataMessage)
 			recordInput(weightedInputs, dataMessage)
+			log.Printf("Neuron %v new weightedInputs: %v", neuron.NodeId.UUID, weightedInputs)
 		}
 
 		if closed {
@@ -70,7 +72,7 @@ func (neuron *Neuron) Run() {
 
 		if receiveBarrierSatisfied(weightedInputs) {
 
-			log.Printf("Neuron %v received inputs: %v", neuron, weightedInputs)
+			log.Printf("Neuron %v barrier satisfied via inputs: %v", neuron.NodeId.UUID, weightedInputs)
 			scalarOutput := neuron.computeScalarOutput(weightedInputs)
 
 			dataMessage := &DataMessage{
@@ -83,7 +85,7 @@ func (neuron *Neuron) Run() {
 			weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
 
 		} else {
-			log.Printf("Neuron %v receive barrier not satisfied", neuron)
+			log.Printf("Neuron %v receive barrier not satisfied.  weightedInputs: %v", neuron.NodeId.UUID, weightedInputs)
 		}
 
 	}
@@ -126,7 +128,6 @@ func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, wei
 func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 
 	recurrentConnections := neuron.recurrentOutboundConnections()
-	log.Printf("Neuron %v recurrent connections: %v", neuron, recurrentConnections)
 	for _, recurrentConnection := range recurrentConnections {
 
 		inputs := []float64{0}
@@ -134,7 +135,6 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 			SenderId: neuron.NodeId,
 			Inputs:   inputs,
 		}
-		log.Printf("Neuron %v sending data %v to recurrent outbound: %v", neuron, dataMessage, recurrentConnection)
 		recurrentConnection.DataChan <- dataMessage
 	}
 
@@ -168,7 +168,7 @@ func (neuron *Neuron) isConnectionRecurrent(connection *OutboundConnection) bool
 func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 	for _, outboundConnection := range neuron.Outbound {
 		dataChan := outboundConnection.DataChan
-		log.Printf("Neuron %v scatter %v to: %v", neuron, dataMessage, outboundConnection)
+		log.Printf("Neuron %v scatter %v to: %v", neuron.NodeId.UUID, dataMessage, outboundConnection)
 		dataChan <- dataMessage
 	}
 }
@@ -176,16 +176,10 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 func (neuron *Neuron) Init() {
 	if neuron.Closing == nil {
 		neuron.Closing = make(chan chan bool)
-	} else {
-		msg := "Warn: %v Init() called, but already had closing channel"
-		log.Printf(msg, neuron)
 	}
 
 	if neuron.DataChan == nil {
 		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
-	} else {
-		msg := "Warn: %v Init() called, but already had data channel"
-		log.Printf(msg, neuron)
 	}
 
 	if neuron.wg == nil {
@@ -229,6 +223,14 @@ func (neuron *Neuron) checkRunnable() {
 		panic(msg)
 	}
 
+	if neuron.ActivationFunction == nil {
+
+		// TODO: fix this .. we need to serialize the name of
+		// the function, and when we deserialize, resolve to
+		// actual function
+		neuron.ActivationFunction = Sigmoid
+	}
+
 	if err := neuron.validateOutbound(); err != nil {
 		msg := fmt.Sprintf("invalid outbound connection(s): %v", err.Error())
 		panic(msg)
@@ -265,6 +267,8 @@ func (neuron *Neuron) weightedInputDotProductSum(weightedInputs []*weightedInput
 		weights := weightedInput.weights
 		inputVector := vector.NewFrom(inputs)
 		weightVector := vector.NewFrom(weights)
+		log.Printf("inputVector: %v", inputVector)
+		log.Printf("weightVector: %v", weightVector)
 		dotProduct, error := vector.DotProduct(inputVector, weightVector)
 		if error != nil {
 			t := "%T error performing dot product between %v and %v"

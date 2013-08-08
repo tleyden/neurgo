@@ -53,7 +53,6 @@ func (sensor *Sensor) Run() {
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case _ = <-sensor.SyncChan:
-			log.Printf("Sensor got value from SyncChan")
 			input := sensor.SensorFunction(syncCounter)
 			syncCounter += 1
 			dataMessage := &DataMessage{
@@ -75,22 +74,13 @@ func (sensor *Sensor) Run() {
 func (sensor *Sensor) Init() {
 	if sensor.Closing == nil {
 		sensor.Closing = make(chan chan bool)
-	} else {
-		msg := "Warn: %v Init() called, but already had closing channel"
-		log.Printf(msg, sensor)
 	}
-
 	if sensor.SyncChan == nil {
 		sensor.SyncChan = make(chan bool)
-	} else {
-		msg := "Warn: %v Init() called, but already had data channel"
-		log.Printf(msg, sensor)
 	}
-
 	if sensor.SensorFunction == nil {
 		// if there is no SensorFunction, create a default
 		// function which emits a 0-vector
-		log.Printf("No sensor function found, using defualt")
 		sensorFunc := func(syncCounter int) []float64 {
 			return make([]float64, sensor.VectorLength)
 		}
@@ -174,7 +164,7 @@ func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) {
 func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
 	for _, outboundConnection := range sensor.Outbound {
 		dataChan := outboundConnection.DataChan
-		log.Printf("Sensor %v scatter %v to: %v", sensor, dataMessage, outboundConnection)
+		log.Printf("Sensor %v scatter %v to: %v dataChan: %v", sensor.NodeId.UUID, dataMessage, outboundConnection, dataChan)
 		dataChan <- dataMessage
 	}
 }
@@ -186,10 +176,8 @@ func (sensor *Sensor) nodeId() *NodeId {
 func (sensor *Sensor) initOutboundConnections(nodeIdToDataMsg nodeIdToDataMsgMap) {
 	for _, outboundConnection := range sensor.Outbound {
 		if outboundConnection.DataChan == nil {
-			log.Printf("connection to %v has empty data chan, setting one.  map: %v", outboundConnection.NodeId, nodeIdToDataMsg)
 			dataChan := nodeIdToDataMsg[outboundConnection.NodeId.UUID]
 			if dataChan != nil {
-				log.Printf("outbound connection now has data chan")
 				outboundConnection.DataChan = dataChan
 			}
 		}

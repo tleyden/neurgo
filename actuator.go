@@ -48,7 +48,7 @@ func (actuator *Actuator) Run() {
 
 	for {
 
-		log.Printf("Actuator %v select().  datachan: %v", actuator, actuator.DataChan)
+		log.Printf("Actuator %v select().  datachan: %v", actuator.NodeId.UUID, actuator.DataChan)
 
 		select {
 		case responseChan := <-actuator.Closing:
@@ -67,7 +67,7 @@ func (actuator *Actuator) Run() {
 
 		if receiveBarrierSatisfied(weightedInputs) {
 
-			log.Printf("Actuator %v received inputs: %v", actuator, weightedInputs)
+			log.Printf("Actuator %v received inputs: %v", actuator.NodeId.UUID, weightedInputs)
 			scalarOutput := actuator.computeScalarOutput(weightedInputs)
 
 			actuator.ActuatorFunction(scalarOutput)
@@ -75,7 +75,7 @@ func (actuator *Actuator) Run() {
 			weightedInputs = createEmptyWeightedInputs(actuator.Inbound)
 
 		} else {
-			log.Printf("Actuator %v receive barrier not satisfied", actuator)
+			log.Printf("Actuator %v receive barrier not satisfied", actuator.NodeId.UUID)
 		}
 
 	}
@@ -149,22 +149,15 @@ func (actuator *Actuator) checkRunnable() {
 func (actuator *Actuator) Init() {
 	if actuator.Closing == nil {
 		actuator.Closing = make(chan chan bool)
-	} else {
-		msg := "Warn: %v Init() called, but already had closing channel"
-		log.Printf(msg, actuator)
 	}
 
 	if actuator.DataChan == nil {
 		actuator.DataChan = make(chan *DataMessage, len(actuator.Inbound))
-	} else {
-		msg := "Warn: %v Init() called, but already had data channel"
-		log.Printf(msg, actuator)
 	}
 
 	if actuator.ActuatorFunction == nil {
 		// if there is no ActuatorFunction, create a default
 		// function which does nothing
-		log.Printf("No actuator function found, using defualt")
 		actuatorFunc := func(outputs []float64) {}
 		actuator.ActuatorFunction = actuatorFunc
 	}

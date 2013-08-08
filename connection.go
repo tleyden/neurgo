@@ -25,17 +25,19 @@ type InboundConnectable interface {
 }
 
 type weightedInput struct {
-	senderNodeId *NodeId
-	weights      []float64
-	inputs       []float64
+	senderNodeUUID string
+	weights        []float64
+	inputs         []float64
 }
 
 func (connection *InboundConnection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		struct {
-			NodeId *NodeId
+			NodeId  *NodeId
+			Weights []float64
 		}{
-			NodeId: connection.NodeId,
+			NodeId:  connection.NodeId,
+			Weights: connection.Weights,
 		})
 }
 
@@ -53,9 +55,9 @@ func createEmptyWeightedInputs(inbound []*InboundConnection) []*weightedInput {
 	weightedInputs := make([]*weightedInput, len(inbound))
 	for i, inboundConnection := range inbound {
 		weightedInput := &weightedInput{
-			senderNodeId: inboundConnection.NodeId,
-			weights:      inboundConnection.Weights,
-			inputs:       nil,
+			senderNodeUUID: inboundConnection.NodeId.UUID,
+			weights:        inboundConnection.Weights,
+			inputs:         nil,
 		}
 		weightedInputs[i] = weightedInput
 	}
@@ -65,7 +67,7 @@ func createEmptyWeightedInputs(inbound []*InboundConnection) []*weightedInput {
 
 func recordInput(weightedInputs []*weightedInput, dataMessage *DataMessage) {
 	for _, weightedInput := range weightedInputs {
-		if weightedInput.senderNodeId == dataMessage.SenderId {
+		if weightedInput.senderNodeUUID == dataMessage.SenderId.UUID {
 			weightedInput.inputs = dataMessage.Inputs
 		}
 	}
@@ -93,7 +95,7 @@ func (connection *InboundConnection) String() string {
 
 func (weightedInput *weightedInput) String() string {
 	return fmt.Sprintf("sender: %v, weights: %v, inputs: %v",
-		weightedInput.senderNodeId,
+		weightedInput.senderNodeUUID,
 		weightedInput.weights,
 		weightedInput.inputs,
 	)

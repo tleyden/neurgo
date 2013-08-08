@@ -160,7 +160,6 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	// install function to sensor which will stream training samples
 	sensor := cortex.Sensors[0]
 	sensorFunc := func(syncCounter int) []float64 {
-		log.Printf("custom sensor function called")
 		sampleX := samples[syncCounter]
 		return sampleX.SampleInputs[0]
 	}
@@ -170,7 +169,6 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	actuator := cortex.Actuators[0]
 	numTimesFuncCalled := 0
 	actuatorFunc := func(outputs []float64) {
-		log.Printf("custom actuator function called")
 		expected := samples[numTimesFuncCalled].ExpectedOutputs[0]
 		error := SumOfSquaresError(expected, outputs)
 		errorAccumulated += error
