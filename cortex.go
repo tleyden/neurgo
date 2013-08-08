@@ -70,6 +70,16 @@ func (cortex *Cortex) Init() {
 	if cortex.SyncChan == nil {
 		cortex.SyncChan = make(chan *NodeId, 1)
 	}
+	for _, sensor := range cortex.Sensors {
+		sensor.Init()
+	}
+	for _, neuron := range cortex.Neurons {
+		neuron.Init()
+	}
+	for _, actuator := range cortex.Actuators {
+		actuator.Init()
+	}
+
 }
 
 func (cortex *Cortex) checkRunnable() {
