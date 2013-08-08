@@ -164,6 +164,7 @@ func (actuator *Actuator) Init() {
 	if actuator.ActuatorFunction == nil {
 		// if there is no ActuatorFunction, create a default
 		// function which does nothing
+		log.Printf("No actuator function found, using defualt")
 		actuatorFunc := func(outputs []float64) {}
 		actuator.ActuatorFunction = actuatorFunc
 	}

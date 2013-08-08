@@ -8,6 +8,25 @@ import (
 	"testing"
 )
 
+func TestCortexCopy(t *testing.T) {
+
+	xnorCortex := XnorCortex(t)
+	xnorCortexCopy := xnorCortex.Copy()
+
+	xnorCortexCopy.Init()
+	sensor := xnorCortexCopy.Sensors[0]
+	assert.True(t, sensor.Outbound[0].DataChan != nil)
+
+	// inputs + expected outputs
+	examples := xnorTrainingSamples()
+
+	// get the fitness
+	fitness := xnorCortexCopy.Fitness(examples)
+
+	assert.True(t, fitness >= 1e8)
+
+}
+
 func TestCortexJsonMarshal(t *testing.T) {
 	xnorCortex := XnorCortex(t)
 	json, err := json.Marshal(xnorCortex)

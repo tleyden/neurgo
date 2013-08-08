@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -89,6 +90,7 @@ func (sensor *Sensor) Init() {
 	if sensor.SensorFunction == nil {
 		// if there is no SensorFunction, create a default
 		// function which emits a 0-vector
+		log.Printf("No sensor function found, using defualt")
 		sensorFunc := func(syncCounter int) []float64 {
 			return make([]float64, sensor.VectorLength)
 		}
@@ -135,6 +137,21 @@ func (sensor *Sensor) checkRunnable() {
 		panic(msg)
 	}
 
+	if err := sensor.validateOutbound(); err != nil {
+		msg := fmt.Sprintf("invalid outbound connection(s): %v", err.Error())
+		panic(msg)
+	}
+
+}
+
+func (sensor *Sensor) validateOutbound() error {
+	for _, connection := range sensor.Outbound {
+		if connection.DataChan == nil {
+			msg := fmt.Sprintf("%v has empty DataChan", connection)
+			return errors.New(msg)
+		}
+	}
+	return nil
 }
 
 func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) {
@@ -164,4 +181,17 @@ func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
 
 func (sensor *Sensor) nodeId() *NodeId {
 	return sensor.NodeId
+}
+
+func (sensor *Sensor) initOutboundConnections(nodeIdToDataMsg nodeIdToDataMsgMap) {
+	for _, outboundConnection := range sensor.Outbound {
+		if outboundConnection.DataChan == nil {
+			log.Printf("connection to %v has empty data chan, setting one.  map: %v", outboundConnection.NodeId, nodeIdToDataMsg)
+			dataChan := nodeIdToDataMsg[outboundConnection.NodeId.UUID]
+			if dataChan != nil {
+				log.Printf("outbound connection now has data chan")
+				outboundConnection.DataChan = dataChan
+			}
+		}
+	}
 }

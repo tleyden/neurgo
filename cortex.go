@@ -35,6 +35,27 @@ func (cortex *Cortex) String() string {
 	return JsonString(cortex)
 }
 
+func (cortex *Cortex) Copy() *Cortex {
+
+	// serialize to json
+	jsonBytes, err := json.Marshal(cortex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// new cortex
+	cortexCopy := &Cortex{}
+
+	// deserialize json into new cortex
+	err = json.Unmarshal(jsonBytes, cortexCopy)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return cortexCopy
+
+}
+
 func (cortex *Cortex) Run() {
 
 	cortex.checkRunnable()
@@ -80,6 +101,40 @@ func (cortex *Cortex) Init() {
 		actuator.Init()
 	}
 
+	cortex.initOutboundConnections()
+
+}
+
+// We may be in a state where the outbound connections
+// do not have data channels associated with them, even
+// though the data channels exist.  (eg, when deserializing
+// from json).  Fix this by seeking out those outbound
+// connections and setting the data channels.
+func (cortex *Cortex) initOutboundConnections() {
+
+	// build a nodeId -> dataChan map
+	nodeIdToDataMsg := cortex.nodeIdToDataMsg()
+
+	// walk all sensors and neurons and fix up their outbound connections
+	for _, sensor := range cortex.Sensors {
+		sensor.initOutboundConnections(nodeIdToDataMsg)
+	}
+	for _, neuron := range cortex.Neurons {
+		neuron.initOutboundConnections(nodeIdToDataMsg)
+	}
+
+}
+
+func (cortex *Cortex) nodeIdToDataMsg() nodeIdToDataMsgMap {
+	nodeIdToDataMsg := make(nodeIdToDataMsgMap)
+	for _, neuron := range cortex.Neurons {
+		nodeIdToDataMsg[neuron.NodeId.UUID] = neuron.DataChan
+	}
+	for _, actuator := range cortex.Actuators {
+		nodeIdToDataMsg[actuator.NodeId.UUID] = actuator.DataChan
+	}
+	return nodeIdToDataMsg
+
 }
 
 func (cortex *Cortex) checkRunnable() {
@@ -105,6 +160,7 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	// install function to sensor which will stream training samples
 	sensor := cortex.Sensors[0]
 	sensorFunc := func(syncCounter int) []float64 {
+		log.Printf("custom sensor function called")
 		sampleX := samples[syncCounter]
 		return sampleX.SampleInputs[0]
 	}
@@ -114,6 +170,7 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	actuator := cortex.Actuators[0]
 	numTimesFuncCalled := 0
 	actuatorFunc := func(outputs []float64) {
+		log.Printf("custom actuator function called")
 		expected := samples[numTimesFuncCalled].ExpectedOutputs[0]
 		error := SumOfSquaresError(expected, outputs)
 		errorAccumulated += error

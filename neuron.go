@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/proxypoke/vector"
 	"log"
@@ -228,6 +229,21 @@ func (neuron *Neuron) checkRunnable() {
 		panic(msg)
 	}
 
+	if err := neuron.validateOutbound(); err != nil {
+		msg := fmt.Sprintf("invalid outbound connection(s): %v", err.Error())
+		panic(msg)
+	}
+
+}
+
+func (neuron *Neuron) validateOutbound() error {
+	for _, connection := range neuron.Outbound {
+		if connection.DataChan == nil {
+			msg := fmt.Sprintf("%v has empty DataChan", connection)
+			return errors.New(msg)
+		}
+	}
+	return nil
 }
 
 func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float64 {
@@ -268,4 +284,15 @@ func (neuron *Neuron) dataChan() chan *DataMessage {
 
 func (neuron *Neuron) nodeId() *NodeId {
 	return neuron.NodeId
+}
+
+func (neuron *Neuron) initOutboundConnections(nodeIdToDataMsg nodeIdToDataMsgMap) {
+	for _, outboundConnection := range neuron.Outbound {
+		if outboundConnection.DataChan == nil {
+			dataChan := nodeIdToDataMsg[outboundConnection.NodeId.UUID]
+			if dataChan != nil {
+				outboundConnection.DataChan = dataChan
+			}
+		}
+	}
 }
