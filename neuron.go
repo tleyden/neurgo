@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/proxypoke/vector"
 	"log"
@@ -18,6 +19,21 @@ type Neuron struct {
 	DataChan           chan *DataMessage
 	ActivationFunction ActivationFunction
 	wg                 sync.WaitGroup
+}
+
+func (neuron *Neuron) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId   *NodeId
+			Bias     float64
+			Inbound  []*InboundConnection
+			Outbound []*OutboundConnection
+		}{
+			NodeId:   neuron.NodeId,
+			Bias:     neuron.Bias,
+			Inbound:  neuron.Inbound,
+			Outbound: neuron.Outbound,
+		})
 }
 
 func (neuron *Neuron) Run() {

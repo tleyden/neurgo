@@ -1,10 +1,23 @@
 package neurgo
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/couchbaselabs/go.assert"
 	"log"
 	"testing"
 )
+
+func TestCortexJsonMarshal(t *testing.T) {
+	xnorCortex := XnorCortex(t)
+	json, err := json.Marshal(xnorCortex)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.True(t, err == nil)
+	jsonString := fmt.Sprintf("%s", json)
+	log.Printf("jsonString: %v", jsonString)
+}
 
 func TestSyncActuators(t *testing.T) {
 
@@ -116,7 +129,10 @@ func XnorCortex(t *testing.T) *Cortex {
 	assert.Equals(t, len(outputNeuron.Outbound), 1)
 	assert.Equals(t, len(actuator.Inbound), 1)
 
+	nodeId := NewCortexId("cortex")
+
 	cortex := &Cortex{
+		NodeId:    nodeId,
 		Sensors:   []*Sensor{sensor},
 		Neurons:   []*Neuron{hiddenNeuron1, hiddenNeuron2, outputNeuron},
 		Actuators: []*Actuator{actuator},

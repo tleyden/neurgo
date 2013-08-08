@@ -1,10 +1,43 @@
 package neurgo
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/couchbaselabs/go.assert"
+	"log"
 	"testing"
 	"time"
 )
+
+func TestSensorJsonMarshal(t *testing.T) {
+
+	fakeNodeId := NewNeuronId("fake-node", 0.25)
+	dataChan := make(chan *DataMessage, 1)
+	outboundConnection := &OutboundConnection{
+		NodeId:   fakeNodeId,
+		DataChan: dataChan,
+	}
+
+	sensorFunc := func(syncCounter int) []float64 {
+		return []float64{0}
+	}
+
+	sensorNodeId := NewSensorId("sensor", 0.0)
+	sensor := &Sensor{
+		NodeId:         sensorNodeId,
+		VectorLength:   2,
+		SensorFunction: sensorFunc,
+		Outbound:       []*OutboundConnection{outboundConnection},
+	}
+
+	json, err := json.Marshal(sensor)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.True(t, err == nil)
+	jsonString := fmt.Sprintf("%s", json)
+	log.Printf("jsonString: %v", jsonString)
+}
 
 func TestSensorRun(t *testing.T) {
 

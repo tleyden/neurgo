@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestJsonMarshal(t *testing.T) {
+func TestNodeIdJsonMarshal(t *testing.T) {
 	fakeNodeId := NewNeuronId("fake-node", 0.25)
 	json, err := json.Marshal(fakeNodeId)
 	if err != nil {

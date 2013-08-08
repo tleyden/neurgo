@@ -1,9 +1,30 @@
 package neurgo
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/couchbaselabs/go.assert"
+	"log"
 	"testing"
 )
+
+func TestActuatorJsonMarshal(t *testing.T) {
+
+	actuatorNodeId := NewActuatorId("actuator", 0.5)
+
+	actuator := &Actuator{
+		NodeId:       actuatorNodeId,
+		VectorLength: 0,
+	}
+
+	json, err := json.Marshal(actuator)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.True(t, err == nil)
+	jsonString := fmt.Sprintf("%s", json)
+	log.Printf("jsonString: %v", jsonString)
+}
 
 func TestActuatorRun(t *testing.T) {
 

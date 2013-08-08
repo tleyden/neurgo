@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
@@ -16,6 +17,19 @@ type Actuator struct {
 	VectorLength     int
 	ActuatorFunction ActuatorFunction
 	wg               sync.WaitGroup
+}
+
+func (actuator *Actuator) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId       *NodeId
+			VectorLength int
+			Inbound      []*InboundConnection
+		}{
+			NodeId:       actuator.NodeId,
+			VectorLength: actuator.VectorLength,
+			Inbound:      actuator.Inbound,
+		})
 }
 
 func (actuator *Actuator) Run() {

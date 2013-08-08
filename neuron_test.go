@@ -1,6 +1,8 @@
 package neurgo
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/couchbaselabs/go.assert"
 	"log"
 	"testing"
@@ -9,6 +11,22 @@ import (
 
 func identityActivationFunction() ActivationFunction {
 	return func(x float64) float64 { return x }
+}
+
+func TestNeuronJsonMarshal(t *testing.T) {
+	neuronNodeId := NewNeuronId("neuron", 0.25)
+	neuron := &Neuron{
+		ActivationFunction: Sigmoid,
+		NodeId:             neuronNodeId,
+		Bias:               -30,
+	}
+	json, err := json.Marshal(neuron)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.True(t, err == nil)
+	jsonString := fmt.Sprintf("%s", json)
+	log.Printf("jsonString: %v", jsonString)
 }
 
 func TestRecurrentNeuron(t *testing.T) {

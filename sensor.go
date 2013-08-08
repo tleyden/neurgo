@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
@@ -16,6 +17,19 @@ type Sensor struct {
 	SyncChan       chan bool
 	SensorFunction SensorFunction
 	wg             sync.WaitGroup
+}
+
+func (sensor *Sensor) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId       *NodeId
+			VectorLength uint
+			Outbound     []*OutboundConnection
+		}{
+			NodeId:       sensor.NodeId,
+			VectorLength: sensor.VectorLength,
+			Outbound:     sensor.Outbound,
+		})
 }
 
 func (sensor *Sensor) Run() {

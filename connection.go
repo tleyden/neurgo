@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -27,6 +28,24 @@ type weightedInput struct {
 	senderNodeId *NodeId
 	weights      []float64
 	inputs       []float64
+}
+
+func (connection *InboundConnection) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId *NodeId
+		}{
+			NodeId: connection.NodeId,
+		})
+}
+
+func (connection *OutboundConnection) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId *NodeId
+		}{
+			NodeId: connection.NodeId,
+		})
 }
 
 func createEmptyWeightedInputs(inbound []*InboundConnection) []*weightedInput {

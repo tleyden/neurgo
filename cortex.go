@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"encoding/json"
 	"log"
 	"time"
 )
@@ -14,6 +15,21 @@ type Cortex struct {
 }
 
 type ActuatorBarrier map[*NodeId]bool
+
+func (cortex *Cortex) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId    *NodeId
+			Sensors   []*Sensor
+			Neurons   []*Neuron
+			Actuators []*Actuator
+		}{
+			NodeId:    cortex.NodeId,
+			Sensors:   cortex.Sensors,
+			Neurons:   cortex.Neurons,
+			Actuators: cortex.Actuators,
+		})
+}
 
 func (cortex *Cortex) Run() {
 
