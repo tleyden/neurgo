@@ -84,10 +84,11 @@ func receiveBarrierSatisfied(weightedInputs []*weightedInput) bool {
 }
 
 func (connection *OutboundConnection) String() string {
-	return fmt.Sprintf("node: %v, datachan: %v",
-		connection.NodeId,
-		connection.DataChan,
-	)
+	return JsonString(connection)
+}
+
+func (connection *InboundConnection) String() string {
+	return JsonString(connection)
 }
 
 func (weightedInput *weightedInput) String() string {

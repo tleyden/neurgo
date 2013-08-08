@@ -31,6 +31,10 @@ func (cortex *Cortex) MarshalJSON() ([]byte, error) {
 		})
 }
 
+func (cortex *Cortex) String() string {
+	return JsonString(cortex)
+}
+
 func (cortex *Cortex) Run() {
 
 	cortex.checkRunnable()

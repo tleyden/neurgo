@@ -90,7 +90,7 @@ func (neuron *Neuron) Run() {
 }
 
 func (neuron *Neuron) String() string {
-	return fmt.Sprintf("%v", neuron.NodeId)
+	return JsonString(neuron)
 }
 
 func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) {

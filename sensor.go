@@ -32,6 +32,10 @@ func (sensor *Sensor) MarshalJSON() ([]byte, error) {
 		})
 }
 
+func (sensor *Sensor) String() string {
+	return JsonString(sensor)
+}
+
 func (sensor *Sensor) Run() {
 
 	defer sensor.wg.Done()
@@ -146,8 +150,4 @@ func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
 
 func (sensor *Sensor) nodeId() *NodeId {
 	return sensor.NodeId
-}
-
-func (sensor *Sensor) String() string {
-	return fmt.Sprintf("%v", sensor.NodeId)
 }

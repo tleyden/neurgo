@@ -32,6 +32,10 @@ func (actuator *Actuator) MarshalJSON() ([]byte, error) {
 		})
 }
 
+func (actuator *Actuator) String() string {
+	return JsonString(actuator)
+}
+
 func (actuator *Actuator) Run() {
 
 	defer actuator.wg.Done()
@@ -176,8 +180,4 @@ func (actuator *Actuator) dataChan() chan *DataMessage {
 
 func (actuator *Actuator) nodeId() *NodeId {
 	return actuator.NodeId
-}
-
-func (actuator *Actuator) String() string {
-	return fmt.Sprintf("%v", actuator.NodeId)
 }
