@@ -53,9 +53,8 @@ func TestCortexInit(t *testing.T) {
 	neuron := cortex.Neurons[0]
 	assert.True(t, neuron.DataChan != nil)
 
-	// gives panic not expecting sensor.SensorFunction to be nil
-	// cortex.Run()
-	// cortex.Shutdown()
+	cortex.Run()
+	cortex.Shutdown()
 
 }
 

@@ -160,6 +160,14 @@ func (actuator *Actuator) Init() {
 		msg := "Warn: %v Init() called, but already had data channel"
 		log.Printf(msg, actuator)
 	}
+
+	if actuator.ActuatorFunction == nil {
+		// if there is no ActuatorFunction, create a default
+		// function which does nothing
+		actuatorFunc := func(outputs []float64) {}
+		actuator.ActuatorFunction = actuatorFunc
+	}
+
 	actuator.wg.Add(1) // TODO: make sure Init() not called twice!
 }
 

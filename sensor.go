@@ -85,6 +85,16 @@ func (sensor *Sensor) Init() {
 		msg := "Warn: %v Init() called, but already had data channel"
 		log.Printf(msg, sensor)
 	}
+
+	if sensor.SensorFunction == nil {
+		// if there is no SensorFunction, create a default
+		// function which emits a 0-vector
+		sensorFunc := func(syncCounter int) []float64 {
+			return make([]float64, sensor.VectorLength)
+		}
+		sensor.SensorFunction = sensorFunc
+	}
+
 	sensor.wg.Add(1) // TODO: make sure Init() not called twice!
 }
 
