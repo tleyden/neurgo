@@ -1,39 +1,9 @@
 package neurgo
 
-import (
-	"github.com/couchbaselabs/go.assert"
-	"testing"
-)
+func XnorCortex() *Cortex {
 
-func TestCreateEmptyWeightedInputs(t *testing.T) {
+	// create network nodes
 
-	nodeId_1 := &NodeId{UUID: "node-1", NodeType: NEURON}
-	nodeId_2 := &NodeId{UUID: "node-2", NodeType: NEURON}
-
-	weights_1 := []float64{1, 1, 1, 1, 1}
-	weights_2 := []float64{1}
-
-	inboundConnection1 := &InboundConnection{
-		NodeId:  nodeId_1,
-		Weights: weights_1,
-	}
-	inboundConnection2 := &InboundConnection{
-		NodeId:  nodeId_2,
-		Weights: weights_2,
-	}
-
-	inbound := []*InboundConnection{
-		inboundConnection1,
-		inboundConnection2,
-	}
-
-	weightedInputs := createEmptyWeightedInputs(inbound)
-	assert.Equals(t, len(inbound), len(weightedInputs))
-	assert.Equals(t, inbound[0].NodeId.UUID, weightedInputs[0].senderNodeUUID)
-
-}
-
-func TestConnections(t *testing.T) {
 	sensorNodeId := NewSensorId("sensor", 0.0)
 	hiddenNeuron1NodeId := NewNeuronId("hidden-neuron1", 0.25)
 	hiddenNeuron2NodeId := NewNeuronId("hidden-neuron2", 0.25)
@@ -80,23 +50,39 @@ func TestConnections(t *testing.T) {
 	sensor.ConnectOutbound(hiddenNeuron2)
 	hiddenNeuron2.ConnectInboundWeighted(sensor, []float64{-20, -20})
 
-	assert.Equals(t, len(sensor.Outbound), 2)
-	assert.Equals(t, len(hiddenNeuron1.Inbound), 1)
-	assert.Equals(t, len(hiddenNeuron2.Inbound), 1)
-
 	hiddenNeuron1.ConnectOutbound(outputNeuron)
 	outputNeuron.ConnectInboundWeighted(hiddenNeuron1, []float64{20})
 
 	hiddenNeuron2.ConnectOutbound(outputNeuron)
 	outputNeuron.ConnectInboundWeighted(hiddenNeuron2, []float64{20})
 
-	assert.Equals(t, len(hiddenNeuron1.Outbound), 1)
-	assert.Equals(t, len(hiddenNeuron2.Outbound), 1)
-	assert.Equals(t, len(outputNeuron.Inbound), 2)
-
 	outputNeuron.ConnectOutbound(actuator)
 	actuator.ConnectInbound(outputNeuron)
-	assert.Equals(t, len(outputNeuron.Outbound), 1)
-	assert.Equals(t, len(actuator.Inbound), 1)
+
+	nodeId := NewCortexId("cortex")
+
+	cortex := &Cortex{
+		NodeId:    nodeId,
+		Sensors:   []*Sensor{sensor},
+		Neurons:   []*Neuron{hiddenNeuron1, hiddenNeuron2, outputNeuron},
+		Actuators: []*Actuator{actuator},
+	}
+
+	return cortex
+
+}
+
+func XnorTrainingSamples() []*TrainingSample {
+
+	// inputs + expected outputs
+	examples := []*TrainingSample{
+
+		// TODO: how to wrap this?
+		{SampleInputs: [][]float64{[]float64{0, 1}}, ExpectedOutputs: [][]float64{[]float64{0}}},
+		{SampleInputs: [][]float64{[]float64{1, 1}}, ExpectedOutputs: [][]float64{[]float64{1}}},
+		{SampleInputs: [][]float64{[]float64{1, 0}}, ExpectedOutputs: [][]float64{[]float64{0}}},
+		{SampleInputs: [][]float64{[]float64{0, 0}}, ExpectedOutputs: [][]float64{[]float64{1}}}}
+
+	return examples
 
 }
