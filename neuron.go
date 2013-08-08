@@ -18,7 +18,7 @@ type Neuron struct {
 	Closing            chan chan bool
 	DataChan           chan *DataMessage
 	ActivationFunction ActivationFunction
-	wg                 sync.WaitGroup
+	wg                 *sync.WaitGroup
 }
 
 func (neuron *Neuron) MarshalJSON() ([]byte, error) {
@@ -186,7 +186,12 @@ func (neuron *Neuron) Init() {
 		msg := "Warn: %v Init() called, but already had data channel"
 		log.Printf(msg, neuron)
 	}
-	neuron.wg.Add(1) // TODO: make sure Init() not called twice!
+
+	if neuron.wg == nil {
+		neuron.wg = &sync.WaitGroup{}
+		neuron.wg.Add(1)
+	}
+
 }
 
 func (neuron *Neuron) Shutdown() {

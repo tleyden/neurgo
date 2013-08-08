@@ -16,7 +16,7 @@ type Actuator struct {
 	DataChan         chan *DataMessage
 	VectorLength     int
 	ActuatorFunction ActuatorFunction
-	wg               sync.WaitGroup
+	wg               *sync.WaitGroup
 }
 
 func (actuator *Actuator) MarshalJSON() ([]byte, error) {
@@ -168,7 +168,11 @@ func (actuator *Actuator) Init() {
 		actuator.ActuatorFunction = actuatorFunc
 	}
 
-	actuator.wg.Add(1) // TODO: make sure Init() not called twice!
+	if actuator.wg == nil {
+		actuator.wg = &sync.WaitGroup{}
+		actuator.wg.Add(1)
+	}
+
 }
 
 func (actuator *Actuator) ConnectInbound(connectable InboundConnectable) {

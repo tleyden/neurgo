@@ -16,7 +16,7 @@ type Sensor struct {
 	Closing        chan chan bool
 	SyncChan       chan bool
 	SensorFunction SensorFunction
-	wg             sync.WaitGroup
+	wg             *sync.WaitGroup
 }
 
 func (sensor *Sensor) MarshalJSON() ([]byte, error) {
@@ -95,7 +95,11 @@ func (sensor *Sensor) Init() {
 		sensor.SensorFunction = sensorFunc
 	}
 
-	sensor.wg.Add(1) // TODO: make sure Init() not called twice!
+	if sensor.wg == nil {
+		sensor.wg = &sync.WaitGroup{}
+		sensor.wg.Add(1)
+	}
+
 }
 
 func (sensor *Sensor) Shutdown() {
