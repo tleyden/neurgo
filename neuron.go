@@ -9,8 +9,6 @@ import (
 	"sync"
 )
 
-type ActivationFunction func(float64) float64
-
 type Neuron struct {
 	NodeId             *NodeId
 	Bias               float64
@@ -18,22 +16,24 @@ type Neuron struct {
 	Outbound           []*OutboundConnection
 	Closing            chan chan bool
 	DataChan           chan *DataMessage
-	ActivationFunction ActivationFunction
+	ActivationFunction *EncodableActivation
 	wg                 *sync.WaitGroup
 }
 
 func (neuron *Neuron) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		struct {
-			NodeId   *NodeId
-			Bias     float64
-			Inbound  []*InboundConnection
-			Outbound []*OutboundConnection
+			NodeId             *NodeId
+			Bias               float64
+			Inbound            []*InboundConnection
+			Outbound           []*OutboundConnection
+			ActivationFunction *EncodableActivation
 		}{
-			NodeId:   neuron.NodeId,
-			Bias:     neuron.Bias,
-			Inbound:  neuron.Inbound,
-			Outbound: neuron.Outbound,
+			NodeId:             neuron.NodeId,
+			Bias:               neuron.Bias,
+			Inbound:            neuron.Inbound,
+			Outbound:           neuron.Outbound,
+			ActivationFunction: neuron.ActivationFunction,
 		})
 }
 
@@ -186,13 +186,15 @@ func (neuron *Neuron) Init() {
 		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
 	}
 
-	if neuron.ActivationFunction == nil {
+	/*
+		if neuron.ActivationFunction == nil {
 
-		// TODO: fix this .. we need to serialize the name of
-		// the function, and when we deserialize, resolve to
-		// actual function
-		neuron.ActivationFunction = Sigmoid
-	}
+			// TODO: fix this .. we need to serialize the name of
+			// the function, and when we deserialize, resolve to
+			// actual function
+			neuron.ActivationFunction = EncodableSigmoid()
+		}
+	*/
 
 	if neuron.wg == nil {
 		neuron.wg = &sync.WaitGroup{}
@@ -263,7 +265,7 @@ func (neuron *Neuron) validateOutbound() error {
 func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float64 {
 	output := neuron.weightedInputDotProductSum(weightedInputs)
 	output += neuron.Bias
-	output = neuron.ActivationFunction(output)
+	output = neuron.ActivationFunction.ActivationFunction(output)
 	return output
 }
 

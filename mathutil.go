@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-func Sigmoid(x float64) float64 {
-	return 1.0 / (1.0 + math.Pow(math.E, -1*x))
-}
-
 func SafeScalarInverse(x float64) float64 {
 	if x == 0 {
 		x += 0.000000001

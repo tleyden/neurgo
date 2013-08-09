@@ -42,21 +42,21 @@ func TestConnections(t *testing.T) {
 	actuatorNodeId := NewActuatorId("actuator", 0.5)
 
 	hiddenNeuron1 := &Neuron{
-		ActivationFunction: Sigmoid,
+		ActivationFunction: EncodableSigmoid(),
 		NodeId:             hiddenNeuron1NodeId,
 		Bias:               -30,
 	}
 	hiddenNeuron1.Init()
 
 	hiddenNeuron2 := &Neuron{
-		ActivationFunction: Sigmoid,
+		ActivationFunction: EncodableSigmoid(),
 		NodeId:             hiddenNeuron2NodeId,
 		Bias:               10,
 	}
 	hiddenNeuron2.Init()
 
 	outputNeuron := &Neuron{
-		ActivationFunction: Sigmoid,
+		ActivationFunction: EncodableSigmoid(),
 		NodeId:             outputNeuronNodeIde,
 		Bias:               -10,
 	}

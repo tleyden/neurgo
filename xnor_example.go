@@ -11,21 +11,21 @@ func XnorCortex() *Cortex {
 	sensor.Init()
 
 	hiddenNeuron1 := &Neuron{
-		ActivationFunction: Sigmoid,
+		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("hidden-neuron1", 0.25),
 		Bias:               -30,
 	}
 	hiddenNeuron1.Init()
 
 	hiddenNeuron2 := &Neuron{
-		ActivationFunction: Sigmoid,
+		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("hidden-neuron2", 0.25),
 		Bias:               10,
 	}
 	hiddenNeuron2.Init()
 
 	outputNeuron := &Neuron{
-		ActivationFunction: Sigmoid,
+		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("output-neuron", 0.35),
 		Bias:               -10,
 	}

@@ -13,10 +13,17 @@ func identityActivationFunction() ActivationFunction {
 	return func(x float64) float64 { return x }
 }
 
+func encodableIdentityActivationFunction() *EncodableActivation {
+	return &EncodableActivation{
+		Name:               "identityActivation",
+		ActivationFunction: identityActivationFunction(),
+	}
+}
+
 func TestNeuronJsonMarshal(t *testing.T) {
 	neuronNodeId := NewNeuronId("neuron", 0.25)
 	neuron := &Neuron{
-		ActivationFunction: Sigmoid,
+		ActivationFunction: EncodableSigmoid(),
 		NodeId:             neuronNodeId,
 		Bias:               -30,
 	}
@@ -35,7 +42,7 @@ func TestRecurrentNeuron(t *testing.T) {
 	// back to n1.  send a two passes of inputs, and make sure the
 	// wiretap gets a signal
 
-	activation := identityActivationFunction()
+	activation := encodableIdentityActivationFunction()
 
 	injectorNodeId_1 := &NodeId{
 		UUID:       "injector-1",
@@ -192,7 +199,7 @@ func TestRunningNeuron(t *testing.T) {
 
 	log.Printf("")
 
-	activation := identityActivationFunction()
+	activation := encodableIdentityActivationFunction()
 
 	neuronNodeId := &NodeId{
 		UUID:       "neuron",
@@ -302,7 +309,7 @@ func TestRunningNeuron(t *testing.T) {
 
 func TestComputeScalarOutput(t *testing.T) {
 
-	activation := identityActivationFunction()
+	activation := encodableIdentityActivationFunction()
 
 	weights_1 := []float64{1, 1, 1, 1, 1}
 	weights_2 := []float64{1}
@@ -342,7 +349,7 @@ func TestNeuronShutdown(t *testing.T) {
 	sensor.Init()
 
 	neuron := &Neuron{
-		ActivationFunction: Sigmoid,
+		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("neuron", 0.35),
 		Bias:               -10,
 	}
