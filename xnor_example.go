@@ -4,45 +4,40 @@ func XnorCortex() *Cortex {
 
 	// create network nodes
 
-	sensorNodeId := NewSensorId("sensor", 0.0)
-	hiddenNeuron1NodeId := NewNeuronId("hidden-neuron1", 0.25)
-	hiddenNeuron2NodeId := NewNeuronId("hidden-neuron2", 0.25)
-	outputNeuronNodeIde := NewNeuronId("output-neuron", 0.35)
-
-	actuatorNodeId := NewActuatorId("actuator", 0.5)
+	sensor := &Sensor{
+		NodeId:       NewSensorId("sensor", 0.0),
+		VectorLength: 2,
+	}
+	sensor.Init()
 
 	hiddenNeuron1 := &Neuron{
 		ActivationFunction: Sigmoid,
-		NodeId:             hiddenNeuron1NodeId,
+		NodeId:             NewNeuronId("hidden-neuron1", 0.25),
 		Bias:               -30,
 	}
 	hiddenNeuron1.Init()
 
 	hiddenNeuron2 := &Neuron{
 		ActivationFunction: Sigmoid,
-		NodeId:             hiddenNeuron2NodeId,
+		NodeId:             NewNeuronId("hidden-neuron2", 0.25),
 		Bias:               10,
 	}
 	hiddenNeuron2.Init()
 
 	outputNeuron := &Neuron{
 		ActivationFunction: Sigmoid,
-		NodeId:             outputNeuronNodeIde,
+		NodeId:             NewNeuronId("output-neuron", 0.35),
 		Bias:               -10,
 	}
 	outputNeuron.Init()
 
-	sensor := &Sensor{
-		NodeId:       sensorNodeId,
-		VectorLength: 2,
-	}
-	sensor.Init()
-
 	actuator := &Actuator{
-		NodeId:       actuatorNodeId,
+		NodeId:       NewActuatorId("actuator", 0.5),
 		VectorLength: 1,
 	}
 	actuator.Init()
+
+	// wire up connections
 
 	sensor.ConnectOutbound(hiddenNeuron1)
 	hiddenNeuron1.ConnectInboundWeighted(sensor, []float64{20, 20})
@@ -58,6 +53,8 @@ func XnorCortex() *Cortex {
 
 	outputNeuron.ConnectOutbound(actuator)
 	actuator.ConnectInbound(outputNeuron)
+
+	// create cortex
 
 	nodeId := NewCortexId("cortex")
 

@@ -333,6 +333,38 @@ func TestComputeScalarOutput(t *testing.T) {
 
 }
 
+func TestNeuronShutdown(t *testing.T) {
+
+	sensor := &Sensor{
+		NodeId:       NewSensorId("sensor", 0.0),
+		VectorLength: 2,
+	}
+	sensor.Init()
+
+	neuron := &Neuron{
+		ActivationFunction: Sigmoid,
+		NodeId:             NewNeuronId("neuron", 0.35),
+		Bias:               -10,
+	}
+	neuron.Init()
+
+	sensor.ConnectOutbound(neuron)
+	neuron.ConnectInboundWeighted(sensor, []float64{20, 20})
+
+	go sensor.Run()
+	go neuron.Run()
+
+	sensor.Shutdown()
+	neuron.Shutdown()
+
+	outboundConnection := sensor.Outbound[0]
+	assert.True(t, outboundConnection.DataChan == nil)
+
+	assert.True(t, neuron.wg == nil)
+	assert.True(t, sensor.wg == nil)
+
+}
+
 func TestRecurrentOutboundConnections(t *testing.T) {
 
 	// make a recurrent connection
