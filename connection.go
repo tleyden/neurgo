@@ -30,6 +30,8 @@ type weightedInput struct {
 	inputs         []float64
 }
 
+type UUIDToInboundConnection map[string]*InboundConnection
+
 func (connection *InboundConnection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		struct {

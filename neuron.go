@@ -218,6 +218,35 @@ func (neuron *Neuron) Shutdown() {
 	neuron.wg = nil
 }
 
+func (neuron *Neuron) InboundUUIDMap() UUIDToInboundConnection {
+	inboundUUIDMap := make(UUIDToInboundConnection)
+	for _, connection := range neuron.Inbound {
+		inboundUUIDMap[connection.NodeId.UUID] = connection
+	}
+	return inboundUUIDMap
+}
+
+func (neuron *Neuron) Copy() *Neuron {
+
+	// serialize to json
+	jsonBytes, err := json.Marshal(neuron)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// new neuron
+	neuronCopy := &Neuron{}
+
+	// deserialize json into new neuron
+	err = json.Unmarshal(jsonBytes, neuronCopy)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return neuronCopy
+
+}
+
 func (neuron *Neuron) checkRunnable() {
 
 	if neuron.NodeId == nil {

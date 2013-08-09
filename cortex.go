@@ -17,6 +17,7 @@ type Cortex struct {
 }
 
 type ActuatorBarrier map[*NodeId]bool
+type UUIDToNeuronMap map[string]*Neuron
 
 func (cortex *Cortex) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
@@ -105,6 +106,14 @@ func (cortex *Cortex) Init() {
 
 	cortex.initOutboundConnections()
 
+}
+
+func (cortex *Cortex) NeuronUUIDMap() UUIDToNeuronMap {
+	neuronUUIDMap := make(UUIDToNeuronMap)
+	for _, neuron := range cortex.Neurons {
+		neuronUUIDMap[neuron.NodeId.UUID] = neuron
+	}
+	return neuronUUIDMap
 }
 
 // We may be in a state where the outbound connections
