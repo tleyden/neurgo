@@ -61,3 +61,14 @@ func EncodableSigmoid() *EncodableActivation {
 		ActivationFunction: Sigmoid,
 	}
 }
+
+func EncodableTanh() *EncodableActivation {
+	return &EncodableActivation{
+		Name:               "tanh",
+		ActivationFunction: math.Tanh,
+	}
+}
+
+func AllEncodableActivations() []*EncodableActivation {
+	return []*EncodableActivation{EncodableSigmoid(), EncodableTanh()}
+}
