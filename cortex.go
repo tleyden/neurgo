@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const FITNESS_THRESHOLD = 1e8
+
 type Cortex struct {
 	NodeId    *NodeId
 	Sensors   []*Sensor
@@ -143,10 +145,15 @@ func (cortex *Cortex) checkRunnable() {
 	}
 }
 
+func (cortex *Cortex) Verify(samples []*TrainingSample) bool {
+	fitness := cortex.Fitness(samples)
+	return fitness >= FITNESS_THRESHOLD
+}
+
 func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
 	errorAccumulated := float64(0)
-	log.Printf("error: %v", errorAccumulated)
+	log.Printf("Fitness() started")
 
 	// assumes there is only one sensor and one actuator
 	// (to support more, this method will require more coding)
@@ -188,7 +195,7 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	cortex.Shutdown()
 
 	// calculate fitness
-	log.Printf("errorAccumulated: %v", errorAccumulated)
+	log.Printf("Fitness() finished: errorAccumulated: %v", errorAccumulated)
 
 	return float64(1) / errorAccumulated
 
@@ -198,7 +205,7 @@ func (cortex *Cortex) SyncSensors() {
 	for _, sensor := range cortex.Sensors {
 		select {
 		case sensor.SyncChan <- true:
-			log.Printf("Sync -> %v", sensor)
+			log.Printf("Cortex send Sync message to %v", sensor)
 		case <-time.After(time.Second):
 			log.Panicf("Unable to send Sync message to sensor %v", sensor)
 		}

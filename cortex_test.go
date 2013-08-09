@@ -23,7 +23,7 @@ func TestCortexCopy(t *testing.T) {
 	// get the fitness
 	fitness := xnorCortexCopy.Fitness(examples)
 
-	assert.True(t, fitness >= 1e8)
+	assert.True(t, fitness >= FITNESS_THRESHOLD)
 
 }
 

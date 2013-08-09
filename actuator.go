@@ -38,6 +38,8 @@ func (actuator *Actuator) String() string {
 
 func (actuator *Actuator) Run() {
 
+	log.Printf("%v Run() started", actuator.NodeId.UUID)
+
 	defer actuator.wg.Done()
 
 	actuator.checkRunnable()
@@ -80,6 +82,8 @@ func (actuator *Actuator) Run() {
 
 	}
 
+	log.Printf("%v Run() finished", actuator.NodeId.UUID)
+
 }
 
 func (actuator *Actuator) Shutdown() {
@@ -92,6 +96,7 @@ func (actuator *Actuator) Shutdown() {
 	}
 
 	actuator.wg.Wait()
+	actuator.wg = nil
 }
 
 func (actuator *Actuator) computeScalarOutput(weightedInputs []*weightedInput) []float64 {

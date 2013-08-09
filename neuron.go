@@ -39,6 +39,8 @@ func (neuron *Neuron) MarshalJSON() ([]byte, error) {
 
 func (neuron *Neuron) Run() {
 
+	log.Printf("%v Run() started", neuron.NodeId.UUID)
+
 	defer neuron.wg.Done()
 
 	neuron.checkRunnable()
@@ -89,6 +91,8 @@ func (neuron *Neuron) Run() {
 		}
 
 	}
+
+	log.Printf("%v Run() finished", neuron.NodeId.UUID)
 
 }
 
@@ -198,7 +202,10 @@ func (neuron *Neuron) Shutdown() {
 		log.Panicf("Got unexpected response on closing channel")
 	}
 
+	neuron.shutdownOutboundConnections()
+
 	neuron.wg.Wait()
+	neuron.wg = nil
 }
 
 func (neuron *Neuron) checkRunnable() {
@@ -298,5 +305,11 @@ func (neuron *Neuron) initOutboundConnections(nodeIdToDataMsg nodeIdToDataMsgMap
 				outboundConnection.DataChan = dataChan
 			}
 		}
+	}
+}
+
+func (neuron *Neuron) shutdownOutboundConnections() {
+	for _, outboundConnection := range neuron.Outbound {
+		outboundConnection.DataChan = nil
 	}
 }
