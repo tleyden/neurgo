@@ -186,6 +186,14 @@ func (neuron *Neuron) Init() {
 		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
 	}
 
+	if neuron.ActivationFunction == nil {
+
+		// TODO: fix this .. we need to serialize the name of
+		// the function, and when we deserialize, resolve to
+		// actual function
+		neuron.ActivationFunction = Sigmoid
+	}
+
 	if neuron.wg == nil {
 		neuron.wg = &sync.WaitGroup{}
 		neuron.wg.Add(1)
@@ -231,11 +239,8 @@ func (neuron *Neuron) checkRunnable() {
 	}
 
 	if neuron.ActivationFunction == nil {
-
-		// TODO: fix this .. we need to serialize the name of
-		// the function, and when we deserialize, resolve to
-		// actual function
-		neuron.ActivationFunction = Sigmoid
+		msg := fmt.Sprintf("not expecting neuron.ActivationFunction to be nil")
+		panic(msg)
 	}
 
 	if err := neuron.validateOutbound(); err != nil {
