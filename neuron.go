@@ -101,7 +101,7 @@ func (neuron *Neuron) String() string {
 	return JsonString(neuron)
 }
 
-func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) {
+func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) *OutboundConnection {
 	if neuron.Outbound == nil {
 		neuron.Outbound = make([]*OutboundConnection, 0)
 	}
@@ -110,6 +110,7 @@ func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) {
 		DataChan: connectable.dataChan(),
 	}
 	neuron.Outbound = append(neuron.Outbound, connection)
+	return connection
 }
 
 func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, weights []float64) *InboundConnection {
