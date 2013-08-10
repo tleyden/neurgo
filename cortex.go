@@ -116,6 +116,31 @@ func (cortex *Cortex) NeuronUUIDMap() UUIDToNeuronMap {
 	return neuronUUIDMap
 }
 
+func (cortex *Cortex) SensorNodeIds() []*NodeId {
+	nodeIds := make([]*NodeId, 0)
+	for _, sensor := range cortex.Sensors {
+		nodeIds = append(nodeIds, sensor.NodeId)
+	}
+	return nodeIds
+}
+
+func (cortex *Cortex) NeuronNodeIds() []*NodeId {
+	nodeIds := make([]*NodeId, 0)
+	for _, neuron := range cortex.Neurons {
+		nodeIds = append(nodeIds, neuron.NodeId)
+	}
+	return nodeIds
+}
+
+func (cortex *Cortex) ActuatorNodeIds() []*NodeId {
+	nodeIds := make([]*NodeId, 0)
+	for _, actuator := range cortex.Actuators {
+		nodeIds = append(nodeIds, actuator.NodeId)
+	}
+	return nodeIds
+
+}
+
 // We may be in a state where the outbound connections
 // do not have data channels associated with them, even
 // though the data channels exist.  (eg, when deserializing
@@ -208,6 +233,15 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
 	return float64(1) / errorAccumulated
 
+}
+
+func (cortex *Cortex) FindSensor(nodeId *NodeId) *Sensor {
+	for _, sensor := range cortex.Sensors {
+		if sensor.NodeId.UUID == nodeId.UUID {
+			return sensor
+		}
+	}
+	return nil
 }
 
 func (cortex *Cortex) SyncSensors() {
