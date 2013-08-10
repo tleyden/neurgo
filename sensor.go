@@ -13,7 +13,7 @@ type SensorFunction func(int) []float64
 type Sensor struct {
 	NodeId         *NodeId
 	Outbound       []*OutboundConnection
-	VectorLength   uint
+	VectorLength   int
 	Closing        chan chan bool
 	SyncChan       chan bool
 	SensorFunction SensorFunction
@@ -24,7 +24,7 @@ func (sensor *Sensor) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
 		struct {
 			NodeId       *NodeId
-			VectorLength uint
+			VectorLength int
 			Outbound     []*OutboundConnection
 		}{
 			NodeId:       sensor.NodeId,
