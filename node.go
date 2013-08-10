@@ -19,6 +19,10 @@ func (nodeId *NodeId) String() string {
 	return JsonString(nodeId)
 }
 
+func (nodeId *NodeId) nodeId() *NodeId {
+	return nodeId
+}
+
 func NewSensorId(UUID string, LayerIndex float64) *NodeId {
 	return &NodeId{
 		UUID:       UUID,
