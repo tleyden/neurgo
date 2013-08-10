@@ -17,6 +17,7 @@ type Actuator struct {
 	VectorLength     int
 	ActuatorFunction ActuatorFunction
 	wg               *sync.WaitGroup
+	Cortex           *Cortex
 }
 
 func (actuator *Actuator) MarshalJSON() ([]byte, error) {

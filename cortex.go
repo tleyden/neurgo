@@ -108,6 +108,27 @@ func (cortex *Cortex) Init() {
 
 }
 
+func (cortex *Cortex) SetSensors(sensors []*Sensor) {
+	cortex.Sensors = sensors
+	for _, sensor := range cortex.Sensors {
+		sensor.Cortex = cortex
+	}
+}
+
+func (cortex *Cortex) SetNeurons(neurons []*Neuron) {
+	cortex.Neurons = neurons
+	for _, neuron := range cortex.Neurons {
+		neuron.Cortex = cortex
+	}
+}
+
+func (cortex *Cortex) SetActuators(actuators []*Actuator) {
+	cortex.Actuators = actuators
+	for _, actuator := range cortex.Actuators {
+		actuator.Cortex = cortex
+	}
+}
+
 func (cortex *Cortex) NeuronUUIDMap() UUIDToNeuronMap {
 	neuronUUIDMap := make(UUIDToNeuronMap)
 	for _, neuron := range cortex.Neurons {

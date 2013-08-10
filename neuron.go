@@ -18,6 +18,7 @@ type Neuron struct {
 	DataChan           chan *DataMessage
 	ActivationFunction *EncodableActivation
 	wg                 *sync.WaitGroup
+	Cortex             *Cortex
 }
 
 func (neuron *Neuron) MarshalJSON() ([]byte, error) {

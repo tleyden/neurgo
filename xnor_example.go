@@ -59,11 +59,11 @@ func XnorCortex() *Cortex {
 	nodeId := NewCortexId("cortex")
 
 	cortex := &Cortex{
-		NodeId:    nodeId,
-		Sensors:   []*Sensor{sensor},
-		Neurons:   []*Neuron{hiddenNeuron1, hiddenNeuron2, outputNeuron},
-		Actuators: []*Actuator{actuator},
+		NodeId: nodeId,
 	}
+	cortex.SetSensors([]*Sensor{sensor})
+	cortex.SetNeurons([]*Neuron{hiddenNeuron1, hiddenNeuron2, outputNeuron})
+	cortex.SetActuators([]*Actuator{actuator})
 
 	return cortex
 

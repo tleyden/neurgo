@@ -18,6 +18,7 @@ type Sensor struct {
 	SyncChan       chan bool
 	SensorFunction SensorFunction
 	wg             *sync.WaitGroup
+	Cortex         *Cortex
 }
 
 func (sensor *Sensor) MarshalJSON() ([]byte, error) {
