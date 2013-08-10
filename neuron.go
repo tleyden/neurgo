@@ -111,7 +111,7 @@ func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) {
 	neuron.Outbound = append(neuron.Outbound, connection)
 }
 
-func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, weights []float64) {
+func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, weights []float64) *InboundConnection {
 	if neuron.Inbound == nil {
 		neuron.Inbound = make([]*InboundConnection, 0)
 	}
@@ -120,7 +120,7 @@ func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, wei
 		Weights: weights,
 	}
 	neuron.Inbound = append(neuron.Inbound, connection)
-
+	return connection
 }
 
 // In order to prevent deadlock, any neurons we have recurrent outbound
@@ -164,6 +164,15 @@ func (neuron *Neuron) recurrentOutboundConnections() []*OutboundConnection {
 // then any layer to the left is considered previous.
 func (neuron *Neuron) isConnectionRecurrent(connection *OutboundConnection) bool {
 	if connection.NodeId.LayerIndex <= neuron.NodeId.LayerIndex {
+		return true
+	}
+	return false
+}
+
+// same as isConnectionRecurrent, but for inbound connections
+// TODO: use interfaces to eliminate code duplication
+func (neuron *Neuron) IsInboundConnectionRecurrent(connection *InboundConnection) bool {
+	if neuron.NodeId.LayerIndex <= connection.NodeId.LayerIndex {
 		return true
 	}
 	return false
