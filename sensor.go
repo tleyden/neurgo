@@ -116,6 +116,14 @@ func (sensor *Sensor) Shutdown() {
 	sensor.wg = nil
 }
 
+func (sensor *Sensor) outbound() []*OutboundConnection {
+	return sensor.Outbound
+}
+
+func (sensor *Sensor) setOutbound(newOutbound []*OutboundConnection) {
+	sensor.Outbound = newOutbound
+}
+
 func (sensor *Sensor) checkRunnable() {
 	if sensor.NodeId == nil {
 		msg := fmt.Sprintf("not expecting sensor.NodeId to be nil")
@@ -172,10 +180,12 @@ func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) {
 }
 
 func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
+	log.Printf("Sensor scatterOutbound to: %v", sensor.Outbound)
 	for _, outboundConnection := range sensor.Outbound {
 		dataChan := outboundConnection.DataChan
-		log.Printf("Sensor %v scatter %v to: %v dataChan: %v", sensor.NodeId.UUID, dataMessage, outboundConnection, dataChan)
+		log.Printf("Sensor %v start scatter %v to: %v dataChan: %v", sensor.NodeId.UUID, dataMessage, outboundConnection, dataChan)
 		dataChan <- dataMessage
+		log.Printf("Sensor %v finish scatter %v to: %v dataChan: %v", sensor.NodeId.UUID, dataMessage, outboundConnection, dataChan)
 	}
 }
 

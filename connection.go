@@ -3,6 +3,7 @@ package neurgo
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 )
 
 type InboundConnection struct {
@@ -22,6 +23,11 @@ type OutboundConnectable interface {
 
 type InboundConnectable interface {
 	nodeId() *NodeId
+}
+
+type OutboundConnector interface {
+	outbound() []*OutboundConnection
+	setOutbound([]*OutboundConnection)
 }
 
 type weightedInput struct {
@@ -101,4 +107,22 @@ func (weightedInput *weightedInput) String() string {
 		weightedInput.weights,
 		weightedInput.inputs,
 	)
+}
+
+func ConnectOutbound(connector OutboundConnector, connectable OutboundConnectable) {
+	if connector.outbound() == nil {
+		connector.setOutbound(make([]*OutboundConnection, 0))
+	}
+
+	if connectable.dataChan() == nil {
+		log.Panicf("Cannot make outbound connection, dataChan == nil")
+	}
+
+	connection := &OutboundConnection{
+		NodeId:   connectable.nodeId(),
+		DataChan: connectable.dataChan(),
+	}
+
+	connector.setOutbound(append(connector.outbound(), connection))
+
 }

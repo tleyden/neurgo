@@ -125,6 +125,14 @@ func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, wei
 	return connection
 }
 
+func (neuron *Neuron) outbound() []*OutboundConnection {
+	return neuron.Outbound
+}
+
+func (neuron *Neuron) setOutbound(newOutbound []*OutboundConnection) {
+	neuron.Outbound = newOutbound
+}
+
 // In order to prevent deadlock, any neurons we have recurrent outbound
 // connections to must be "primed" by sending an empty signal.  A recurrent
 // outbound connection simply means that it's a connection to ourself or

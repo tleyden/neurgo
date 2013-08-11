@@ -250,9 +250,10 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	cortex.Shutdown()
 
 	// calculate fitness
-	log.Printf("Fitness() finished: errorAccumulated: %v", errorAccumulated)
+	fitness := float64(1) / errorAccumulated
+	log.Printf("Fitness() finished: %v", fitness)
 
-	return float64(1) / errorAccumulated
+	return fitness
 
 }
 
@@ -260,6 +261,20 @@ func (cortex *Cortex) FindSensor(nodeId *NodeId) *Sensor {
 	for _, sensor := range cortex.Sensors {
 		if sensor.NodeId.UUID == nodeId.UUID {
 			return sensor
+		}
+	}
+	return nil
+}
+
+func (cortex *Cortex) FindConnector(nodeId *NodeId) OutboundConnector {
+	for _, sensor := range cortex.Sensors {
+		if sensor.NodeId.UUID == nodeId.UUID {
+			return sensor
+		}
+	}
+	for _, neuron := range cortex.Neurons {
+		if neuron.NodeId.UUID == nodeId.UUID {
+			return neuron
 		}
 	}
 	return nil
