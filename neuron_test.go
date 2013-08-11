@@ -140,7 +140,7 @@ func TestRecurrentNeuron(t *testing.T) {
 		DataChan:           dataN2,
 	}
 
-	recurrentConnections := neuronN2.recurrentOutboundConnections()
+	recurrentConnections := neuronN2.RecurrentOutboundConnections()
 	assert.Equals(t, len(recurrentConnections), 1)
 
 	neuronN1.Init()
@@ -406,7 +406,7 @@ func TestRecurrentOutboundConnections(t *testing.T) {
 		DataChan:           nil,
 	}
 
-	recurrentConnections := neuronN2.recurrentOutboundConnections()
+	recurrentConnections := neuronN2.RecurrentOutboundConnections()
 
 	assert.Equals(t, len(recurrentConnections), 1)
 

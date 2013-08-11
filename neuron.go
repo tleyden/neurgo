@@ -7,6 +7,7 @@ import (
 	"github.com/proxypoke/vector"
 	"log"
 	"sync"
+	"time"
 )
 
 type Neuron struct {
@@ -141,15 +142,27 @@ func (neuron *Neuron) setOutbound(newOutbound []*OutboundConnection) {
 // never come, because this neuron wouldn't fire until it got a signal.
 func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 
-	recurrentConnections := neuron.recurrentOutboundConnections()
+	recurrentConnections := neuron.RecurrentOutboundConnections()
+	log.Printf("%v sendEmptySignalRecurrentOutbound() to %v", neuron.NodeId.UUID, recurrentConnections)
 	for _, recurrentConnection := range recurrentConnections {
 
+		log.Printf("%v sendEmptySignalRecurrentOutbound -> %v", neuron.NodeId.UUID, recurrentConnection.NodeId.UUID)
 		inputs := []float64{0}
 		dataMessage := &DataMessage{
 			SenderId: neuron.NodeId,
 			Inputs:   inputs,
 		}
-		recurrentConnection.DataChan <- dataMessage
+		if recurrentConnection.DataChan == nil {
+			log.Panicf("Can't sendEmptySignalRecurrentOutbound to %v, DataChan is nil", recurrentConnection)
+		}
+
+		select {
+		case recurrentConnection.DataChan <- dataMessage:
+			log.Printf("%v sent emptySignalRecurrentOutbound -> %v", neuron.NodeId.UUID, recurrentConnection.NodeId.UUID)
+		case <-time.After(time.Second):
+			log.Panicf("Timeout sendEmptySignalRecurrentOutbound to %v, DataChan is nil", recurrentConnection)
+		}
+
 	}
 
 }
@@ -157,7 +170,7 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 // Find the subset of outbound connections which are "recurrent" - meaning
 // that the connection is to this neuron itself, or to a neuron in a previous
 // (eg, to the left) layer.
-func (neuron *Neuron) recurrentOutboundConnections() []*OutboundConnection {
+func (neuron *Neuron) RecurrentOutboundConnections() []*OutboundConnection {
 	result := make([]*OutboundConnection, 0)
 	for _, outboundConnection := range neuron.Outbound {
 		if neuron.isConnectionRecurrent(outboundConnection) {
@@ -204,16 +217,6 @@ func (neuron *Neuron) Init() {
 	if neuron.DataChan == nil {
 		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
 	}
-
-	/*
-		if neuron.ActivationFunction == nil {
-
-			// TODO: fix this .. we need to serialize the name of
-			// the function, and when we deserialize, resolve to
-			// actual function
-			neuron.ActivationFunction = EncodableSigmoid()
-		}
-	*/
 
 	if neuron.wg == nil {
 		neuron.wg = &sync.WaitGroup{}
