@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func writeStringToFile(value string, filepath string) error {
+func WriteStringToFile(value string, filepath string) error {
 	outputFile, outputError := os.OpenFile(filepath,
 		os.O_WRONLY|os.O_CREATE,
 		0666)

@@ -36,7 +36,7 @@ func TestCortexJsonMarshal(t *testing.T) {
 	assert.True(t, err == nil)
 	jsonString := fmt.Sprintf("%s", json)
 	log.Printf("jsonString: %v", jsonString)
-	writeStringToFile(jsonString, "/tmp/output.json")
+	WriteStringToFile(jsonString, "/tmp/output.json")
 
 }
 
@@ -100,6 +100,25 @@ func TestSyncActuators(t *testing.T) {
 	syncChan <- actuatorNodeId
 
 	cortex.SyncActuators()
+
+}
+
+func TestRecurrentCortex(t *testing.T) {
+
+	jsonString := `{"NodeId":{"UUID":"cortex","NodeType":"CORTEX","LayerIndex":0},"Sensors":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"VectorLength":2,"Outbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25}}]}],"Neurons":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Bias":-30,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[20,20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Bias":10,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[-20,-20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Bias":-10,"Inbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":[0.0955837638877588]}],"Outbound":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}}],"Actuators":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5},"VectorLength":1,"Inbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":null}]}]}`
+
+	jsonBytes := []byte(jsonString)
+
+	cortex := &Cortex{}
+	err := json.Unmarshal(jsonBytes, cortex)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.True(t, err == nil)
+
+	examples := XnorTrainingSamples()
+	fitness := cortex.Fitness(examples)
+	assert.True(t, fitness >= 0)
 
 }
 
