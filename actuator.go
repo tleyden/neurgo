@@ -152,23 +152,33 @@ func (actuator *Actuator) checkRunnable() {
 
 }
 
-func (actuator *Actuator) Init() {
-	if actuator.Closing == nil {
+func (actuator *Actuator) Init(reInit bool) {
+	if reInit == true {
+		actuator.Closing = make(chan chan bool)
+	} else if actuator.Closing == nil {
 		actuator.Closing = make(chan chan bool)
 	}
 
-	if actuator.DataChan == nil {
+	if reInit == true {
+		actuator.DataChan = make(chan *DataMessage, len(actuator.Inbound))
+	} else if actuator.DataChan == nil {
 		actuator.DataChan = make(chan *DataMessage, len(actuator.Inbound))
 	}
 
-	if actuator.ActuatorFunction == nil {
+	if reInit == true {
+		actuatorFunc := func(outputs []float64) {}
+		actuator.ActuatorFunction = actuatorFunc
+	} else if actuator.ActuatorFunction == nil {
 		// if there is no ActuatorFunction, create a default
 		// function which does nothing
 		actuatorFunc := func(outputs []float64) {}
 		actuator.ActuatorFunction = actuatorFunc
 	}
 
-	if actuator.wg == nil {
+	if reInit == true {
+		actuator.wg = &sync.WaitGroup{}
+		actuator.wg.Add(1)
+	} else if actuator.wg == nil {
 		actuator.wg = &sync.WaitGroup{}
 		actuator.wg.Add(1)
 	}

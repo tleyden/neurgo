@@ -209,16 +209,23 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 	}
 }
 
-func (neuron *Neuron) Init() {
-	if neuron.Closing == nil {
+func (neuron *Neuron) Init(reInit bool) {
+	if reInit == true {
+		neuron.Closing = make(chan chan bool)
+	} else if neuron.Closing == nil {
 		neuron.Closing = make(chan chan bool)
 	}
 
-	if neuron.DataChan == nil {
+	if reInit == true {
+		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
+	} else if neuron.DataChan == nil {
 		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
 	}
 
-	if neuron.wg == nil {
+	if reInit == true {
+		neuron.wg = &sync.WaitGroup{}
+		neuron.wg.Add(1)
+	} else if neuron.wg == nil {
 		neuron.wg = &sync.WaitGroup{}
 		neuron.wg.Add(1)
 	}

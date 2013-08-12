@@ -4,38 +4,40 @@ func XnorCortex() *Cortex {
 
 	// create network nodes
 
+	shouldReInit := false
+
 	sensor := &Sensor{
 		NodeId:       NewSensorId("sensor", 0.0),
 		VectorLength: 2,
 	}
-	sensor.Init()
+	sensor.Init(shouldReInit)
 
 	hiddenNeuron1 := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("hidden-neuron1", 0.25),
 		Bias:               -30,
 	}
-	hiddenNeuron1.Init()
+	hiddenNeuron1.Init(shouldReInit)
 
 	hiddenNeuron2 := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("hidden-neuron2", 0.25),
 		Bias:               10,
 	}
-	hiddenNeuron2.Init()
+	hiddenNeuron2.Init(shouldReInit)
 
 	outputNeuron := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("output-neuron", 0.35),
 		Bias:               -10,
 	}
-	outputNeuron.Init()
+	outputNeuron.Init(shouldReInit)
 
 	actuator := &Actuator{
 		NodeId:       NewActuatorId("actuator", 0.5),
 		VectorLength: 1,
 	}
-	actuator.Init()
+	actuator.Init(shouldReInit)
 
 	// wire up connections
 

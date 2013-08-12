@@ -44,6 +44,8 @@ func TestRecurrentNeuron(t *testing.T) {
 
 	activation := encodableIdentityActivationFunction()
 
+	shouldReInit := false
+
 	injectorNodeId_1 := &NodeId{
 		UUID:       "injector-1",
 		NodeType:   SENSOR,
@@ -143,8 +145,8 @@ func TestRecurrentNeuron(t *testing.T) {
 	recurrentConnections := neuronN2.RecurrentOutboundConnections()
 	assert.Equals(t, len(recurrentConnections), 1)
 
-	neuronN1.Init()
-	neuronN2.Init()
+	neuronN1.Init(shouldReInit)
+	neuronN2.Init(shouldReInit)
 
 	go neuronN1.Run()
 	go neuronN2.Run()
@@ -198,6 +200,8 @@ func TestRecurrentNeuron(t *testing.T) {
 func TestRunningNeuron(t *testing.T) {
 
 	log.Printf("")
+
+	shouldReInit := false
 
 	activation := encodableIdentityActivationFunction()
 
@@ -260,7 +264,7 @@ func TestRunningNeuron(t *testing.T) {
 		DataChan:           data,
 	}
 
-	neuron.Init()
+	neuron.Init(shouldReInit)
 	go neuron.Run()
 
 	// send one input
@@ -342,18 +346,20 @@ func TestComputeScalarOutput(t *testing.T) {
 
 func TestNeuronShutdown(t *testing.T) {
 
+	shouldReInit := false
+
 	sensor := &Sensor{
 		NodeId:       NewSensorId("sensor", 0.0),
 		VectorLength: 2,
 	}
-	sensor.Init()
+	sensor.Init(shouldReInit)
 
 	neuron := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("neuron", 0.35),
 		Bias:               -10,
 	}
-	neuron.Init()
+	neuron.Init(shouldReInit)
 
 	sensor.ConnectOutbound(neuron)
 	neuron.ConnectInboundWeighted(sensor, []float64{20, 20})

@@ -41,6 +41,8 @@ func TestSensorJsonMarshal(t *testing.T) {
 
 func TestSensorRun(t *testing.T) {
 
+	shouldReInit := false
+
 	fakeNodeId := NewNeuronId("fake-node", 0.25)
 	dataChan := make(chan *DataMessage, 1)
 	outboundConnection := &OutboundConnection{
@@ -62,7 +64,7 @@ func TestSensorRun(t *testing.T) {
 		SensorFunction: sensorFunc,
 		Outbound:       []*OutboundConnection{outboundConnection},
 	}
-	sensor.Init()
+	sensor.Init(shouldReInit)
 	go sensor.Run()
 
 	// send it a sync message

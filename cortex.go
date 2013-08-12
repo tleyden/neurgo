@@ -91,19 +91,21 @@ func (cortex *Cortex) Shutdown() {
 }
 
 func (cortex *Cortex) Init() {
+	reInit := false
 	if cortex.SyncChan == nil {
 		cortex.SyncChan = make(chan *NodeId, 1)
 	}
 	for _, sensor := range cortex.Sensors {
-		sensor.Init()
+		sensor.Init(reInit)
 	}
 	for _, neuron := range cortex.Neurons {
-		neuron.Init()
+		neuron.Init(reInit)
 	}
 	for _, actuator := range cortex.Actuators {
-		actuator.Init()
+		actuator.Init(reInit)
 	}
 
+	// cortex.shutdownOutboundConnections()
 	cortex.initOutboundConnections()
 
 }
@@ -178,6 +180,18 @@ func (cortex *Cortex) initOutboundConnections() {
 	}
 	for _, neuron := range cortex.Neurons {
 		neuron.initOutboundConnections(nodeIdToDataMsg)
+	}
+
+}
+
+func (cortex *Cortex) shutdownOutboundConnections() {
+
+	// walk all sensors and neurons and shutdown their outbound connections
+	for _, sensor := range cortex.Sensors {
+		sensor.shutdownOutboundConnections()
+	}
+	for _, neuron := range cortex.Neurons {
+		neuron.shutdownOutboundConnections()
 	}
 
 }
