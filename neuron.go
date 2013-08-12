@@ -209,6 +209,14 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 	}
 }
 
+// Initialize/re-initialize the neuron.
+// reInit: basically this is a messy hack to solve the issue:
+// - neuron.Init() function is called and DataChan buffer len = X
+// - new recurrent connections are added
+// - since the DataChan buffer len is X, and needs to be X+1, network is wedged
+// So by doing a "destructive reInit" it will rebuild all DataChan's
+// and all outbound connections which contain DataChan's, thus solving
+// the problem.
 func (neuron *Neuron) Init(reInit bool) {
 	if reInit == true {
 		neuron.Closing = make(chan chan bool)

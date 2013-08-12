@@ -70,7 +70,7 @@ func (actuator *Actuator) Run() {
 
 		if receiveBarrierSatisfied(weightedInputs) {
 
-			log.Printf("Actuator %v received inputs: %v", actuator.NodeId.UUID, weightedInputs)
+			log.Printf("Actuator %v received inputs: %v + barrier satisfied", actuator.NodeId.UUID, weightedInputs)
 			scalarOutput := actuator.computeScalarOutput(weightedInputs)
 
 			actuator.ActuatorFunction(scalarOutput)
@@ -166,12 +166,16 @@ func (actuator *Actuator) Init(reInit bool) {
 	}
 
 	if reInit == true {
-		actuatorFunc := func(outputs []float64) {}
+		actuatorFunc := func(outputs []float64) {
+			log.Panicf("defualt actuator function called - do nothing")
+		}
 		actuator.ActuatorFunction = actuatorFunc
 	} else if actuator.ActuatorFunction == nil {
 		// if there is no ActuatorFunction, create a default
 		// function which does nothing
-		actuatorFunc := func(outputs []float64) {}
+		actuatorFunc := func(outputs []float64) {
+			log.Panicf("defualt actuator function called - do nothing")
+		}
 		actuator.ActuatorFunction = actuatorFunc
 	}
 

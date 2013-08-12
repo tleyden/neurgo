@@ -90,11 +90,26 @@ func (cortex *Cortex) Shutdown() {
 	cortex.SyncChan = nil
 }
 
-func (cortex *Cortex) Init() {
-	reInit := false
-	if cortex.SyncChan == nil {
+// Initialize/re-initialize the cortex.
+// reInit: basically this is a messy hack to solve the issue:
+// - neuron.Init() function is called and DataChan buffer len = X
+// - new recurrent connections are added
+// - since the DataChan buffer len is X, and needs to be X+1, network is wedged
+// So by doing a "destructive reInit" it will rebuild all DataChan's
+// and all outbound connections which contain DataChan's, thus solving
+// the problem.
+func (cortex *Cortex) Init(reInit bool) {
+
+	if reInit == true {
+		cortex.shutdownOutboundConnections()
+	}
+
+	if reInit == true {
+		cortex.SyncChan = make(chan *NodeId, 1)
+	} else if cortex.SyncChan == nil {
 		cortex.SyncChan = make(chan *NodeId, 1)
 	}
+
 	for _, sensor := range cortex.Sensors {
 		sensor.Init(reInit)
 	}
@@ -105,7 +120,6 @@ func (cortex *Cortex) Init() {
 		actuator.Init(reInit)
 	}
 
-	// cortex.shutdownOutboundConnections()
 	cortex.initOutboundConnections()
 
 }
@@ -221,6 +235,9 @@ func (cortex *Cortex) Verify(samples []*TrainingSample) bool {
 
 func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
+	shouldReInit := true
+	cortex.Init(shouldReInit)
+
 	errorAccumulated := float64(0)
 	log.Printf("Fitness() started")
 
@@ -253,7 +270,6 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	}
 	actuator.ActuatorFunction = actuatorFunc
 
-	cortex.Init()
 	go cortex.Run()
 
 	for _ = range samples {
