@@ -180,6 +180,16 @@ func (neuron *Neuron) RecurrentOutboundConnections() []*OutboundConnection {
 	return result
 }
 
+func (neuron *Neuron) RecurrentInboundConnections() []*InboundConnection {
+	result := make([]*InboundConnection, 0)
+	for _, inboundConnection := range neuron.Inbound {
+		if neuron.IsInboundConnectionRecurrent(inboundConnection) {
+			result = append(result, inboundConnection)
+		}
+	}
+	return result
+}
+
 // a connection is considered recurrent if it has a connection
 // to itself or to a node in a previous layer.  Previous meaning
 // if you look at a feedforward from left to right, with the input
@@ -313,6 +323,12 @@ func (neuron *Neuron) checkRunnable() {
 
 	if err := neuron.validateOutbound(); err != nil {
 		msg := fmt.Sprintf("invalid outbound connection(s): %v", err.Error())
+		panic(msg)
+	}
+
+	inboundRecurrentCxns := neuron.RecurrentInboundConnections()
+	if cap(neuron.DataChan) < len(inboundRecurrentCxns) {
+		msg := fmt.Sprintf("dataChan buffer capacity %v less than # of inbound recurrent connections: %v", cap(neuron.DataChan), len(inboundRecurrentCxns))
 		panic(msg)
 	}
 
