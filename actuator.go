@@ -200,10 +200,22 @@ func (actuator *Actuator) ConnectInbound(connectable InboundConnectable) {
 	actuator.Inbound = append(actuator.Inbound, connection)
 }
 
+func (actuator *Actuator) inbound() []*InboundConnection {
+	return actuator.Inbound
+}
+
+func (actuator *Actuator) setInbound(newInbound []*InboundConnection) {
+	actuator.Inbound = newInbound
+}
+
 func (actuator *Actuator) dataChan() chan *DataMessage {
 	return actuator.DataChan
 }
 
 func (actuator *Actuator) nodeId() *NodeId {
 	return actuator.NodeId
+}
+
+func (actuator *Actuator) CanAddInboundConnection() bool {
+	return len(actuator.Inbound) < actuator.VectorLength
 }

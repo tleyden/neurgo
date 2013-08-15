@@ -296,6 +296,24 @@ func (cortex *Cortex) FindSensor(nodeId *NodeId) *Sensor {
 	return nil
 }
 
+func (cortex *Cortex) FindNeuron(nodeId *NodeId) *Neuron {
+	for _, neuron := range cortex.Neurons {
+		if neuron.NodeId.UUID == nodeId.UUID {
+			return neuron
+		}
+	}
+	return nil
+}
+
+func (cortex *Cortex) FindActuator(nodeId *NodeId) *Actuator {
+	for _, actuator := range cortex.Actuators {
+		if actuator.NodeId.UUID == nodeId.UUID {
+			return actuator
+		}
+	}
+	return nil
+}
+
 func (cortex *Cortex) FindConnector(nodeId *NodeId) OutboundConnector {
 	for _, sensor := range cortex.Sensors {
 		if sensor.NodeId.UUID == nodeId.UUID {

@@ -30,6 +30,11 @@ type OutboundConnector interface {
 	setOutbound([]*OutboundConnection)
 }
 
+type InboundConnector interface {
+	inbound() []*InboundConnection
+	setInbound([]*InboundConnection)
+}
+
 type weightedInput struct {
 	senderNodeUUID string
 	weights        []float64
@@ -109,7 +114,7 @@ func (weightedInput *weightedInput) String() string {
 	)
 }
 
-func ConnectOutbound(connector OutboundConnector, connectable OutboundConnectable) {
+func ConnectOutbound(connector OutboundConnector, connectable OutboundConnectable) *OutboundConnection {
 	if connector.outbound() == nil {
 		connector.setOutbound(make([]*OutboundConnection, 0))
 	}
@@ -124,5 +129,24 @@ func ConnectOutbound(connector OutboundConnector, connectable OutboundConnectabl
 	}
 
 	connector.setOutbound(append(connector.outbound(), connection))
+	return connection
 
+}
+
+func ConnectInbound(connector InboundConnector, connectable InboundConnectable) *InboundConnection {
+	return ConnectInboundWeighted(connector, connectable, nil)
+}
+
+func ConnectInboundWeighted(connector InboundConnector, connectable InboundConnectable, weights []float64) *InboundConnection {
+	if connector.inbound() == nil {
+		connector.setInbound(make([]*InboundConnection, 0))
+	}
+
+	connection := &InboundConnection{
+		NodeId:  connectable.nodeId(),
+		Weights: weights,
+	}
+
+	connector.setInbound(append(connector.inbound(), connection))
+	return connection
 }

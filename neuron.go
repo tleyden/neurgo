@@ -134,6 +134,14 @@ func (neuron *Neuron) setOutbound(newOutbound []*OutboundConnection) {
 	neuron.Outbound = newOutbound
 }
 
+func (neuron *Neuron) inbound() []*InboundConnection {
+	return neuron.Inbound
+}
+
+func (neuron *Neuron) setInbound(newInbound []*InboundConnection) {
+	neuron.Inbound = newInbound
+}
+
 // In order to prevent deadlock, any neurons we have recurrent outbound
 // connections to must be "primed" by sending an empty signal.  A recurrent
 // outbound connection simply means that it's a connection to ourself or
@@ -173,7 +181,7 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 func (neuron *Neuron) RecurrentOutboundConnections() []*OutboundConnection {
 	result := make([]*OutboundConnection, 0)
 	for _, outboundConnection := range neuron.Outbound {
-		if neuron.isConnectionRecurrent(outboundConnection) {
+		if neuron.IsConnectionRecurrent(outboundConnection) {
 			result = append(result, outboundConnection)
 		}
 	}
@@ -195,7 +203,7 @@ func (neuron *Neuron) RecurrentInboundConnections() []*InboundConnection {
 // if you look at a feedforward from left to right, with the input
 // layer being on the far left, and output layer on the far right,
 // then any layer to the left is considered previous.
-func (neuron *Neuron) isConnectionRecurrent(connection *OutboundConnection) bool {
+func (neuron *Neuron) IsConnectionRecurrent(connection *OutboundConnection) bool {
 	if connection.NodeId.LayerIndex <= neuron.NodeId.LayerIndex {
 		return true
 	}
