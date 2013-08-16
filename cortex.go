@@ -161,6 +161,12 @@ func (cortex *Cortex) CreateNeuronInLayer(layerIndex float64) *Neuron {
 		Bias:               RandomBias(),
 	}
 	neuron.Cortex = cortex
+
+	reInit := false
+	neuron.Init(reInit)
+
+	cortex.Neurons = append(cortex.Neurons, neuron)
+
 	return neuron
 }
 
@@ -189,6 +195,15 @@ func (cortex *Cortex) ActuatorNodeIds() []*NodeId {
 
 }
 
+func (cortex *Cortex) AllNodeIds() []*NodeId {
+	neuronNodeIds := cortex.NeuronNodeIds()
+	sensorNodeIds := cortex.SensorNodeIds()
+	actuatorNodeIds := cortex.ActuatorNodeIds()
+	availableNodeIds := append(neuronNodeIds, sensorNodeIds...)
+	availableNodeIds = append(availableNodeIds, actuatorNodeIds...)
+	return availableNodeIds
+}
+
 func (cortex *Cortex) NeuronLayerMap() LayerToNeuronMap {
 	layerToNeuronMap := make(LayerToNeuronMap)
 	for _, neuron := range cortex.Neurons {
@@ -204,6 +219,23 @@ func (cortex *Cortex) NeuronLayerMap() LayerToNeuronMap {
 
 	}
 	return layerToNeuronMap
+}
+
+func (cortex *Cortex) NodeIdLayerMap() LayerToNodeIdMap {
+	layerToNodeIdMap := make(LayerToNodeIdMap)
+	for _, nodeId := range cortex.AllNodeIds() {
+		if _, ok := layerToNodeIdMap[nodeId.LayerIndex]; !ok {
+			nodeIds := make([]*NodeId, 0)
+			nodeIds = append(nodeIds, nodeId)
+			layerToNodeIdMap[nodeId.LayerIndex] = nodeIds
+		} else {
+			nodeIds := layerToNodeIdMap[nodeId.LayerIndex]
+			nodeIds = append(nodeIds, nodeId)
+			layerToNodeIdMap[nodeId.LayerIndex] = nodeIds
+		}
+
+	}
+	return layerToNodeIdMap
 }
 
 // We may be in a state where the outbound connections
