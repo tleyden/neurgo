@@ -153,6 +153,17 @@ func (cortex *Cortex) NeuronUUIDMap() UUIDToNeuronMap {
 	return neuronUUIDMap
 }
 
+func (cortex *Cortex) CreateNeuronInLayer(layerIndex float64) *Neuron {
+	uuid := NewUuid()
+	neuron := &Neuron{
+		ActivationFunction: RandomEncodableActivation(),
+		NodeId:             NewNeuronId(uuid, layerIndex),
+		Bias:               RandomBias(),
+	}
+	neuron.Cortex = cortex
+	return neuron
+}
+
 func (cortex *Cortex) SensorNodeIds() []*NodeId {
 	nodeIds := make([]*NodeId, 0)
 	for _, sensor := range cortex.Sensors {

@@ -72,3 +72,9 @@ func EncodableTanh() *EncodableActivation {
 func AllEncodableActivations() []*EncodableActivation {
 	return []*EncodableActivation{EncodableSigmoid(), EncodableTanh()}
 }
+
+func RandomEncodableActivation() *EncodableActivation {
+	allActivations := AllEncodableActivations()
+	randIndex := RandomIntInRange(0, len(allActivations))
+	return allActivations[randIndex]
+}

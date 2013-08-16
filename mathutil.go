@@ -76,3 +76,11 @@ func RandomIntInRange(min, max int) int {
 func SeedRandom() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
+
+func RandomBias() float64 {
+	return RandomInRange(-1*math.Pi, math.Pi)
+}
+
+func RandomWeight() float64 {
+	return RandomInRange(-1*math.Pi, math.Pi)
+}

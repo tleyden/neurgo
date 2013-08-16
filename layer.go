@@ -1,7 +1,6 @@
 package neurgo
 
 import (
-	"log"
 	"sort"
 )
 
@@ -39,23 +38,22 @@ func (l LayerToNeuronMap) ChooseNeuronFollowingLayer(layerIndex float64) *Neuron
 }
 
 func (l LayerToNeuronMap) chooseNeuronFromLayer(chooser func(float64) bool) *Neuron {
-	log.Printf("layerToNeuronMap: %v", l)
 	keys := l.Keys()
 	sort.Float64s(keys)
 	eligibleKeys := make([]float64, 0)
 	for _, layerIndexKey := range keys {
-		log.Printf("calling chooser with key: %v", layerIndexKey)
 		if chooser(layerIndexKey) == true {
 			eligibleKeys = append(eligibleKeys, layerIndexKey)
 		}
 	}
-	log.Printf("eligible: %v", eligibleKeys)
+	if len(eligibleKeys) == 0 {
+		return nil
+	}
 	chosenKeyIndex := RandomIntInRange(0, len(eligibleKeys))
 	chosenLayerIndex := eligibleKeys[chosenKeyIndex]
 	neuronsChosenLayer := l[chosenLayerIndex]
 	chosenNeuronIndex := RandomIntInRange(0, len(neuronsChosenLayer))
 	chosenNeuron := neuronsChosenLayer[chosenNeuronIndex]
-	log.Printf("chosenNeuron: %v", chosenNeuron)
 	return chosenNeuron
 
 }
