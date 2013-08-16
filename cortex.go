@@ -18,7 +18,6 @@ type Cortex struct {
 
 type ActuatorBarrier map[*NodeId]bool
 type UUIDToNeuronMap map[string]*Neuron
-type LayerToNeuronMap map[float64][]*Neuron
 
 func (cortex *Cortex) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
