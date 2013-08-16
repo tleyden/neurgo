@@ -5,6 +5,36 @@ import (
 	"testing"
 )
 
+func fakeLayerToNeuronMap() (LayerToNeuronMap, *Neuron, *Neuron, *Neuron) {
+	layerToNeuronMap := make(LayerToNeuronMap)
+
+	neuron1 := &Neuron{
+		ActivationFunction: EncodableSigmoid(),
+		NodeId:             NewNeuronId("neuron1", 0.25),
+		Bias:               -30,
+	}
+	neurons25 := []*Neuron{neuron1}
+	layerToNeuronMap[0.25] = neurons25
+
+	neuron2 := &Neuron{
+		ActivationFunction: EncodableSigmoid(),
+		NodeId:             NewNeuronId("neuron2", 0.35),
+		Bias:               -30,
+	}
+	neurons35 := []*Neuron{neuron2}
+	layerToNeuronMap[0.35] = neurons35
+
+	neuron3 := &Neuron{
+		ActivationFunction: EncodableSigmoid(),
+		NodeId:             NewNeuronId("neuron3", 0.45),
+		Bias:               -30,
+	}
+	neurons45 := []*Neuron{neuron3}
+	layerToNeuronMap[0.45] = neurons45
+	return layerToNeuronMap, neuron1, neuron2, neuron3
+
+}
+
 func TestChooseRandomLayer(t *testing.T) {
 	layerToNeuronMap := make(LayerToNeuronMap)
 	neurons := make([]*Neuron, 0)
@@ -31,31 +61,7 @@ func TestChooseRandomLayer(t *testing.T) {
 
 func TestChooseNeuronPrecedingLayer(t *testing.T) {
 
-	layerToNeuronMap := make(LayerToNeuronMap)
-
-	neuron1 := &Neuron{
-		ActivationFunction: EncodableSigmoid(),
-		NodeId:             NewNeuronId("neuron1", 0.25),
-		Bias:               -30,
-	}
-	neurons25 := []*Neuron{neuron1}
-	layerToNeuronMap[0.25] = neurons25
-
-	neuron2 := &Neuron{
-		ActivationFunction: EncodableSigmoid(),
-		NodeId:             NewNeuronId("neuron2", 0.35),
-		Bias:               -30,
-	}
-	neurons35 := []*Neuron{neuron2}
-	layerToNeuronMap[0.35] = neurons35
-
-	neuron3 := &Neuron{
-		ActivationFunction: EncodableSigmoid(),
-		NodeId:             NewNeuronId("neuron3", 0.45),
-		Bias:               -30,
-	}
-	neurons45 := []*Neuron{neuron3}
-	layerToNeuronMap[0.45] = neurons45
+	layerToNeuronMap, neuron1, neuron2, neuron3 := fakeLayerToNeuronMap()
 
 	foundNeuron1 := false
 	foundNeuron2 := false
@@ -77,5 +83,32 @@ func TestChooseNeuronPrecedingLayer(t *testing.T) {
 	assert.True(t, foundNeuron1)
 	assert.True(t, foundNeuron2)
 	assert.False(t, foundNeuron3)
+
+}
+
+func TestChooseNeuronFollowingLayer(t *testing.T) {
+
+	layerToNeuronMap, neuron1, neuron2, neuron3 := fakeLayerToNeuronMap()
+
+	foundNeuron1 := false
+	foundNeuron2 := false
+	foundNeuron3 := false
+
+	for i := 0; i < 20; i++ {
+		chosenNeuron := layerToNeuronMap.ChooseNeuronFollowingLayer(0.25)
+		switch chosenNeuron.NodeId.UUID {
+		case neuron1.NodeId.UUID:
+			foundNeuron1 = true
+		case neuron2.NodeId.UUID:
+			foundNeuron2 = true
+		case neuron3.NodeId.UUID:
+			foundNeuron3 = true
+		}
+
+	}
+
+	assert.False(t, foundNeuron1)
+	assert.True(t, foundNeuron2)
+	assert.True(t, foundNeuron3)
 
 }
