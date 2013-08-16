@@ -67,7 +67,7 @@ func RandomInRange(min, max float64) float64 {
 // if you call it between 0,2 it will return 0 or 1
 func RandomIntInRange(min, max int) int {
 	if min == max {
-		log.Printf("min==max")
+		log.Printf("warn: min==max (%v == %v)", min, max)
 		return min
 	}
 	return rand.Intn(max-min) + min
