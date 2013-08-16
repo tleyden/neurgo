@@ -25,27 +25,14 @@ func (layerToNeuronMap LayerToNeuronMap) ChooseRandomLayer() float64 {
 }
 
 func (l LayerToNeuronMap) ChooseNeuronPrecedingLayer(layerIndex float64) *Neuron {
-	keys := l.Keys()
-	log.Printf("keys: %v", keys)
-	sort.Float64s(keys)
-	log.Printf("keys sorted: %v", keys)
-	eligibleKeys := make([]float64, 0)
-	for _, layerIndexKey := range keys {
-		if layerIndexKey < layerIndex {
-			eligibleKeys = append(eligibleKeys, layerIndexKey)
-		}
+	chooser := func(layerIndexKey float64) bool {
+		return layerIndexKey < layerIndex
 	}
-	log.Printf("eligible: %v", eligibleKeys)
-	chosenKeyIndex := RandomIntInRange(0, len(eligibleKeys))
-	chosenLayerIndex := keys[chosenKeyIndex]
-	neuronsChosenLayer := l[chosenLayerIndex]
-	chosenNeuronIndex := RandomIntInRange(0, len(neuronsChosenLayer))
-	return neuronsChosenLayer[chosenNeuronIndex]
+	return l.chooseNeuronFromLayer(chooser)
 }
 
 func (l LayerToNeuronMap) ChooseNeuronFollowingLayer(layerIndex float64) *Neuron {
 	chooser := func(layerIndexKey float64) bool {
-		log.Printf("chooser with key: %v.  layerIndex: %v", layerIndexKey, layerIndex)
 		return layerIndexKey > layerIndex
 	}
 	return l.chooseNeuronFromLayer(chooser)
