@@ -142,3 +142,13 @@ func TestCortexFitness(t *testing.T) {
 	assert.True(t, fitness >= 1e8)
 
 }
+
+func TestNeuronLayerMap(t *testing.T) {
+	xnorCortex := XnorCortex()
+	layerToNeuronMap := xnorCortex.NeuronLayerMap()
+	log.Printf("layerToNeuron: %v", layerToNeuronMap)
+	hiddenNeurons := layerToNeuronMap[0.25]
+	assert.Equals(t, len(hiddenNeurons), 2)
+	outputNeurons := layerToNeuronMap[0.35]
+	assert.Equals(t, len(outputNeurons), 1)
+}

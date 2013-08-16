@@ -18,6 +18,7 @@ type Cortex struct {
 
 type ActuatorBarrier map[*NodeId]bool
 type UUIDToNeuronMap map[string]*Neuron
+type LayerToNeuronMap map[float64][]*Neuron
 
 func (cortex *Cortex) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
@@ -176,6 +177,23 @@ func (cortex *Cortex) ActuatorNodeIds() []*NodeId {
 	}
 	return nodeIds
 
+}
+
+func (cortex *Cortex) NeuronLayerMap() LayerToNeuronMap {
+	layerToNeuronMap := make(LayerToNeuronMap)
+	for _, neuron := range cortex.Neurons {
+		if _, ok := layerToNeuronMap[neuron.NodeId.LayerIndex]; !ok {
+			neurons := make([]*Neuron, 0)
+			neurons = append(neurons, neuron)
+			layerToNeuronMap[neuron.NodeId.LayerIndex] = neurons
+		} else {
+			neurons := layerToNeuronMap[neuron.NodeId.LayerIndex]
+			neurons = append(neurons, neuron)
+			layerToNeuronMap[neuron.NodeId.LayerIndex] = neurons
+		}
+
+	}
+	return layerToNeuronMap
 }
 
 // We may be in a state where the outbound connections
