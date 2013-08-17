@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"log"
+	"math"
 	"sort"
 )
 
@@ -41,19 +42,30 @@ func (l LayerToNodeIdMap) NewLayerBetween(initial, final float64) float64 {
 
 func (l LayerToNodeIdMap) LayerBetweenOrNew(initial, final float64) float64 {
 
-	// otherwise, create new layer
+	if initial == final {
+		return initial
+	}
 
 	initialIntegerIndex := l.IntegerIndexOf(initial)
 	finalIntegerIndex := l.IntegerIndexOf(final)
 
-	if (finalIntegerIndex - initialIntegerIndex) == 1 {
+	delta := finalIntegerIndex - initialIntegerIndex
+	if math.Abs(float64(delta)) == 1.0 {
 		// adjacent layer, make a new layer
 		return l.NewLayerBetween(initial, final)
-	} else {
+	} else if delta > 1 {
 		// there is an existing layer between?  use it
 		nextLayerIntegerIndex := initialIntegerIndex + 1
 		nextLayerFractalIndex := l.LayerOfIntegerIndex(nextLayerIntegerIndex)
 		return nextLayerFractalIndex
+	} else if delta < -1 {
+		// there is an existing layer between?  use it
+		nextLayerIntegerIndex := initialIntegerIndex - 1
+		nextLayerFractalIndex := l.LayerOfIntegerIndex(nextLayerIntegerIndex)
+		return nextLayerFractalIndex
+	} else {
+		log.Panicf("Unexpected delta: %v", delta)
+		return -1.0
 	}
 
 }

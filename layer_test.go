@@ -27,16 +27,32 @@ func TestLayerBetweenOrNew(t *testing.T) {
 
 	layerToNodeIdMap, nodeId1, nodeId2, nodeId3 := fakeLayerToNodeIdMap()
 
+	// if initial == final layer, return that layer
 	initialLayer := nodeId1.LayerIndex
-	finalLayer := nodeId2.LayerIndex
+	finalLayer := nodeId1.LayerIndex
 	layer := layerToNodeIdMap.LayerBetweenOrNew(initialLayer, finalLayer)
+	assert.True(t, layer == initialLayer)
+
+	// adjacent layers, should create new layer
+	initialLayer = nodeId1.LayerIndex
+	finalLayer = nodeId2.LayerIndex
+	layer = layerToNodeIdMap.LayerBetweenOrNew(initialLayer, finalLayer)
 	assert.True(t, layer > initialLayer)
 	assert.True(t, layer < finalLayer)
 
+	// layers with layer in the middle, return existing middle layer
 	initialLayer = nodeId1.LayerIndex
 	finalLayer = nodeId3.LayerIndex
 	layer = layerToNodeIdMap.LayerBetweenOrNew(initialLayer, finalLayer)
 	assert.True(t, layer == nodeId2.LayerIndex)
+
+	// adjacent layers, but where initialLayer > finalLayer.
+	// should behave the same as when finalLayer > initialLayer
+	initialLayer = nodeId2.LayerIndex
+	finalLayer = nodeId1.LayerIndex
+	layer = layerToNodeIdMap.LayerBetweenOrNew(initialLayer, finalLayer)
+	assert.True(t, layer > nodeId1.LayerIndex)
+	assert.True(t, layer < nodeId2.LayerIndex)
 
 }
 
