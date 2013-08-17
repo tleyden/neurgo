@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"log"
 	"sort"
 )
 
@@ -16,6 +17,45 @@ func (layerToNodeIdMap LayerToNodeIdMap) Keys() []float64 {
 	}
 	sort.Float64s(keys)
 	return keys
+}
+
+func (l LayerToNodeIdMap) IntegerIndexOf(layer float64) int {
+	keys := l.Keys()
+	for i, key := range keys {
+		if key == layer {
+			return i
+		}
+	}
+	log.Panicf("Unable to find integer index of layer: %v", layer)
+	return -1
+}
+
+func (l LayerToNodeIdMap) LayerOfIntegerIndex(layerInteger int) float64 {
+	keys := l.Keys()
+	return keys[layerInteger]
+}
+
+func (l LayerToNodeIdMap) NewLayerBetween(initial, final float64) float64 {
+	return (initial + final) / 2.0
+}
+
+func (l LayerToNodeIdMap) LayerBetweenOrNew(initial, final float64) float64 {
+
+	// otherwise, create new layer
+
+	initialIntegerIndex := l.IntegerIndexOf(initial)
+	finalIntegerIndex := l.IntegerIndexOf(final)
+
+	if (finalIntegerIndex - initialIntegerIndex) == 1 {
+		// adjacent layer, make a new layer
+		return l.NewLayerBetween(initial, final)
+	} else {
+		// there is an existing layer between?  use it
+		nextLayerIntegerIndex := initialIntegerIndex + 1
+		nextLayerFractalIndex := l.LayerOfIntegerIndex(nextLayerIntegerIndex)
+		return nextLayerFractalIndex
+	}
+
 }
 
 func (layerToNodeIdMap LayerToNodeIdMap) ChooseRandomLayer() float64 {

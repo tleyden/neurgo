@@ -23,6 +23,23 @@ func fakeLayerToNodeIdMap() (LayerToNodeIdMap, *NodeId, *NodeId, *NodeId) {
 
 }
 
+func TestLayerBetweenOrNew(t *testing.T) {
+
+	layerToNodeIdMap, nodeId1, nodeId2, nodeId3 := fakeLayerToNodeIdMap()
+
+	initialLayer := nodeId1.LayerIndex
+	finalLayer := nodeId2.LayerIndex
+	layer := layerToNodeIdMap.LayerBetweenOrNew(initialLayer, finalLayer)
+	assert.True(t, layer > initialLayer)
+	assert.True(t, layer < finalLayer)
+
+	initialLayer = nodeId1.LayerIndex
+	finalLayer = nodeId3.LayerIndex
+	layer = layerToNodeIdMap.LayerBetweenOrNew(initialLayer, finalLayer)
+	assert.True(t, layer == nodeId2.LayerIndex)
+
+}
+
 func TestChooseRandomLayer(t *testing.T) {
 	layerToNodeIdMap := make(LayerToNodeIdMap)
 	nodeIds := make([]*NodeId, 0)
