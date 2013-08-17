@@ -5,6 +5,43 @@ import (
 	"testing"
 )
 
+func TestDisconnect(t *testing.T) {
+
+	shouldReInit := false
+
+	sensorNodeId := NewSensorId("sensor", 0.0)
+	neuronNodeId := NewNeuronId("neuron", 0.25)
+
+	neuron := &Neuron{
+		ActivationFunction: EncodableSigmoid(),
+		NodeId:             neuronNodeId,
+		Bias:               -30,
+	}
+	neuron.Init(shouldReInit)
+
+	sensor := &Sensor{
+		NodeId:       sensorNodeId,
+		VectorLength: 2,
+	}
+	sensor.Init(shouldReInit)
+
+	weights := RandomWeights(1)
+	outboundConnection := ConnectOutbound(sensor, neuron)
+	inboundConnection := ConnectInboundWeighted(neuron, sensor, weights)
+
+	assert.True(t, len(neuron.Inbound) == 1)
+	assert.True(t, len(sensor.Outbound) == 1)
+
+	disconnected := DisconnectOutbound(sensor, neuron)
+	assert.True(t, disconnected == outboundConnection)
+	assert.True(t, len(sensor.Outbound) == 0)
+
+	disconnectedInbound := DisconnectInbound(neuron, sensor)
+	assert.True(t, disconnectedInbound == inboundConnection)
+	assert.True(t, len(neuron.Inbound) == 0)
+
+}
+
 func TestCreateEmptyWeightedInputs(t *testing.T) {
 
 	nodeId_1 := &NodeId{UUID: "node-1", NodeType: NEURON}

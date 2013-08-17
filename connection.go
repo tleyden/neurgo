@@ -114,6 +114,39 @@ func (weightedInput *weightedInput) String() string {
 	)
 }
 
+func DisconnectOutbound(connector OutboundConnector, connectable OutboundConnectable) *OutboundConnection {
+
+	var disconnectedOutbound *OutboundConnection
+
+	newOutbound := make([]*OutboundConnection, 0)
+	for _, outbound := range connector.outbound() {
+		if outbound.NodeId.UUID != connectable.nodeId().UUID {
+			newOutbound = append(newOutbound, outbound)
+		} else {
+			disconnectedOutbound = outbound
+		}
+	}
+	connector.setOutbound(newOutbound)
+	return disconnectedOutbound
+}
+
+func DisconnectInbound(connector InboundConnector, connectable InboundConnectable) *InboundConnection {
+
+	var disconnectedInbound *InboundConnection
+
+	newInbound := make([]*InboundConnection, 0)
+	for _, inbound := range connector.inbound() {
+		if inbound.NodeId.UUID != connectable.nodeId().UUID {
+			newInbound = append(newInbound, inbound)
+		} else {
+			disconnectedInbound = inbound
+		}
+	}
+	connector.setInbound(newInbound)
+	return disconnectedInbound
+
+}
+
 func ConnectOutbound(connector OutboundConnector, connectable OutboundConnectable) *OutboundConnection {
 	if connector.outbound() == nil {
 		connector.setOutbound(make([]*OutboundConnection, 0))
