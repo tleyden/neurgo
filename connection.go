@@ -25,6 +25,10 @@ type InboundConnectable interface {
 	nodeId() *NodeId
 }
 
+type Disconnectable interface {
+	nodeId() *NodeId
+}
+
 type OutboundConnector interface {
 	outbound() []*OutboundConnection
 	setOutbound([]*OutboundConnection)
@@ -114,7 +118,7 @@ func (weightedInput *weightedInput) String() string {
 	)
 }
 
-func DisconnectOutbound(connector OutboundConnector, connectable OutboundConnectable) *OutboundConnection {
+func DisconnectOutbound(connector OutboundConnector, connectable Disconnectable) *OutboundConnection {
 
 	var disconnectedOutbound *OutboundConnection
 
@@ -130,7 +134,7 @@ func DisconnectOutbound(connector OutboundConnector, connectable OutboundConnect
 	return disconnectedOutbound
 }
 
-func DisconnectInbound(connector InboundConnector, connectable InboundConnectable) *InboundConnection {
+func DisconnectInbound(connector InboundConnector, connectable Disconnectable) *InboundConnection {
 
 	var disconnectedInbound *InboundConnection
 

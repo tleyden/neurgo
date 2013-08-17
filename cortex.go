@@ -374,6 +374,7 @@ func (cortex *Cortex) FindActuator(nodeId *NodeId) *Actuator {
 	return nil
 }
 
+// TODO: rename to FindOutboundConnector
 func (cortex *Cortex) FindConnector(nodeId *NodeId) OutboundConnector {
 	for _, sensor := range cortex.Sensors {
 		if sensor.NodeId.UUID == nodeId.UUID {
@@ -385,6 +386,21 @@ func (cortex *Cortex) FindConnector(nodeId *NodeId) OutboundConnector {
 			return neuron
 		}
 	}
+	return nil
+}
+
+func (cortex *Cortex) FindInboundConnector(nodeId *NodeId) InboundConnector {
+	for _, neuron := range cortex.Neurons {
+		if neuron.NodeId.UUID == nodeId.UUID {
+			return neuron
+		}
+	}
+	for _, actuator := range cortex.Actuators {
+		if actuator.NodeId.UUID == nodeId.UUID {
+			return actuator
+		}
+	}
+
 	return nil
 }
 
