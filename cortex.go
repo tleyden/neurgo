@@ -299,7 +299,6 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	cortex.Init(shouldReInit)
 
 	errorAccumulated := float64(0)
-	log.Printf("Fitness() started")
 
 	// assumes there is only one sensor and one actuator
 	// (to support more, this method will require more coding)
@@ -341,7 +340,6 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
 	// calculate fitness
 	fitness := float64(1) / errorAccumulated
-	log.Printf("Fitness() finished: %v", fitness)
 
 	return fitness
 
@@ -408,9 +406,8 @@ func (cortex *Cortex) SyncSensors() {
 	for _, sensor := range cortex.Sensors {
 		select {
 		case sensor.SyncChan <- true:
-			log.Printf("Cortex send Sync message to %v", sensor)
 		case <-time.After(time.Second):
-			log.Panicf("Unable to send Sync message to sensor %v", sensor)
+			log.Panicf("Cortex unable to send Sync message to sensor %v", sensor)
 		}
 	}
 
@@ -422,7 +419,6 @@ func (cortex *Cortex) SyncActuators() {
 
 		select {
 		case senderNodeId := <-cortex.SyncChan:
-			log.Printf("Cortex received Sync from -> %v", senderNodeId)
 			actuatorBarrier[senderNodeId] = true
 		case <-time.After(time.Second):
 			log.Panicf("Timeout waiting for actuator sync message")

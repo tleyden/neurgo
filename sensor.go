@@ -40,8 +40,6 @@ func (sensor *Sensor) String() string {
 
 func (sensor *Sensor) Run() {
 
-	log.Printf("%v Run() started", sensor.NodeId.UUID)
-
 	defer sensor.wg.Done()
 
 	sensor.checkRunnable()
@@ -52,12 +50,10 @@ func (sensor *Sensor) Run() {
 	for {
 		select {
 		case responseChan := <-sensor.Closing:
-			log.Printf("%v received Closing message", sensor.NodeId.UUID)
 			closed = true
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case _ = <-sensor.SyncChan:
-			log.Printf("%v received Sync message", sensor.NodeId.UUID)
 			input := sensor.SensorFunction(syncCounter)
 			syncCounter += 1
 			dataMessage := &DataMessage{
@@ -73,8 +69,6 @@ func (sensor *Sensor) Run() {
 			break
 		}
 	}
-
-	log.Printf("%v Run() finished", sensor.NodeId.UUID)
 
 }
 
@@ -203,12 +197,9 @@ func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) {
 }
 
 func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
-	log.Printf("Sensor scatterOutbound to: %v", sensor.Outbound)
 	for _, outboundConnection := range sensor.Outbound {
 		dataChan := outboundConnection.DataChan
-		log.Printf("Sensor %v start scatter %v to: %v dataChan: %v", sensor.NodeId.UUID, dataMessage, outboundConnection, dataChan)
 		dataChan <- dataMessage
-		log.Printf("Sensor %v finish scatter %v to: %v dataChan: %v", sensor.NodeId.UUID, dataMessage, outboundConnection, dataChan)
 	}
 }
 

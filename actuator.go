@@ -39,8 +39,6 @@ func (actuator *Actuator) String() string {
 
 func (actuator *Actuator) Run() {
 
-	log.Printf("%v Run() started", actuator.NodeId.UUID)
-
 	defer actuator.wg.Done()
 
 	actuator.checkRunnable()
@@ -50,8 +48,6 @@ func (actuator *Actuator) Run() {
 	closed := false
 
 	for {
-
-		log.Printf("Actuator %v select().  datachan: %v", actuator.NodeId.UUID, actuator.DataChan)
 
 		select {
 		case responseChan := <-actuator.Closing:
@@ -70,20 +66,15 @@ func (actuator *Actuator) Run() {
 
 		if receiveBarrierSatisfied(weightedInputs) {
 
-			log.Printf("Actuator %v received inputs: %v + barrier satisfied", actuator.NodeId.UUID, weightedInputs)
 			scalarOutput := actuator.computeScalarOutput(weightedInputs)
 
 			actuator.ActuatorFunction(scalarOutput)
 
 			weightedInputs = createEmptyWeightedInputs(actuator.Inbound)
 
-		} else {
-			log.Printf("Actuator %v receive barrier not satisfied", actuator.NodeId.UUID)
 		}
 
 	}
-
-	log.Printf("%v Run() finished", actuator.NodeId.UUID)
 
 }
 

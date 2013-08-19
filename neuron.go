@@ -41,8 +41,6 @@ func (neuron *Neuron) MarshalJSON() ([]byte, error) {
 
 func (neuron *Neuron) Run() {
 
-	log.Printf("%v Run() started", neuron.NodeId.UUID)
-
 	defer neuron.wg.Done()
 
 	neuron.checkRunnable()
@@ -55,17 +53,13 @@ func (neuron *Neuron) Run() {
 
 	for {
 
-		log.Printf("Neuron %v select().  datachan: %v", neuron.NodeId.UUID, neuron.DataChan)
-
 		select {
 		case responseChan := <-neuron.Closing:
 			closed = true
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case dataMessage := <-neuron.DataChan:
-			log.Printf("Neuron %v recording input: %v", neuron.NodeId.UUID, dataMessage)
 			recordInput(weightedInputs, dataMessage)
-			log.Printf("Neuron %v new weightedInputs: %v", neuron.NodeId.UUID, weightedInputs)
 		}
 
 		if closed {
@@ -76,7 +70,6 @@ func (neuron *Neuron) Run() {
 
 		if receiveBarrierSatisfied(weightedInputs) {
 
-			log.Printf("Neuron %v barrier satisfied via inputs: %v", neuron.NodeId.UUID, weightedInputs)
 			scalarOutput := neuron.computeScalarOutput(weightedInputs)
 
 			dataMessage := &DataMessage{
@@ -88,13 +81,9 @@ func (neuron *Neuron) Run() {
 
 			weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
 
-		} else {
-			log.Printf("Neuron %v receive barrier not satisfied.  weightedInputs: %v", neuron.NodeId.UUID, weightedInputs)
 		}
 
 	}
-
-	log.Printf("%v Run() finished", neuron.NodeId.UUID)
 
 }
 
@@ -151,10 +140,9 @@ func (neuron *Neuron) setInbound(newInbound []*InboundConnection) {
 func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 
 	recurrentConnections := neuron.RecurrentOutboundConnections()
-	log.Printf("%v sendEmptySignalRecurrentOutbound() to %v", neuron.NodeId.UUID, recurrentConnections)
+
 	for _, recurrentConnection := range recurrentConnections {
 
-		log.Printf("%v sendEmptySignalRecurrentOutbound -> %v", neuron.NodeId.UUID, recurrentConnection.NodeId.UUID)
 		inputs := []float64{0}
 		dataMessage := &DataMessage{
 			SenderId: neuron.NodeId,
@@ -166,7 +154,6 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 
 		select {
 		case recurrentConnection.DataChan <- dataMessage:
-			log.Printf("%v sent emptySignalRecurrentOutbound -> %v", neuron.NodeId.UUID, recurrentConnection.NodeId.UUID)
 		case <-time.After(time.Second):
 			log.Panicf("Timeout sendEmptySignalRecurrentOutbound to %v, DataChan is nil", recurrentConnection)
 		}
@@ -222,7 +209,6 @@ func (neuron *Neuron) IsInboundConnectionRecurrent(connection *InboundConnection
 func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 	for _, outboundConnection := range neuron.Outbound {
 		dataChan := outboundConnection.DataChan
-		log.Printf("Neuron %v scatter %v to: %v", neuron.NodeId.UUID, dataMessage, outboundConnection)
 		dataChan <- dataMessage
 	}
 }
@@ -371,8 +357,6 @@ func (neuron *Neuron) weightedInputDotProductSum(weightedInputs []*weightedInput
 		weights := weightedInput.weights
 		inputVector := vector.NewFrom(inputs)
 		weightVector := vector.NewFrom(weights)
-		log.Printf("inputVector: %v", inputVector)
-		log.Printf("weightVector: %v", weightVector)
 		dotProduct, error := vector.DotProduct(inputVector, weightVector)
 		if error != nil {
 			t := "%T error performing dot product between %v and %v"
