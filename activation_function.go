@@ -40,6 +40,8 @@ func (activation *EncodableActivation) UnmarshalJSON(bytes []byte) error {
 	switch activation.Name {
 	case "sigmoid":
 		activation.ActivationFunction = Sigmoid
+	case "tanh":
+		activation.ActivationFunction = math.Tanh
 	default:
 		log.Panicf("Unknown activation function: %v", activation.Name)
 	}
