@@ -85,3 +85,46 @@ func XnorTrainingSamples() []*TrainingSample {
 	return examples
 
 }
+
+func BasicCortex() *Cortex {
+
+	shouldReInit := false
+
+	// create nodes
+	sensor := &Sensor{
+		NodeId:       NewSensorId("sensor", 0.0),
+		VectorLength: 2,
+	}
+	sensor.Init(shouldReInit)
+
+	neuron := &Neuron{
+		ActivationFunction: EncodableSigmoid(),
+		NodeId:             NewNeuronId("neuron", 0.25),
+		Bias:               0,
+	}
+	neuron.Init(shouldReInit)
+
+	actuator := &Actuator{
+		NodeId:       NewActuatorId("actuator", 0.5),
+		VectorLength: 1,
+	}
+	actuator.Init(shouldReInit)
+
+	// wire up connections
+	sensor.ConnectOutbound(neuron)
+	neuron.ConnectInboundWeighted(sensor, []float64{20, 20})
+	neuron.ConnectOutbound(actuator)
+	actuator.ConnectInbound(neuron)
+
+	// create cortex
+	nodeId := NewCortexId("cortex")
+	cortex := &Cortex{
+		NodeId: nodeId,
+	}
+	cortex.SetSensors([]*Sensor{sensor})
+	cortex.SetNeurons([]*Neuron{neuron})
+	cortex.SetActuators([]*Actuator{actuator})
+
+	return cortex
+
+}
