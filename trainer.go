@@ -18,3 +18,7 @@ func (t *TrainingSample) String() string {
 		t.SampleInputs,
 		t.ExpectedOutputs)
 }
+
+type Trainer interface {
+	Train(cortex *Cortex, examples []*TrainingSample) *Cortex
+}
