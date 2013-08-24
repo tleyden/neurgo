@@ -82,7 +82,7 @@ assert.True(t, verified)
 
 # Libraries that build on Neurgo
 
-* [neurvolve](https://github.com/tleyden/neurvolve) builds on this library
+* [neurvolve](https://github.com/tleyden/neurvolve) builds on this library to support evolution-based learning.
 
 # Related Work
 
