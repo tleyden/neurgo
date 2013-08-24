@@ -16,6 +16,8 @@ For a more detailed architecture diagram, see the [Neurgo Architecture Prezi](ht
 
 # Example code
 
+(note: out of date!)
+
 ```
 // create network nodes
 neuronProcessor1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
