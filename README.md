@@ -1,4 +1,3 @@
-
 # Neurgo
 
 [![Build Status](https://drone.io/github.com/tleyden/neurgo/status.png)](https://drone.io/github.com/tleyden/neurgo/latest)
@@ -71,23 +70,19 @@ assert.True(t, verified)
 
 # Status
 
-* Feedforward operation is complete
-* Learning via Stochastic Hill Climbing complete (w/ test that trains network to solve XNOR)
-* In progress: ability to cleanly shutdown network
-* Coming soon: Learning via network topology evolution
+* Feedforward operation works
+* Learning via Stochastic Hill Climbing works (see [neurvolve](https://github.com/tleyden/neurvolve))
+* Topological mutatation operators implemented (see [neurvolve](https://github.com/tleyden/neurvolve))
+* Example which evolves a network capable of sovling XOR (see [neurvolve](https://github.com/tleyden/neurvolve))
 
-# Understanding the codebase
+# TODO
 
-Start by reading the code in:
+* Visualize networks
+* Backpropagation based learning (contributions welcome)
 
-* `stochastic_hill_climber.go`
-* `trainer_test.go`
-* `neural_network_test.go`
+# Libraries that build on Neurgo
 
-# Contributing
-
-Wanted: contribution of an implementation of Backpropagation training which follows the `Trainer` interface.
-
+* [neurvolve](https://github.com/tleyden/neurvolve) builds on this library
 
 # Related Work
 
