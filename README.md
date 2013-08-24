@@ -12,7 +12,6 @@ For a more detailed architecture diagram, see the [Neurgo Architecture Prezi](ht
 
 * Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang)
 * 100% test coverage
-* Message passing architecture 
 * Complete documentation & examples
 
 # Example code
