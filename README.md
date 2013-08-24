@@ -11,7 +11,6 @@ For a more detailed architecture diagram, see the [Neurgo Architecture Prezi](ht
 # Project Goals:
 
 * Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang)
-* Support traditional Backpropagation learning methods, in addition to Evolutionary based methods
 * 100% test coverage
 * Message passing architecture 
 * Complete documentation & examples
