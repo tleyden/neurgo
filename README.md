@@ -69,7 +69,8 @@ assert.True(t, verified)
 
 # Status
 
-* Feedforward operation works
+* Feedforward networks completed
+* Recurrent networks completed
 * Learning via Stochastic Hill Climbing works (see [neurvolve](https://github.com/tleyden/neurvolve))
 * Topological mutatation operators implemented (see [neurvolve](https://github.com/tleyden/neurvolve))
 * Example which evolves a network capable of sovling XOR (see [neurvolve](https://github.com/tleyden/neurvolve))
