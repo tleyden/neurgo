@@ -7,16 +7,18 @@ import (
 	"log"
 )
 
-func (cortex Cortex) RenderSVG(writer io.Writer) {
+type NodeCircleSVG struct {
+	x      int
+	y      int
+	radius int
+}
+
+type NodeUUIDToCircleSVG map[string]NodeCircleSVG
+
+func (cortex *Cortex) RenderSVG(writer io.Writer) {
 
 	width := 500
 	height := 500
-	canvas := svg.New(writer)
-
-	canvas.Start(width, height)
-
-	canvas.Rect(0, 0, width, height, canvas.RGB(255, 255, 255))
-
 	x := 100
 	xDelta := 100
 	yDelta := 100
@@ -25,8 +27,14 @@ func (cortex Cortex) RenderSVG(writer io.Writer) {
 	actuatorFill := "fill:red"
 	sensorFill := "fill:blue"
 
+	canvas := svg.New(writer)
+	canvas.Start(width, height)
+	canvas.Rect(0, 0, width, height, canvas.RGB(255, 255, 255))
+
+	nodeUUIDToCircleSVG := make(NodeUUIDToCircleSVG)
 	layerToNodeIdMap := cortex.NodeIdLayerMap()
 	layerIndexes := layerToNodeIdMap.Keys()
+
 	for _, layerIndex := range layerIndexes {
 
 		y := 100
@@ -37,8 +45,6 @@ func (cortex Cortex) RenderSVG(writer io.Writer) {
 		y += yDelta
 
 		for _, nodeId := range nodeIds {
-			log.Printf("nodeId: %v", nodeId)
-			log.Printf("x: %v, y: %v", x, y)
 
 			switch nodeId.NodeType {
 			case NEURON:
@@ -49,12 +55,62 @@ func (cortex Cortex) RenderSVG(writer io.Writer) {
 				canvas.Circle(x, y, radius, sensorFill)
 			}
 
+			circleSVG := NodeCircleSVG{x: x, y: y, radius: radius}
+			nodeUUIDToCircleSVG[nodeId.UUID] = circleSVG
+
 			y += yDelta
 		}
 
 		x += xDelta
 	}
 
+	addConnectionsToSVG(cortex, canvas, nodeUUIDToCircleSVG)
+
 	canvas.End()
 
+}
+
+func addConnectionsToSVG(cortex *Cortex, canvas *svg.SVG, nodeUUIDToCircleSVG NodeUUIDToCircleSVG) {
+
+	// loop over all nodes
+
+	// loop over all outbound connections
+
+	// find node id of source and target
+
+	// loopup circle svg for that node
+
+	// draw a line from source center to target center
+
+	layerToNodeIdMap := cortex.NodeIdLayerMap()
+	layerIndexes := layerToNodeIdMap.Keys()
+
+	for _, layerIndex := range layerIndexes {
+
+		nodeIds := layerToNodeIdMap[layerIndex]
+
+		for _, nodeId := range nodeIds {
+			log.Printf("nodeId: %v", nodeId)
+
+			node := cortex.FindConnector(nodeId)
+			if node == nil {
+				continue
+			}
+			for _, outbound := range node.outbound() {
+				tgtNodeId := outbound.NodeId
+				srcCircle := nodeUUIDToCircleSVG[nodeId.UUID]
+				tgtCircle := nodeUUIDToCircleSVG[tgtNodeId.UUID]
+				connectNodesSVG(canvas, srcCircle, tgtCircle)
+
+			}
+
+		}
+
+	}
+
+}
+
+func connectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
+	linestyle := []string{`stroke="blue"`, `stroke-linecap="round"`, `stroke-width="5"`}
+	canvas.Line(src.x, src.y, tgt.x, tgt.y, linestyle[0], linestyle[1], linestyle[2])
 }
