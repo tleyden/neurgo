@@ -72,30 +72,26 @@ func (cortex *Cortex) RenderSVG(writer io.Writer) {
 
 func addConnectionsToSVG(cortex *Cortex, canvas *svg.SVG, nodeUUIDToCircleSVG NodeUUIDToCircleSVG) {
 
-	// loop over all nodes
-
-	// loop over all outbound connections
-
-	// find node id of source and target
-
-	// loopup circle svg for that node
-
-	// draw a line from source center to target center
-
 	layerToNodeIdMap := cortex.NodeIdLayerMap()
 	layerIndexes := layerToNodeIdMap.Keys()
 
+	// loop over all layers
 	for _, layerIndex := range layerIndexes {
 
 		nodeIds := layerToNodeIdMap[layerIndex]
 
+		// loop over all nodes
 		for _, nodeId := range nodeIds {
 			log.Printf("nodeId: %v", nodeId)
 
+			// lookup node (assuming it is an OutboundConnector)
 			node := cortex.FindConnector(nodeId)
 			if node == nil {
+				// if not, ignore it (eg, actuator)
 				continue
 			}
+
+			// loop over all outbound connections
 			for _, outbound := range node.outbound() {
 				tgtNodeId := outbound.NodeId
 				srcCircle := nodeUUIDToCircleSVG[nodeId.UUID]
