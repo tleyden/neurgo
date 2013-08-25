@@ -23,9 +23,9 @@ func (cortex *Cortex) RenderSVG(writer io.Writer) {
 	xDelta := 100
 	yDelta := 100
 	radius := 25
-	neuronFill := "fill:black"
+	neuronFill := "fill:blue"
 	actuatorFill := "fill:red"
-	sensorFill := "fill:blue"
+	sensorFill := "fill:green"
 
 	canvas := svg.New(writer)
 	canvas.Start(width, height)
@@ -111,6 +111,6 @@ func addConnectionsToSVG(cortex *Cortex, canvas *svg.SVG, nodeUUIDToCircleSVG No
 }
 
 func connectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
-	linestyle := []string{`stroke="blue"`, `stroke-linecap="round"`, `stroke-width="5"`}
+	linestyle := []string{`stroke="black"`, `stroke-linecap="round"`, `stroke-width="5"`}
 	canvas.Line(src.x, src.y, tgt.x, tgt.y, linestyle[0], linestyle[1], linestyle[2])
 }
