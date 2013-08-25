@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"fmt"
 	"github.com/ajstarks/svgo"
 	"io"
 	"log"
@@ -16,21 +17,42 @@ func (cortex Cortex) RenderSVG(writer io.Writer) {
 
 	canvas.Rect(0, 0, width, height, canvas.RGB(255, 255, 255))
 
-	xOffset := 50
+	x := 100
+	xDelta := 100
+	yDelta := 100
+	radius := 25
+	neuronFill := "fill:black"
+	actuatorFill := "fill:red"
+	sensorFill := "fill:blue"
 
 	layerToNodeIdMap := cortex.NodeIdLayerMap()
 	layerIndexes := layerToNodeIdMap.Keys()
 	for _, layerIndex := range layerIndexes {
 
-		yOffset := 50
+		y := 100
 		nodeIds := layerToNodeIdMap[layerIndex]
+		layerIndexStr := fmt.Sprintf("%v", layerIndex)
+
+		canvas.Text(x, y, layerIndexStr, "font-size:12;fill:black")
+		y += yDelta
+
 		for _, nodeId := range nodeIds {
 			log.Printf("nodeId: %v", nodeId)
-			canvas.Circle(xOffset, yOffset, 5, "fill:black")
-			yOffset += 50
+			log.Printf("x: %v, y: %v", x, y)
+
+			switch nodeId.NodeType {
+			case NEURON:
+				canvas.Circle(x, y, radius, neuronFill)
+			case ACTUATOR:
+				canvas.Circle(x, y, radius, actuatorFill)
+			case SENSOR:
+				canvas.Circle(x, y, radius, sensorFill)
+			}
+
+			y += yDelta
 		}
 
-		xOffset += 50
+		x += xDelta
 	}
 
 	canvas.End()
