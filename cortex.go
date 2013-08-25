@@ -16,7 +16,7 @@ type Cortex struct {
 	SyncChan  chan *NodeId
 }
 
-type ActuatorBarrier map[*NodeId]bool
+type ActuatorBarrier map[*NodeId]bool // TODO: fixme!! totally broken
 type UUIDToNeuronMap map[string]*Neuron
 
 func (cortex *Cortex) MarshalJSON() ([]byte, error) {
