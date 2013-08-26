@@ -40,6 +40,19 @@ func (l LayerToNodeIdMap) NewLayerBetween(initial, final float64) float64 {
 	return (initial + final) / 2.0
 }
 
+func (l LayerToNodeIdMap) LayersAdjacent(initial, final float64) bool {
+	if initial == final {
+		return true
+	}
+
+	initialIntegerIndex := l.IntegerIndexOf(initial)
+	finalIntegerIndex := l.IntegerIndexOf(final)
+
+	delta := finalIntegerIndex - initialIntegerIndex
+	return math.Abs(float64(delta)) == 1.0
+
+}
+
 func (l LayerToNodeIdMap) LayerBetweenOrNew(initial, final float64) float64 {
 
 	if initial == final {
