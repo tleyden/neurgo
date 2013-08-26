@@ -24,7 +24,7 @@ func (cortex *Cortex) RenderSVG(writer io.Writer) {
 	yDelta := 100
 	radius := 25
 	neuronFill := "fill:blue"
-	actuatorFill := "fill:red"
+	actuatorFill := "fill:magenta"
 	sensorFill := "fill:green"
 
 	canvas := svg.New(writer)
@@ -96,7 +96,8 @@ func addConnectionsToSVG(cortex *Cortex, canvas *svg.SVG, nodeUUIDToCircleSVG No
 				tgtNodeId := outbound.NodeId
 				srcCircle := nodeUUIDToCircleSVG[nodeId.UUID]
 				tgtCircle := nodeUUIDToCircleSVG[tgtNodeId.UUID]
-				connectNodesSVG(canvas, srcCircle, tgtCircle)
+				forwardConnectNodesSVG(canvas, srcCircle, tgtCircle)
+				recurrentConnectNodesSVG(canvas, srcCircle, tgtCircle)
 
 			}
 
@@ -106,7 +107,31 @@ func addConnectionsToSVG(cortex *Cortex, canvas *svg.SVG, nodeUUIDToCircleSVG No
 
 }
 
-func connectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
+func recurrentConnectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
+
+	// draw a bezier curve
+
+	linestyle2 := []string{`stroke="turquoise"`, `stroke-linecap="round"`, `stroke-width="5"`, `fill="none"`}
+
+	// line: src.x 100, src.y: 200 tgt.x: 200 tgt.y: 200
+	srcX := src.x
+	srcY := src.y
+	tgtX := tgt.x
+	tgtY := tgt.y
+	controlX := (srcX + tgtX) / 2
+	controlY := srcY - 50
+	canvas.Qbez(srcX, srcY, controlX, controlY, tgtX, tgtY, linestyle2[0], linestyle2[1], linestyle2[2], linestyle2[3])
+
+	// find the x midpoint
+	// xMidpoint := (src.x + src.y) / 2
+
+}
+
+func forwardConnectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
 	linestyle := []string{`stroke="black"`, `stroke-linecap="round"`, `stroke-width="5"`}
+
+	log.Printf("line: src.x %v, src.y: %v tgt.x: %v tgt.y: %v", src.x, src.y, tgt.x, tgt.y)
+
 	canvas.Line(src.x, src.y, tgt.x, tgt.y, linestyle[0], linestyle[1], linestyle[2])
+
 }
