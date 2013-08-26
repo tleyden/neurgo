@@ -5,6 +5,7 @@ import (
 	"github.com/ajstarks/svgo"
 	"io"
 	"log"
+	"os"
 )
 
 type Point struct {
@@ -19,10 +20,23 @@ type NodeCircleSVG struct {
 
 type NodeUUIDToCircleSVG map[string]NodeCircleSVG
 
+func (cortex *Cortex) RenderSVGFile(filename string) {
+	outfile, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err := outfile.Close(); err != nil {
+			panic(err)
+		}
+	}()
+	cortex.RenderSVG(outfile)
+}
+
 func (cortex *Cortex) RenderSVG(writer io.Writer) {
 
-	width := 500
-	height := 500
+	width := 1000
+	height := 1000
 	x := 100
 	xDelta := 100
 	yDelta := 100
@@ -100,8 +114,21 @@ func addConnectionsToSVG(cortex *Cortex, canvas *svg.SVG, nodeUUIDToCircleSVG No
 				tgtNodeId := outbound.NodeId
 				srcCircle := nodeUUIDToCircleSVG[nodeId.UUID]
 				tgtCircle := nodeUUIDToCircleSVG[tgtNodeId.UUID]
-				forwardConnectNodesSVG(canvas, srcCircle, tgtCircle)
-				recurrentConnectNodesSVG(canvas, srcCircle, tgtCircle)
+
+				layerDelta := tgtNodeId.LayerIndex - nodeId.LayerIndex
+				if layerDelta > 0 {
+					adjacent := layerToNodeIdMap.LayersAdjacent(nodeId.LayerIndex, tgtNodeId.LayerIndex)
+					if adjacent {
+						forwardConnectNodesSVG(canvas, srcCircle, tgtCircle)
+					} else {
+						forwardConnectDistantNodesSVG(canvas, srcCircle, tgtCircle)
+					}
+
+				} else if layerDelta == 0 {
+					selfRecurrentConnectNodesSVG(canvas, srcCircle, tgtCircle)
+				} else if layerDelta < 0 {
+					recurrentConnectNodesSVG(canvas, srcCircle, tgtCircle)
+				}
 
 			}
 
@@ -113,23 +140,26 @@ func addConnectionsToSVG(cortex *Cortex, canvas *svg.SVG, nodeUUIDToCircleSVG No
 
 func recurrentConnectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
 
-	// draw a bezier curve
+	linestyle2 := []string{`stroke="turquoise"`, `stroke-linecap="round"`, `stroke-width="5"`, `fill="none"`}
+	midpoint := midpoint(Point{x: src.x, y: src.y}, Point{x: tgt.x, y: tgt.y})
+	controlX := midpoint.x
+	controlY := midpoint.y - 50
+	canvas.Qbez(src.x, src.y, controlX, controlY, tgt.x, tgt.y, linestyle2[0], linestyle2[1], linestyle2[2], linestyle2[3])
+
+}
+
+func selfRecurrentConnectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
 
 	linestyle2 := []string{`stroke="turquoise"`, `stroke-linecap="round"`, `stroke-width="5"`, `fill="none"`}
 
-	// line: src.x 100, src.y: 200 tgt.x: 200 tgt.y: 200
-	srcX := src.x
+	srcX := src.x - 10
 	srcY := src.y
-	tgtX := tgt.x
-	tgtY := tgt.y
+	tgtX := src.x + 10
+	tgtY := src.y
 
-	midpoint := midpoint(Point{x: srcX, y: srcY}, Point{x: tgtX, y: tgtY})
-	controlX := midpoint.x
-	controlY := midpoint.y - 50
+	controlX := src.x
+	controlY := src.y - 100
 	canvas.Qbez(srcX, srcY, controlX, controlY, tgtX, tgtY, linestyle2[0], linestyle2[1], linestyle2[2], linestyle2[3])
-
-	// find the x midpoint
-	// xMidpoint := (src.x + src.y) / 2
 
 }
 
@@ -146,5 +176,15 @@ func forwardConnectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSV
 	log.Printf("line: src.x %v, src.y: %v tgt.x: %v tgt.y: %v", src.x, src.y, tgt.x, tgt.y)
 
 	canvas.Line(src.x, src.y, tgt.x, tgt.y, linestyle[0], linestyle[1], linestyle[2])
+
+}
+
+func forwardConnectDistantNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
+
+	linestyle2 := []string{`stroke="black"`, `stroke-linecap="round"`, `stroke-width="5"`, `fill="none"`, `stroke-dasharray="10,10"`}
+	midpoint := midpoint(Point{x: src.x, y: src.y}, Point{x: tgt.x, y: tgt.y})
+	controlX := midpoint.x
+	controlY := midpoint.y + 50
+	canvas.Qbez(src.x, src.y, controlX, controlY, tgt.x, tgt.y, linestyle2[0], linestyle2[1], linestyle2[2], linestyle2[3], linestyle2[4])
 
 }
