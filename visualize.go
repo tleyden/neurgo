@@ -7,9 +7,13 @@ import (
 	"log"
 )
 
+type Point struct {
+	x int
+	y int
+}
+
 type NodeCircleSVG struct {
-	x      int
-	y      int
+	Point
 	radius int
 }
 
@@ -55,7 +59,7 @@ func (cortex *Cortex) RenderSVG(writer io.Writer) {
 				canvas.Circle(x, y, radius, sensorFill)
 			}
 
-			circleSVG := NodeCircleSVG{x: x, y: y, radius: radius}
+			circleSVG := NodeCircleSVG{Point{x: x, y: y}, radius}
 			nodeUUIDToCircleSVG[nodeId.UUID] = circleSVG
 
 			y += yDelta
@@ -118,13 +122,22 @@ func recurrentConnectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircle
 	srcY := src.y
 	tgtX := tgt.x
 	tgtY := tgt.y
-	controlX := (srcX + tgtX) / 2
-	controlY := srcY - 50
+
+	midpoint := midpoint(Point{x: srcX, y: srcY}, Point{x: tgtX, y: tgtY})
+	controlX := midpoint.x
+	controlY := midpoint.y - 50
 	canvas.Qbez(srcX, srcY, controlX, controlY, tgtX, tgtY, linestyle2[0], linestyle2[1], linestyle2[2], linestyle2[3])
 
 	// find the x midpoint
 	// xMidpoint := (src.x + src.y) / 2
 
+}
+
+func midpoint(p1 Point, p2 Point) Point {
+	pResult := Point{}
+	pResult.x = (p1.x + p2.x) / 2
+	pResult.y = (p1.y + p2.y) / 2
+	return pResult
 }
 
 func forwardConnectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
