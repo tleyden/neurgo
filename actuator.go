@@ -180,15 +180,8 @@ func (actuator *Actuator) Init(reInit bool) {
 
 }
 
-func (actuator *Actuator) ConnectInbound(connectable InboundConnectable) {
-	if actuator.Inbound == nil {
-		actuator.Inbound = make([]*InboundConnection, 0)
-	}
-	connection := &InboundConnection{
-		NodeId:  connectable.nodeId(),
-		Weights: nil,
-	}
-	actuator.Inbound = append(actuator.Inbound, connection)
+func (actuator *Actuator) ConnectInbound(connectable InboundConnectable) *InboundConnection {
+	return ConnectInbound(actuator, connectable)
 }
 
 func (actuator *Actuator) inbound() []*InboundConnection {

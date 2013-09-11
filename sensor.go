@@ -179,21 +179,8 @@ func (sensor *Sensor) validateOutbound() error {
 	return nil
 }
 
-func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) {
-	if s.Outbound == nil {
-		s.Outbound = make([]*OutboundConnection, 0)
-	}
-
-	if connectable.dataChan() == nil {
-		log.Panicf("Cannot make outbound connection, dataChan == nil")
-	}
-
-	connection := &OutboundConnection{
-		NodeId:   connectable.nodeId(),
-		DataChan: connectable.dataChan(),
-	}
-
-	s.Outbound = append(s.Outbound, connection)
+func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) *OutboundConnection {
+	return ConnectOutbound(s, connectable)
 }
 
 func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {

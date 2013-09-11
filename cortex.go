@@ -98,6 +98,7 @@ func (cortex *Cortex) Shutdown() {
 // So by doing a "destructive reInit" it will rebuild all DataChan's
 // and all outbound connections which contain DataChan's, thus solving
 // the problem.
+// TODO: fix this hack
 func (cortex *Cortex) Init(reInit bool) {
 
 	if reInit == true {

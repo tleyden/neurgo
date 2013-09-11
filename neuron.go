@@ -92,27 +92,11 @@ func (neuron *Neuron) String() string {
 }
 
 func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) *OutboundConnection {
-	if neuron.Outbound == nil {
-		neuron.Outbound = make([]*OutboundConnection, 0)
-	}
-	connection := &OutboundConnection{
-		NodeId:   connectable.nodeId(),
-		DataChan: connectable.dataChan(),
-	}
-	neuron.Outbound = append(neuron.Outbound, connection)
-	return connection
+	return ConnectOutbound(neuron, connectable)
 }
 
 func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, weights []float64) *InboundConnection {
-	if neuron.Inbound == nil {
-		neuron.Inbound = make([]*InboundConnection, 0)
-	}
-	connection := &InboundConnection{
-		NodeId:  connectable.nodeId(),
-		Weights: weights,
-	}
-	neuron.Inbound = append(neuron.Inbound, connection)
-	return connection
+	return ConnectInboundWeighted(neuron, connectable, weights)
 }
 
 func (neuron *Neuron) outbound() []*OutboundConnection {
@@ -221,6 +205,7 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 // So by doing a "destructive reInit" it will rebuild all DataChan's
 // and all outbound connections which contain DataChan's, thus solving
 // the problem.
+// TODO: fix this hack
 func (neuron *Neuron) Init(reInit bool) {
 	if reInit == true {
 		neuron.Closing = make(chan chan bool)
