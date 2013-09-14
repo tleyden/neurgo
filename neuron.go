@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/couchbaselabs/logg"
 	"github.com/proxypoke/vector"
 	"log"
 	"sync"
@@ -59,6 +60,7 @@ func (neuron *Neuron) Run() {
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case dataMessage := <-neuron.DataChan:
+			neuron.logDataReceive(dataMessage)
 			recordInput(weightedInputs, dataMessage)
 		}
 
@@ -191,7 +193,11 @@ func (neuron *Neuron) IsInboundConnectionRecurrent(connection *InboundConnection
 }
 
 func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
+
 	for _, outboundConnection := range neuron.Outbound {
+		logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
+			outboundConnection.NodeId.UUID, dataMessage)
+		logg.LogTo("NODE_SEND", logmsg)
 		dataChan := outboundConnection.DataChan
 		dataChan <- dataMessage
 	}
@@ -378,4 +384,11 @@ func (neuron *Neuron) shutdownOutboundConnections() {
 	for _, outboundConnection := range neuron.Outbound {
 		outboundConnection.DataChan = nil
 	}
+}
+
+func (neuron *Neuron) logDataReceive(dataMessage *DataMessage) {
+	sender := dataMessage.SenderId.UUID
+	logmsg := fmt.Sprintf("%v -> %v: %v", sender,
+		neuron.NodeId.UUID, dataMessage)
+	logg.LogTo("NODE_RECV", logmsg)
 }
