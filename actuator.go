@@ -3,6 +3,7 @@ package neurgo
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/couchbaselabs/logg"
 	"log"
 	"sync"
 )
@@ -55,6 +56,7 @@ func (actuator *Actuator) Run() {
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case dataMessage := <-actuator.DataChan:
+			actuator.logDataReceive(dataMessage)
 			recordInput(weightedInputs, dataMessage)
 		}
 
@@ -202,4 +204,11 @@ func (actuator *Actuator) nodeId() *NodeId {
 
 func (actuator *Actuator) CanAddInboundConnection() bool {
 	return len(actuator.Inbound) < actuator.VectorLength
+}
+
+func (actuator *Actuator) logDataReceive(dataMessage *DataMessage) {
+	sender := dataMessage.SenderId.UUID
+	logmsg := fmt.Sprintf("%v -> %v: %v", sender,
+		actuator.NodeId.UUID, dataMessage)
+	logg.LogTo("NODE_RECV", logmsg)
 }

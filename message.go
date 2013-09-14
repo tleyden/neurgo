@@ -10,8 +10,5 @@ type DataMessage struct {
 }
 
 func (dataMessage *DataMessage) String() string {
-	return fmt.Sprintf("sender: %v, values: %v",
-		dataMessage.SenderId,
-		dataMessage.Inputs,
-	)
+	return fmt.Sprintf("%v", dataMessage.Inputs)
 }
