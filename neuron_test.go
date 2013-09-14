@@ -72,7 +72,7 @@ func TestRecurrentNeuron(t *testing.T) {
 	inboundN2 := []*InboundConnection{inboundConnectionToN2}
 
 	closingN2 := make(chan chan bool)
-	dataN2 := make(chan *DataMessage, len(inboundN2))
+	dataN2 := make(chan *DataMessage)
 
 	inboundConnectionToN1 := &InboundConnection{
 		NodeId:  injectorNodeId_1,
@@ -99,7 +99,7 @@ func TestRecurrentNeuron(t *testing.T) {
 	}
 
 	closingN1 := make(chan chan bool)
-	dataN1 := make(chan *DataMessage, len(inboundN1))
+	dataN1 := make(chan *DataMessage)
 
 	neuronN1 := &Neuron{
 		ActivationFunction: activation,

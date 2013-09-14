@@ -146,16 +146,12 @@ func (actuator *Actuator) checkRunnable() {
 }
 
 func (actuator *Actuator) Init(reInit bool) {
-	if reInit == true {
-		actuator.Closing = make(chan chan bool)
-	} else if actuator.Closing == nil {
+	if reInit == true || actuator.Closing == nil {
 		actuator.Closing = make(chan chan bool)
 	}
 
-	if reInit == true {
-		actuator.DataChan = make(chan *DataMessage, len(actuator.Inbound))
-	} else if actuator.DataChan == nil {
-		actuator.DataChan = make(chan *DataMessage, len(actuator.Inbound))
+	if reInit == true || actuator.DataChan == nil {
+		actuator.DataChan = make(chan *DataMessage)
 	}
 
 	if reInit == true {

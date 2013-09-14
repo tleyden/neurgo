@@ -21,6 +21,7 @@ type Neuron struct {
 	ActivationFunction *EncodableActivation
 	wg                 *sync.WaitGroup
 	Cortex             *Cortex
+	weightedInputs     []*weightedInput
 }
 
 func (neuron *Neuron) MarshalJSON() ([]byte, error) {
@@ -46,13 +47,15 @@ func (neuron *Neuron) Run() {
 
 	neuron.checkRunnable()
 
-	neuron.sendEmptySignalRecurrentOutbound()
+	neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
 
-	weightedInputs := createEmptyWeightedInputs(neuron.Inbound)
+	neuron.sendEmptySignalRecurrentOutbound()
 
 	closed := false
 
 	for {
+
+		logg.LogTo("MISC", "Neuron checking for incoming messages: %v", neuron.NodeId.UUID)
 
 		select {
 		case responseChan := <-neuron.Closing:
@@ -60,8 +63,7 @@ func (neuron *Neuron) Run() {
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case dataMessage := <-neuron.DataChan:
-			neuron.logDataReceive(dataMessage)
-			recordInput(weightedInputs, dataMessage)
+			neuron.receiveDataMessage(dataMessage)
 		}
 
 		if closed {
@@ -70,22 +72,9 @@ func (neuron *Neuron) Run() {
 			break
 		}
 
-		if receiveBarrierSatisfied(weightedInputs) {
-
-			scalarOutput := neuron.computeScalarOutput(weightedInputs)
-
-			dataMessage := &DataMessage{
-				SenderId: neuron.NodeId,
-				Inputs:   []float64{scalarOutput},
-			}
-
-			neuron.scatterOutput(dataMessage)
-
-			weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
-
-		}
-
 	}
+
+	logg.LogTo("MISC", "Neuron run() finished: %v", neuron.NodeId.UUID)
 
 }
 
@@ -134,14 +123,31 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 			SenderId: neuron.NodeId,
 			Inputs:   inputs,
 		}
-		if recurrentConnection.DataChan == nil {
-			log.Panicf("Can't sendEmptySignalRecurrentOutbound to %v, DataChan is nil", recurrentConnection)
-		}
 
-		select {
-		case recurrentConnection.DataChan <- dataMessage:
-		case <-time.After(time.Second):
-			log.Panicf("Timeout sendEmptySignalRecurrentOutbound to %v, DataChan is nil", recurrentConnection)
+		if recurrentConnection.NodeId.UUID == neuron.NodeId.UUID {
+			// we are sending to ourselves, so short-circuit the
+			// channel based messaging so we can use unbuffered channels
+			logmsg := fmt.Sprintf("**** %v -> %v: %v", neuron.NodeId.UUID,
+				neuron.NodeId.UUID, dataMessage)
+			logg.LogTo("NODE_SEND", logmsg)
+
+			neuron.receiveDataMessage(dataMessage)
+		} else {
+
+			if recurrentConnection.DataChan == nil {
+				log.Panicf("Can't sendEmptySignalRecurrentOutbound to %v, DataChan is nil", recurrentConnection)
+			}
+
+			select {
+			case recurrentConnection.DataChan <- dataMessage:
+			case <-time.After(time.Second):
+				log.Panicf("Timeout sendEmptySignalRecurrentOutbound to %v", recurrentConnection)
+			}
+
+			logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
+				neuron.NodeId.UUID, dataMessage)
+			logg.LogTo("NODE_SEND", logmsg)
+
 		}
 
 	}
@@ -195,11 +201,23 @@ func (neuron *Neuron) IsInboundConnectionRecurrent(connection *InboundConnection
 func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 
 	for _, outboundConnection := range neuron.Outbound {
-		logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
-			outboundConnection.NodeId.UUID, dataMessage)
-		logg.LogTo("NODE_SEND", logmsg)
-		dataChan := outboundConnection.DataChan
-		dataChan <- dataMessage
+
+		if outboundConnection.NodeId.UUID == neuron.NodeId.UUID {
+
+			logmsg := fmt.Sprintf("*** %v -> %v: %v", neuron.NodeId.UUID,
+				outboundConnection.NodeId.UUID, dataMessage)
+			logg.LogTo("NODE_SEND", logmsg)
+
+			neuron.receiveDataMessage(dataMessage)
+		} else {
+			dataChan := outboundConnection.DataChan
+			dataChan <- dataMessage
+			logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
+				outboundConnection.NodeId.UUID, dataMessage)
+			logg.LogTo("NODE_SEND", logmsg)
+
+		}
+
 	}
 }
 
@@ -213,16 +231,12 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 // the problem.
 // TODO: fix this hack
 func (neuron *Neuron) Init(reInit bool) {
-	if reInit == true {
-		neuron.Closing = make(chan chan bool)
-	} else if neuron.Closing == nil {
+	if reInit == true || neuron.Closing == nil {
 		neuron.Closing = make(chan chan bool)
 	}
 
-	if reInit == true {
-		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
-	} else if neuron.DataChan == nil {
-		neuron.DataChan = make(chan *DataMessage, len(neuron.Inbound))
+	if reInit == true || neuron.DataChan == nil {
+		neuron.DataChan = make(chan *DataMessage)
 	}
 
 	if reInit == true {
@@ -311,12 +325,6 @@ func (neuron *Neuron) checkRunnable() {
 		panic(msg)
 	}
 
-	inboundRecurrentCxns := neuron.RecurrentInboundConnections()
-	if cap(neuron.DataChan) < len(inboundRecurrentCxns) {
-		msg := fmt.Sprintf("dataChan buffer capacity %v less than # of inbound recurrent connections: %v", cap(neuron.DataChan), len(inboundRecurrentCxns))
-		panic(msg)
-	}
-
 }
 
 func (neuron *Neuron) validateOutbound() error {
@@ -386,7 +394,31 @@ func (neuron *Neuron) shutdownOutboundConnections() {
 	}
 }
 
-func (neuron *Neuron) logDataReceive(dataMessage *DataMessage) {
+func (neuron *Neuron) receiveDataMessage(dataMessage *DataMessage) {
+	neuron.logReceivedDataMessage(dataMessage)
+	recordInput(neuron.weightedInputs, dataMessage)
+
+	if receiveBarrierSatisfied(neuron.weightedInputs) {
+
+		logg.LogTo("MISC", "receive barrier satisfied %v", neuron.NodeId.UUID)
+		scalarOutput := neuron.computeScalarOutput(neuron.weightedInputs)
+
+		neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
+
+		dataMessage := &DataMessage{
+			SenderId: neuron.NodeId,
+			Inputs:   []float64{scalarOutput},
+		}
+
+		neuron.scatterOutput(dataMessage)
+
+	} else {
+		logg.LogTo("MISC", "receive barrier NOT satisfied %v", neuron.NodeId.UUID)
+	}
+
+}
+
+func (neuron *Neuron) logReceivedDataMessage(dataMessage *DataMessage) {
 	sender := dataMessage.SenderId.UUID
 	logmsg := fmt.Sprintf("%v -> %v: %v", sender,
 		neuron.NodeId.UUID, dataMessage)
