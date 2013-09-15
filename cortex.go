@@ -68,16 +68,13 @@ func (cortex *Cortex) Copy() *Cortex {
 		log.Fatal(err)
 	}
 
-	cortexCopy.Init(false)
-	cortexCopy.InitOutboundConnections()
-
 	return cortexCopy
 
 }
 
 func (cortex *Cortex) Run() {
 
-	cortex.Init(false)
+	cortex.Init()
 	cortex.InitOutboundConnections()
 
 	cortex.checkRunnable()
@@ -110,31 +107,21 @@ func (cortex *Cortex) Shutdown() {
 }
 
 // Initialize/re-initialize the cortex.
-// reInit: basically this is a messy hack to solve the issue:
-// - neuron.Init() function is called and DataChan buffer len = X
-// - new recurrent connections are added
-// - since the DataChan buffer len is X, and needs to be X+1, network is wedged
-// So by doing a "destructive reInit" it will rebuild all DataChan's
-// and all outbound connections which contain DataChan's, thus solving
-// the problem.
-// TODO: fix this hack
-func (cortex *Cortex) Init(reInit bool) {
+func (cortex *Cortex) Init() {
 
 	if cortex.SyncChan == nil {
 		cortex.SyncChan = make(chan *NodeId, 1)
 	}
 
 	for _, sensor := range cortex.Sensors {
-		sensor.Init(false)
+		sensor.Init()
 	}
 	for _, neuron := range cortex.Neurons {
-		neuron.Init(false)
+		neuron.Init()
 	}
 	for _, actuator := range cortex.Actuators {
-		actuator.Init(false)
+		actuator.Init()
 	}
-
-	// cortex.InitOutboundConnections()
 
 }
 
@@ -176,8 +163,7 @@ func (cortex *Cortex) CreateNeuronInLayer(layerIndex float64) *Neuron {
 	}
 	neuron.Cortex = cortex
 
-	reInit := false
-	neuron.Init(reInit)
+	neuron.Init()
 
 	cortex.Neurons = append(cortex.Neurons, neuron)
 
@@ -309,8 +295,7 @@ func (cortex *Cortex) Verify(samples []*TrainingSample) bool {
 
 func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
-	shouldReInit := true
-	cortex.Init(shouldReInit)
+	cortex.Init() // TODO: I think this is redundant
 
 	errorAccumulated := float64(0)
 

@@ -15,11 +15,6 @@ func TestCortexCopy(t *testing.T) {
 	xnorCortex := XnorCortex()
 	xnorCortexCopy := xnorCortex.Copy()
 
-	// shouldReInit := false
-	// xnorCortexCopy.Init(shouldReInit)
-	sensor := xnorCortexCopy.Sensors[0]
-	assert.True(t, sensor.Outbound[0].DataChan != nil)
-
 	for _, neuron := range xnorCortex.Neurons {
 		assert.False(t, neuron.Cortex == nil)
 	}
@@ -69,6 +64,9 @@ func TestCortexInit(t *testing.T) {
 	}
 	assert.True(t, err == nil)
 
+	cortex.Init()
+	cortex.InitOutboundConnections()
+
 	neuron := cortex.Neurons[0]
 	assert.True(t, neuron.DataChan != nil)
 
@@ -94,8 +92,7 @@ func TestSyncActuators(t *testing.T) {
 		SyncChan:  syncChan,
 	}
 
-	shouldReInit := false
-	cortex.Init(shouldReInit)
+	cortex.Init()
 
 	syncChan <- actuatorNodeId
 

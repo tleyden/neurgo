@@ -145,21 +145,16 @@ func (actuator *Actuator) checkRunnable() {
 
 }
 
-func (actuator *Actuator) Init(reInit bool) {
-	if reInit == true || actuator.Closing == nil {
+func (actuator *Actuator) Init() {
+	if actuator.Closing == nil {
 		actuator.Closing = make(chan chan bool)
 	}
 
-	if reInit == true || actuator.DataChan == nil {
+	if actuator.DataChan == nil {
 		actuator.DataChan = make(chan *DataMessage)
 	}
 
-	if reInit == true {
-		actuatorFunc := func(outputs []float64) {
-			log.Panicf("defualt actuator function called - do nothing")
-		}
-		actuator.ActuatorFunction = actuatorFunc
-	} else if actuator.ActuatorFunction == nil {
+	if actuator.ActuatorFunction == nil {
 		// if there is no ActuatorFunction, create a default
 		// function which does nothing
 		actuatorFunc := func(outputs []float64) {
@@ -168,10 +163,7 @@ func (actuator *Actuator) Init(reInit bool) {
 		actuator.ActuatorFunction = actuatorFunc
 	}
 
-	if reInit == true {
-		actuator.wg = &sync.WaitGroup{}
-		actuator.wg.Add(1)
-	} else if actuator.wg == nil {
+	if actuator.wg == nil {
 		actuator.wg = &sync.WaitGroup{}
 		actuator.wg.Add(1)
 	}

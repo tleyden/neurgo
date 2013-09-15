@@ -7,8 +7,6 @@ import (
 
 func TestDisconnect(t *testing.T) {
 
-	shouldReInit := false
-
 	sensorNodeId := NewSensorId("sensor", 0.0)
 	neuronNodeId := NewNeuronId("neuron", 0.25)
 
@@ -17,13 +15,13 @@ func TestDisconnect(t *testing.T) {
 		NodeId:             neuronNodeId,
 		Bias:               -30,
 	}
-	neuron.Init(shouldReInit)
+	neuron.Init()
 
 	sensor := &Sensor{
 		NodeId:       sensorNodeId,
 		VectorLength: 2,
 	}
-	sensor.Init(shouldReInit)
+	sensor.Init()
 
 	weights := RandomWeights(1)
 	outboundConnection := ConnectOutbound(sensor, neuron)
@@ -72,8 +70,6 @@ func TestCreateEmptyWeightedInputs(t *testing.T) {
 
 func TestConnections(t *testing.T) {
 
-	shouldReInit := false
-
 	sensorNodeId := NewSensorId("sensor", 0.0)
 	hiddenNeuron1NodeId := NewNeuronId("hidden-neuron1", 0.25)
 	hiddenNeuron2NodeId := NewNeuronId("hidden-neuron2", 0.25)
@@ -86,33 +82,33 @@ func TestConnections(t *testing.T) {
 		NodeId:             hiddenNeuron1NodeId,
 		Bias:               -30,
 	}
-	hiddenNeuron1.Init(shouldReInit)
+	hiddenNeuron1.Init()
 
 	hiddenNeuron2 := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             hiddenNeuron2NodeId,
 		Bias:               10,
 	}
-	hiddenNeuron2.Init(shouldReInit)
+	hiddenNeuron2.Init()
 
 	outputNeuron := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             outputNeuronNodeIde,
 		Bias:               -10,
 	}
-	outputNeuron.Init(shouldReInit)
+	outputNeuron.Init()
 
 	sensor := &Sensor{
 		NodeId:       sensorNodeId,
 		VectorLength: 2,
 	}
-	sensor.Init(shouldReInit)
+	sensor.Init()
 
 	actuator := &Actuator{
 		NodeId:       actuatorNodeId,
 		VectorLength: 1,
 	}
-	actuator.Init(shouldReInit)
+	actuator.Init()
 
 	sensor.ConnectOutbound(hiddenNeuron1)
 	hiddenNeuron1.ConnectInboundWeighted(sensor, []float64{20, 20})

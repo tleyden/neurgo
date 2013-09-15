@@ -73,48 +73,27 @@ func (sensor *Sensor) Run() {
 
 }
 
-func (sensor *Sensor) Init(reInit bool) {
-	if reInit == true {
-		sensor.Closing = make(chan chan bool)
-	} else if sensor.Closing == nil {
+func (sensor *Sensor) Init() {
+	if sensor.Closing == nil {
 		sensor.Closing = make(chan chan bool)
 	}
 
-	if reInit == true {
+	if sensor.SyncChan == nil {
 		sensor.SyncChan = make(chan bool)
-	} else {
-		if sensor.SyncChan == nil {
-			sensor.SyncChan = make(chan bool)
-		}
 	}
 
-	if reInit == true {
+	if sensor.SensorFunction == nil {
+		// if there is no SensorFunction, create a default
+		// function which emits a 0-vector
 		sensorFunc := func(syncCounter int) []float64 {
 			return make([]float64, sensor.VectorLength)
 		}
 		sensor.SensorFunction = sensorFunc
-
-	} else {
-		if sensor.SensorFunction == nil {
-			// if there is no SensorFunction, create a default
-			// function which emits a 0-vector
-			sensorFunc := func(syncCounter int) []float64 {
-				return make([]float64, sensor.VectorLength)
-			}
-			sensor.SensorFunction = sensorFunc
-		}
 	}
 
-	if reInit == true {
+	if sensor.wg == nil {
 		sensor.wg = &sync.WaitGroup{}
 		sensor.wg.Add(1)
-
-	} else {
-		if sensor.wg == nil {
-			sensor.wg = &sync.WaitGroup{}
-			sensor.wg.Add(1)
-		}
-
 	}
 
 }

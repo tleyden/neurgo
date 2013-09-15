@@ -4,40 +4,38 @@ func XnorCortex() *Cortex {
 
 	// create network nodes
 
-	shouldReInit := false
-
 	sensor := &Sensor{
 		NodeId:       NewSensorId("sensor", 0.0),
 		VectorLength: 2,
 	}
-	sensor.Init(shouldReInit)
+	sensor.Init()
 
 	hiddenNeuron1 := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("hidden-neuron1", 0.25),
 		Bias:               -30,
 	}
-	hiddenNeuron1.Init(shouldReInit)
+	hiddenNeuron1.Init()
 
 	hiddenNeuron2 := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("hidden-neuron2", 0.25),
 		Bias:               10,
 	}
-	hiddenNeuron2.Init(shouldReInit)
+	hiddenNeuron2.Init()
 
 	outputNeuron := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("output-neuron", 0.35),
 		Bias:               -10,
 	}
-	outputNeuron.Init(shouldReInit)
+	outputNeuron.Init()
 
 	actuator := &Actuator{
 		NodeId:       NewActuatorId("actuator", 0.5),
 		VectorLength: 1,
 	}
-	actuator.Init(shouldReInit)
+	actuator.Init()
 
 	// wire up connections
 
@@ -88,27 +86,25 @@ func XnorTrainingSamples() []*TrainingSample {
 
 func BasicCortex() *Cortex {
 
-	shouldReInit := false
-
 	// create nodes
 	sensor := &Sensor{
 		NodeId:       NewSensorId("sensor", 0.0),
 		VectorLength: 2,
 	}
-	sensor.Init(shouldReInit)
+	sensor.Init()
 
 	neuron := &Neuron{
 		ActivationFunction: EncodableSigmoid(),
 		NodeId:             NewNeuronId("neuron", 0.25),
 		Bias:               0,
 	}
-	neuron.Init(shouldReInit)
+	neuron.Init()
 
 	actuator := &Actuator{
 		NodeId:       NewActuatorId("actuator", 0.5),
 		VectorLength: 1,
 	}
-	actuator.Init(shouldReInit)
+	actuator.Init()
 
 	// wire up connections
 	sensor.ConnectOutbound(neuron)

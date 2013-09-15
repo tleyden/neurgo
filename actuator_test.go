@@ -45,9 +45,7 @@ func TestActuatorRun(t *testing.T) {
 		ActuatorFunction: actuatorFunc,
 	}
 
-	shouldReInit := false
-
-	actuator.Init(shouldReInit)
+	actuator.Init()
 	go actuator.Run()
 	// send it a message
 	fakeInput := []float64{1}
