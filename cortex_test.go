@@ -72,7 +72,7 @@ func TestCortexInit(t *testing.T) {
 	shouldReInit := false
 
 	cortex.Init(shouldReInit)
-	cortex.initOutboundConnections()
+	cortex.InitOutboundConnections()
 
 	neuron := cortex.Neurons[0]
 	assert.True(t, neuron.DataChan != nil)
@@ -126,7 +126,7 @@ func TestRecurrentCortex(t *testing.T) {
 	assert.True(t, err == nil)
 
 	cortex.Init(false)
-	cortex.initOutboundConnections()
+	cortex.InitOutboundConnections()
 
 	examples := XnorTrainingSamples()
 	logg.LogTo("MISC", "training samples: %v", examples)

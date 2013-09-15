@@ -69,7 +69,7 @@ func (cortex *Cortex) Copy() *Cortex {
 	}
 
 	cortexCopy.Init(false)
-	cortexCopy.initOutboundConnections()
+	cortexCopy.InitOutboundConnections()
 
 	return cortexCopy
 
@@ -254,7 +254,7 @@ func (cortex *Cortex) NodeIdLayerMap() LayerToNodeIdMap {
 // though the data channels exist.  (eg, when deserializing
 // from json).  Fix this by seeking out those outbound
 // connections and setting the data channels.
-func (cortex *Cortex) initOutboundConnections() {
+func (cortex *Cortex) InitOutboundConnections() {
 
 	// build a nodeId -> dataChan map
 	nodeIdToDataMsg := cortex.nodeIdToDataMsg()
