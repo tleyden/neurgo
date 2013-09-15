@@ -2,6 +2,8 @@ package neurgo
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/couchbaselabs/logg"
 	"log"
 	"time"
 )
@@ -32,6 +34,17 @@ func (cortex *Cortex) MarshalJSON() ([]byte, error) {
 			Neurons:   cortex.Neurons,
 			Actuators: cortex.Actuators,
 		})
+}
+
+func (cortex *Cortex) MarshalJSONToFile(filename string) error {
+	json, err := json.Marshal(cortex)
+	if err != nil {
+		return err
+	}
+	jsonString := fmt.Sprintf("%s", json)
+	logg.Log("%v", jsonString)
+	WriteStringToFile(jsonString, filename)
+	return nil
 }
 
 func (cortex *Cortex) String() string {
@@ -322,6 +335,9 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	actuator := cortex.Actuators[0]
 	numTimesFuncCalled := 0
 	actuatorFunc := func(outputs []float64) {
+		logg.LogTo("MISC", "numTimesFuncCalled: %v", numTimesFuncCalled)
+		logg.LogTo("MISC", "len(samples): %v", len(samples))
+		logg.LogTo("MISC", "samples: %v", samples)
 		expected := samples[numTimesFuncCalled].ExpectedOutputs[0]
 		error := SumOfSquaresError(expected, outputs)
 		errorAccumulated += error
@@ -430,6 +446,27 @@ func (cortex *Cortex) SyncActuators() {
 		}
 
 	}
+}
+
+func (cortex *Cortex) Validate() bool {
+
+	for _, neuron := range cortex.Neurons {
+		if neuron.Cortex == nil {
+			logg.LogWarn("Neuron: %v has no cortex", neuron)
+			return false
+		}
+	}
+	return true
+}
+
+func (cortex *Cortex) Repair() {
+
+	for _, neuron := range cortex.Neurons {
+		if neuron.Cortex == nil {
+			neuron.Cortex = cortex
+		}
+	}
+
 }
 
 func (cortex *Cortex) createActuatorBarrier() ActuatorBarrier {

@@ -2,13 +2,15 @@ package neurgo
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/couchbaselabs/go.assert"
+	"github.com/couchbaselabs/logg"
 	"log"
 	"testing"
 )
 
 func TestCortexCopy(t *testing.T) {
+
+	logg.LogKeys["DEBUG"] = true
 
 	xnorCortex := XnorCortex()
 	xnorCortexCopy := xnorCortex.Copy()
@@ -17,6 +19,10 @@ func TestCortexCopy(t *testing.T) {
 	xnorCortexCopy.Init(shouldReInit)
 	sensor := xnorCortexCopy.Sensors[0]
 	assert.True(t, sensor.Outbound[0].DataChan != nil)
+
+	for _, neuron := range xnorCortex.Neurons {
+		assert.False(t, neuron.Cortex == nil)
+	}
 
 	// inputs + expected outputs
 	examples := XnorTrainingSamples()
@@ -30,15 +36,8 @@ func TestCortexCopy(t *testing.T) {
 
 func TestCortexJsonMarshal(t *testing.T) {
 	xnorCortex := XnorCortex()
-	json, err := json.Marshal(xnorCortex)
-	if err != nil {
-		log.Fatal(err)
-	}
-	assert.True(t, err == nil)
-	jsonString := fmt.Sprintf("%s", json)
-	log.Printf("jsonString: %v", jsonString)
-	WriteStringToFile(jsonString, "/tmp/output.json")
-
+	xnorCortex.MarshalJSONToFile("/tmp/output.json")
+	// TODO: add some assertions about this  (try reading file back in)
 }
 
 func TestCortexJsonUnmarshal(t *testing.T) {
@@ -111,6 +110,12 @@ func TestRecurrentCortex(t *testing.T) {
 
 	jsonString := `{"NodeId":{"UUID":"cortex","NodeType":"CORTEX","LayerIndex":0},"Sensors":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"VectorLength":2,"Outbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25}}]}],"Neurons":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Bias":-30,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[20,20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Bias":10,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[-20,-20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Bias":-10,"Inbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":[0.0955837638877588]}],"Outbound":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}}],"Actuators":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5},"VectorLength":1,"Inbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":null}]}]}`
 
+	// jsonStringNoSelfRecurrent := `{"NodeId":{"UUID":"cortex","NodeType":"CORTEX","LayerIndex":0},"Sensors":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"VectorLength":2,"Outbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25}}]}],"Neurons":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Bias":-30,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[20,20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Bias":10,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[-20,-20]},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":[0.0955837638877588]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Bias":-10,"Inbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]}],"Outbound":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25}}],"ActivationFunction":{"Name":"sigmoid"}}],"Actuators":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5},"VectorLength":1,"Inbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":null}]}]}`
+
+	logg.LogKeys["NODE_SEND"] = true
+	logg.LogKeys["NODE_RECV"] = true
+	logg.LogKeys["MISC"] = true
+
 	jsonBytes := []byte(jsonString)
 
 	cortex := &Cortex{}
@@ -120,7 +125,11 @@ func TestRecurrentCortex(t *testing.T) {
 	}
 	assert.True(t, err == nil)
 
+	cortex.RenderSVGFile("/Users/traun/tmp/cortex.svg")
+
 	examples := XnorTrainingSamples()
+	logg.LogTo("MISC", "training samples: %v", examples)
+
 	fitness := cortex.Fitness(examples)
 	assert.True(t, fitness >= 0)
 

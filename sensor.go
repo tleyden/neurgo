@@ -191,6 +191,9 @@ func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
 		logg.LogTo("NODE_SEND", logmsg)
 		dataChan := outboundConnection.DataChan
 		dataChan <- dataMessage
+		logmsg := fmt.Sprintf("%v -> %v: %v", sensor.NodeId.UUID,
+			outboundConnection.NodeId.UUID, dataMessage)
+		logg.LogTo("NODE_SEND", logmsg)
 	}
 }
 
