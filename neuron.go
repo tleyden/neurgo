@@ -61,9 +61,9 @@ func (neuron *Neuron) Run() {
 		case responseChan := <-neuron.Closing:
 			closed = true
 			responseChan <- true
-			break // TODO: do we need this for anything??
+			break
 		case dataMessage := <-neuron.DataChan:
-			neuron.receiveDataMessage(dataMessage)
+			closed = neuron.receiveDataMessage(dataMessage)
 		}
 
 		if closed {
@@ -131,17 +131,29 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 				neuron.NodeId.UUID, dataMessage)
 			logg.LogTo("NODE_SEND", logmsg)
 
-			neuron.receiveDataMessage(dataMessage)
+			closed := neuron.receiveDataMessage(dataMessage)
+			if closed {
+				break
+			}
 		} else {
 
 			if recurrentConnection.DataChan == nil {
 				log.Panicf("Can't sendEmptySignalRecurrentOutbound to %v, DataChan is nil", recurrentConnection)
 			}
 
+			closed := false
+
 			select {
 			case recurrentConnection.DataChan <- dataMessage:
 			case <-time.After(time.Second):
 				log.Panicf("Timeout sendEmptySignalRecurrentOutbound to %v", recurrentConnection)
+			case responseChan := <-neuron.Closing:
+				closed = true
+				responseChan <- true
+			}
+
+			if closed {
+				break
 			}
 
 			logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
@@ -198,7 +210,9 @@ func (neuron *Neuron) IsInboundConnectionRecurrent(connection *InboundConnection
 	return false
 }
 
-func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
+func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
+
+	closed = false
 
 	for _, outboundConnection := range neuron.Outbound {
 
@@ -210,15 +224,24 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) {
 
 			neuron.receiveDataMessage(dataMessage)
 		} else {
-			dataChan := outboundConnection.DataChan
-			dataChan <- dataMessage
-			logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
-				outboundConnection.NodeId.UUID, dataMessage)
-			logg.LogTo("NODE_SEND", logmsg)
+
+			select {
+			case responseChan := <-neuron.Closing:
+				closed = true
+				responseChan <- true
+				break
+			case outboundConnection.DataChan <- dataMessage:
+				logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
+					outboundConnection.NodeId.UUID, dataMessage)
+				logg.LogTo("NODE_SEND", logmsg)
+
+			}
 
 		}
 
 	}
+	return
+
 }
 
 // Initialize/re-initialize the neuron.
@@ -394,7 +417,9 @@ func (neuron *Neuron) shutdownOutboundConnections() {
 	}
 }
 
-func (neuron *Neuron) receiveDataMessage(dataMessage *DataMessage) {
+func (neuron *Neuron) receiveDataMessage(dataMessage *DataMessage) (closed bool) {
+
+	closed = false
 	neuron.logReceivedDataMessage(dataMessage)
 	recordInput(neuron.weightedInputs, dataMessage)
 
@@ -410,11 +435,13 @@ func (neuron *Neuron) receiveDataMessage(dataMessage *DataMessage) {
 			Inputs:   []float64{scalarOutput},
 		}
 
-		neuron.scatterOutput(dataMessage)
+		closed = neuron.scatterOutput(dataMessage)
 
 	} else {
 		logg.LogTo("MISC", "receive barrier NOT satisfied %v", neuron.NodeId.UUID)
 	}
+
+	return
 
 }
 
