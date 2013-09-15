@@ -92,3 +92,13 @@ func RandomWeights(length int) []float64 {
 	}
 	return weights
 }
+
+func Saturate(parameter, lowerBound, upperBound float64) float64 {
+	if parameter < lowerBound {
+		return lowerBound
+	}
+	if parameter > upperBound {
+		return upperBound
+	}
+	return parameter
+}
