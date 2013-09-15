@@ -75,7 +75,6 @@ func (cortex *Cortex) Copy() *Cortex {
 func (cortex *Cortex) Run() {
 
 	cortex.Init()
-	cortex.InitOutboundConnections()
 
 	cortex.checkRunnable()
 
@@ -122,6 +121,8 @@ func (cortex *Cortex) Init() {
 	for _, actuator := range cortex.Actuators {
 		actuator.Init()
 	}
+
+	cortex.InitOutboundConnections()
 
 }
 
@@ -320,9 +321,6 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	actuator := cortex.Actuators[0]
 	numTimesFuncCalled := 0
 	actuatorFunc := func(outputs []float64) {
-		logg.LogTo("MISC", "numTimesFuncCalled: %v", numTimesFuncCalled)
-		logg.LogTo("MISC", "len(samples): %v", len(samples))
-		logg.LogTo("MISC", "samples: %v", samples)
 		expected := samples[numTimesFuncCalled].ExpectedOutputs[0]
 		error := SumOfSquaresError(expected, outputs)
 		errorAccumulated += error

@@ -65,7 +65,6 @@ func TestCortexInit(t *testing.T) {
 	assert.True(t, err == nil)
 
 	cortex.Init()
-	cortex.InitOutboundConnections()
 
 	neuron := cortex.Neurons[0]
 	assert.True(t, neuron.DataChan != nil)
