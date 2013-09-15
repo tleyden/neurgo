@@ -186,9 +186,6 @@ func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) *OutboundConne
 
 func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
 	for _, outboundConnection := range sensor.Outbound {
-		logmsg := fmt.Sprintf("%v -> %v: %v", sensor.NodeId.UUID,
-			outboundConnection.NodeId.UUID, dataMessage)
-		logg.LogTo("NODE_SEND", logmsg)
 		dataChan := outboundConnection.DataChan
 		dataChan <- dataMessage
 		logmsg := fmt.Sprintf("%v -> %v: %v", sensor.NodeId.UUID,
