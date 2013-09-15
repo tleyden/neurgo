@@ -262,10 +262,7 @@ func (neuron *Neuron) Init(reInit bool) {
 		neuron.DataChan = make(chan *DataMessage)
 	}
 
-	if reInit == true {
-		neuron.wg = &sync.WaitGroup{}
-		neuron.wg.Add(1)
-	} else if neuron.wg == nil {
+	if reInit == true || neuron.wg == nil {
 		neuron.wg = &sync.WaitGroup{}
 		neuron.wg.Add(1)
 	}

@@ -68,6 +68,9 @@ func (cortex *Cortex) Copy() *Cortex {
 		log.Fatal(err)
 	}
 
+	cortexCopy.Init(false)
+	cortexCopy.initOutboundConnections()
+
 	return cortexCopy
 
 }
@@ -114,27 +117,21 @@ func (cortex *Cortex) Shutdown() {
 // TODO: fix this hack
 func (cortex *Cortex) Init(reInit bool) {
 
-	if reInit == true {
-		cortex.shutdownOutboundConnections()
-	}
-
-	if reInit == true {
-		cortex.SyncChan = make(chan *NodeId, 1)
-	} else if cortex.SyncChan == nil {
+	if cortex.SyncChan == nil {
 		cortex.SyncChan = make(chan *NodeId, 1)
 	}
 
 	for _, sensor := range cortex.Sensors {
-		sensor.Init(reInit)
+		sensor.Init(false)
 	}
 	for _, neuron := range cortex.Neurons {
-		neuron.Init(reInit)
+		neuron.Init(false)
 	}
 	for _, actuator := range cortex.Actuators {
-		actuator.Init(reInit)
+		actuator.Init(false)
 	}
 
-	cortex.initOutboundConnections()
+	// cortex.initOutboundConnections()
 
 }
 

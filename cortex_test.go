@@ -15,8 +15,8 @@ func TestCortexCopy(t *testing.T) {
 	xnorCortex := XnorCortex()
 	xnorCortexCopy := xnorCortex.Copy()
 
-	shouldReInit := false
-	xnorCortexCopy.Init(shouldReInit)
+	// shouldReInit := false
+	// xnorCortexCopy.Init(shouldReInit)
 	sensor := xnorCortexCopy.Sensors[0]
 	assert.True(t, sensor.Outbound[0].DataChan != nil)
 
@@ -70,7 +70,9 @@ func TestCortexInit(t *testing.T) {
 	assert.True(t, err == nil)
 
 	shouldReInit := false
+
 	cortex.Init(shouldReInit)
+	cortex.initOutboundConnections()
 
 	neuron := cortex.Neurons[0]
 	assert.True(t, neuron.DataChan != nil)
@@ -122,6 +124,9 @@ func TestRecurrentCortex(t *testing.T) {
 		log.Fatal(err)
 	}
 	assert.True(t, err == nil)
+
+	cortex.Init(false)
+	cortex.initOutboundConnections()
 
 	examples := XnorTrainingSamples()
 	logg.LogTo("MISC", "training samples: %v", examples)
