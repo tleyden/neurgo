@@ -448,6 +448,27 @@ func (cortex *Cortex) SyncActuators() {
 	}
 }
 
+func (cortex *Cortex) Validate() bool {
+
+	for _, neuron := range cortex.Neurons {
+		if neuron.Cortex == nil {
+			logg.LogWarn("Neuron: %v has no cortex", neuron)
+			return false
+		}
+	}
+	return true
+}
+
+func (cortex *Cortex) Repair() {
+
+	for _, neuron := range cortex.Neurons {
+		if neuron.Cortex == nil {
+			neuron.Cortex = cortex
+		}
+	}
+
+}
+
 func (cortex *Cortex) createActuatorBarrier() ActuatorBarrier {
 	actuatorBarrier := make(ActuatorBarrier)
 	for _, actuator := range cortex.Actuators {
