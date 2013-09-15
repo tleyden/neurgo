@@ -77,6 +77,9 @@ func (cortex *Cortex) Copy() *Cortex {
 
 func (cortex *Cortex) Run() {
 
+	cortex.Init(false)
+	cortex.InitOutboundConnections()
+
 	cortex.checkRunnable()
 
 	// TODO: merge slices, create Runnable() interface
@@ -131,7 +134,7 @@ func (cortex *Cortex) Init(reInit bool) {
 		actuator.Init(false)
 	}
 
-	// cortex.initOutboundConnections()
+	// cortex.InitOutboundConnections()
 
 }
 
