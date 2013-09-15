@@ -10,6 +10,8 @@ import (
 
 func TestCortexCopy(t *testing.T) {
 
+	logg.LogKeys["DEBUG"] = true
+
 	xnorCortex := XnorCortex()
 	xnorCortexCopy := xnorCortex.Copy()
 
@@ -17,6 +19,10 @@ func TestCortexCopy(t *testing.T) {
 	xnorCortexCopy.Init(shouldReInit)
 	sensor := xnorCortexCopy.Sensors[0]
 	assert.True(t, sensor.Outbound[0].DataChan != nil)
+
+	for _, neuron := range xnorCortex.Neurons {
+		assert.False(t, neuron.Cortex == nil)
+	}
 
 	// inputs + expected outputs
 	examples := XnorTrainingSamples()
