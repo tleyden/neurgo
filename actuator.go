@@ -21,21 +21,29 @@ type Actuator struct {
 	Cortex           *Cortex
 }
 
-func (actuator *Actuator) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
-		struct {
-			NodeId       *NodeId
-			VectorLength int
-			Inbound      []*InboundConnection
-		}{
-			NodeId:       actuator.NodeId,
-			VectorLength: actuator.VectorLength,
-			Inbound:      actuator.Inbound,
-		})
-}
+func (actuator *Actuator) Init() {
+	if actuator.Closing == nil {
+		actuator.Closing = make(chan chan bool)
+	}
 
-func (actuator *Actuator) String() string {
-	return JsonString(actuator)
+	if actuator.DataChan == nil {
+		actuator.DataChan = make(chan *DataMessage)
+	}
+
+	if actuator.ActuatorFunction == nil {
+		// if there is no ActuatorFunction, create a default
+		// function which does nothing
+		actuatorFunc := func(outputs []float64) {
+			log.Panicf("defualt actuator function called - do nothing")
+		}
+		actuator.ActuatorFunction = actuatorFunc
+	}
+
+	if actuator.wg == nil {
+		actuator.wg = &sync.WaitGroup{}
+		actuator.wg.Add(1)
+	}
+
 }
 
 func (actuator *Actuator) Run() {
@@ -93,6 +101,31 @@ func (actuator *Actuator) Shutdown() {
 	actuator.wg = nil
 }
 
+func (actuator *Actuator) ConnectInbound(connectable InboundConnectable) *InboundConnection {
+	return ConnectInbound(actuator, connectable)
+}
+
+func (actuator *Actuator) CanAddInboundConnection() bool {
+	return len(actuator.Inbound) < actuator.VectorLength
+}
+
+func (actuator *Actuator) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId       *NodeId
+			VectorLength int
+			Inbound      []*InboundConnection
+		}{
+			NodeId:       actuator.NodeId,
+			VectorLength: actuator.VectorLength,
+			Inbound:      actuator.Inbound,
+		})
+}
+
+func (actuator *Actuator) String() string {
+	return JsonString(actuator)
+}
+
 func (actuator *Actuator) computeScalarOutput(weightedInputs []*weightedInput) []float64 {
 
 	outputs := make([]float64, 0)
@@ -145,35 +178,6 @@ func (actuator *Actuator) checkRunnable() {
 
 }
 
-func (actuator *Actuator) Init() {
-	if actuator.Closing == nil {
-		actuator.Closing = make(chan chan bool)
-	}
-
-	if actuator.DataChan == nil {
-		actuator.DataChan = make(chan *DataMessage)
-	}
-
-	if actuator.ActuatorFunction == nil {
-		// if there is no ActuatorFunction, create a default
-		// function which does nothing
-		actuatorFunc := func(outputs []float64) {
-			log.Panicf("defualt actuator function called - do nothing")
-		}
-		actuator.ActuatorFunction = actuatorFunc
-	}
-
-	if actuator.wg == nil {
-		actuator.wg = &sync.WaitGroup{}
-		actuator.wg.Add(1)
-	}
-
-}
-
-func (actuator *Actuator) ConnectInbound(connectable InboundConnectable) *InboundConnection {
-	return ConnectInbound(actuator, connectable)
-}
-
 func (actuator *Actuator) inbound() []*InboundConnection {
 	return actuator.Inbound
 }
@@ -188,10 +192,6 @@ func (actuator *Actuator) dataChan() chan *DataMessage {
 
 func (actuator *Actuator) nodeId() *NodeId {
 	return actuator.NodeId
-}
-
-func (actuator *Actuator) CanAddInboundConnection() bool {
-	return len(actuator.Inbound) < actuator.VectorLength
 }
 
 func (actuator *Actuator) logDataReceive(dataMessage *DataMessage) {

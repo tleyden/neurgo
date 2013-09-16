@@ -24,6 +24,21 @@ type Neuron struct {
 	weightedInputs     []*weightedInput
 }
 
+func (neuron *Neuron) Init() {
+	if neuron.Closing == nil {
+		neuron.Closing = make(chan chan bool)
+	}
+
+	if neuron.DataChan == nil {
+		neuron.DataChan = make(chan *DataMessage)
+	}
+
+	if neuron.wg == nil {
+		neuron.wg = &sync.WaitGroup{}
+		neuron.wg.Add(1)
+	}
+}
+
 func (neuron *Neuron) Run() {
 
 	defer neuron.wg.Done()
@@ -62,12 +77,169 @@ func (neuron *Neuron) Run() {
 
 }
 
+func (neuron *Neuron) Shutdown() {
+
+	closingResponse := make(chan bool)
+	neuron.Closing <- closingResponse
+	response := <-closingResponse
+	if response != true {
+		log.Panicf("Got unexpected response on closing channel")
+	}
+
+	neuron.shutdownOutboundConnections()
+
+	neuron.wg.Wait()
+	neuron.wg = nil
+}
+
+func (neuron *Neuron) Copy() *Neuron {
+
+	// serialize to json
+	jsonBytes, err := json.Marshal(neuron)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// new neuron
+	neuronCopy := &Neuron{}
+
+	// deserialize json into new neuron
+	err = json.Unmarshal(jsonBytes, neuronCopy)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return neuronCopy
+
+}
+
 func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) *OutboundConnection {
 	return ConnectOutbound(neuron, connectable)
 }
 
 func (neuron *Neuron) ConnectInboundWeighted(connectable InboundConnectable, weights []float64) *InboundConnection {
 	return ConnectInboundWeighted(neuron, connectable, weights)
+}
+
+// Find the subset of outbound connections which are "recurrent" - meaning
+// that the connection is to this neuron itself, or to a neuron in a previous
+// (eg, to the left) layer.
+func (neuron *Neuron) RecurrentOutboundConnections() []*OutboundConnection {
+	result := make([]*OutboundConnection, 0)
+	for _, outboundConnection := range neuron.Outbound {
+		if neuron.IsConnectionRecurrent(outboundConnection) {
+			result = append(result, outboundConnection)
+		}
+	}
+	return result
+}
+
+func (neuron *Neuron) RecurrentInboundConnections() []*InboundConnection {
+	result := make([]*InboundConnection, 0)
+	for _, inboundConnection := range neuron.Inbound {
+		if neuron.IsInboundConnectionRecurrent(inboundConnection) {
+			result = append(result, inboundConnection)
+		}
+	}
+	return result
+}
+
+// a connection is considered recurrent if it has a connection
+// to itself or to a node in a previous layer.  Previous meaning
+// if you look at a feedForward from left to right, with the input
+// layer being on the far left, and output layer on the far right,
+// then any layer to the left is considered previous.
+func (neuron *Neuron) IsConnectionRecurrent(connection *OutboundConnection) bool {
+	if connection.NodeId.LayerIndex <= neuron.NodeId.LayerIndex {
+		return true
+	}
+	return false
+}
+
+// same as isConnectionRecurrent, but for inbound connections
+// TODO: use interfaces to eliminate code duplication
+func (neuron *Neuron) IsInboundConnectionRecurrent(connection *InboundConnection) bool {
+	if neuron.NodeId.LayerIndex <= connection.NodeId.LayerIndex {
+		return true
+	}
+	return false
+}
+
+func (neuron *Neuron) InboundUUIDMap() UUIDToInboundConnection {
+	inboundUUIDMap := make(UUIDToInboundConnection)
+	for _, connection := range neuron.Inbound {
+		inboundUUIDMap[connection.NodeId.UUID] = connection
+	}
+	return inboundUUIDMap
+}
+
+func (neuron *Neuron) String() string {
+	return JsonString(neuron)
+}
+
+func (neuron *Neuron) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId             *NodeId
+			Bias               float64
+			Inbound            []*InboundConnection
+			Outbound           []*OutboundConnection
+			ActivationFunction *EncodableActivation
+		}{
+			NodeId:             neuron.NodeId,
+			Bias:               neuron.Bias,
+			Inbound:            neuron.Inbound,
+			Outbound:           neuron.Outbound,
+			ActivationFunction: neuron.ActivationFunction,
+		})
+}
+
+func (neuron *Neuron) feedForward() (closed bool) {
+
+	scalarOutput := neuron.computeScalarOutput(neuron.weightedInputs)
+
+	neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
+
+	dataMessage := &DataMessage{
+		SenderId: neuron.NodeId,
+		Inputs:   []float64{scalarOutput},
+	}
+
+	closed = neuron.scatterOutput(dataMessage)
+	return
+}
+
+func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
+
+	closed = false
+
+	for _, outboundConnection := range neuron.Outbound {
+
+		if outboundConnection.NodeId.UUID == neuron.NodeId.UUID {
+
+			logSend(neuron.NodeId, outboundConnection.NodeId, dataMessage)
+			neuron.receiveDataMessage(dataMessage)
+			if neuron.receiveBarrierSatisfied() {
+				closed = neuron.feedForward()
+			}
+
+		} else {
+
+			select {
+			case responseChan := <-neuron.Closing:
+				closed = true
+				responseChan <- true
+				break
+			case outboundConnection.DataChan <- dataMessage:
+				logSend(neuron.NodeId,
+					outboundConnection.NodeId, dataMessage)
+			}
+
+		}
+
+	}
+	return
+
 }
 
 func (neuron *Neuron) outbound() []*OutboundConnection {
@@ -143,180 +315,6 @@ func (neuron *Neuron) primeAllRecurrentOutbound() (closed bool) {
 		}
 	}
 	return
-}
-
-// Find the subset of outbound connections which are "recurrent" - meaning
-// that the connection is to this neuron itself, or to a neuron in a previous
-// (eg, to the left) layer.
-func (neuron *Neuron) RecurrentOutboundConnections() []*OutboundConnection {
-	result := make([]*OutboundConnection, 0)
-	for _, outboundConnection := range neuron.Outbound {
-		if neuron.IsConnectionRecurrent(outboundConnection) {
-			result = append(result, outboundConnection)
-		}
-	}
-	return result
-}
-
-func (neuron *Neuron) RecurrentInboundConnections() []*InboundConnection {
-	result := make([]*InboundConnection, 0)
-	for _, inboundConnection := range neuron.Inbound {
-		if neuron.IsInboundConnectionRecurrent(inboundConnection) {
-			result = append(result, inboundConnection)
-		}
-	}
-	return result
-}
-
-// a connection is considered recurrent if it has a connection
-// to itself or to a node in a previous layer.  Previous meaning
-// if you look at a feedForward from left to right, with the input
-// layer being on the far left, and output layer on the far right,
-// then any layer to the left is considered previous.
-func (neuron *Neuron) IsConnectionRecurrent(connection *OutboundConnection) bool {
-	if connection.NodeId.LayerIndex <= neuron.NodeId.LayerIndex {
-		return true
-	}
-	return false
-}
-
-// same as isConnectionRecurrent, but for inbound connections
-// TODO: use interfaces to eliminate code duplication
-func (neuron *Neuron) IsInboundConnectionRecurrent(connection *InboundConnection) bool {
-	if neuron.NodeId.LayerIndex <= connection.NodeId.LayerIndex {
-		return true
-	}
-	return false
-}
-
-func (neuron *Neuron) feedForward() (closed bool) {
-
-	logg.LogTo("MISC", "receive barrier satisfied %v", neuron.NodeId.UUID)
-	scalarOutput := neuron.computeScalarOutput(neuron.weightedInputs)
-
-	neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
-
-	dataMessage := &DataMessage{
-		SenderId: neuron.NodeId,
-		Inputs:   []float64{scalarOutput},
-	}
-
-	closed = neuron.scatterOutput(dataMessage)
-	return
-}
-
-func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
-
-	closed = false
-
-	for _, outboundConnection := range neuron.Outbound {
-
-		if outboundConnection.NodeId.UUID == neuron.NodeId.UUID {
-
-			logSend(neuron.NodeId, outboundConnection.NodeId, dataMessage)
-			neuron.receiveDataMessage(dataMessage)
-			if neuron.receiveBarrierSatisfied() {
-				closed = neuron.feedForward()
-			}
-
-		} else {
-
-			select {
-			case responseChan := <-neuron.Closing:
-				closed = true
-				responseChan <- true
-				break
-			case outboundConnection.DataChan <- dataMessage:
-				logSend(neuron.NodeId,
-					outboundConnection.NodeId, dataMessage)
-			}
-
-		}
-
-	}
-	return
-
-}
-
-// Initialize/re-initialize the neuron.
-func (neuron *Neuron) Init() {
-	if neuron.Closing == nil {
-		neuron.Closing = make(chan chan bool)
-	}
-
-	if neuron.DataChan == nil {
-		neuron.DataChan = make(chan *DataMessage)
-	}
-
-	if neuron.wg == nil {
-		neuron.wg = &sync.WaitGroup{}
-		neuron.wg.Add(1)
-	}
-}
-
-func (neuron *Neuron) Shutdown() {
-
-	closingResponse := make(chan bool)
-	neuron.Closing <- closingResponse
-	response := <-closingResponse
-	if response != true {
-		log.Panicf("Got unexpected response on closing channel")
-	}
-
-	neuron.shutdownOutboundConnections()
-
-	neuron.wg.Wait()
-	neuron.wg = nil
-}
-
-func (neuron *Neuron) InboundUUIDMap() UUIDToInboundConnection {
-	inboundUUIDMap := make(UUIDToInboundConnection)
-	for _, connection := range neuron.Inbound {
-		inboundUUIDMap[connection.NodeId.UUID] = connection
-	}
-	return inboundUUIDMap
-}
-
-func (neuron *Neuron) Copy() *Neuron {
-
-	// serialize to json
-	jsonBytes, err := json.Marshal(neuron)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// new neuron
-	neuronCopy := &Neuron{}
-
-	// deserialize json into new neuron
-	err = json.Unmarshal(jsonBytes, neuronCopy)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return neuronCopy
-
-}
-
-func (neuron *Neuron) String() string {
-	return JsonString(neuron)
-}
-
-func (neuron *Neuron) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
-		struct {
-			NodeId             *NodeId
-			Bias               float64
-			Inbound            []*InboundConnection
-			Outbound           []*OutboundConnection
-			ActivationFunction *EncodableActivation
-		}{
-			NodeId:             neuron.NodeId,
-			Bias:               neuron.Bias,
-			Inbound:            neuron.Inbound,
-			Outbound:           neuron.Outbound,
-			ActivationFunction: neuron.ActivationFunction,
-		})
 }
 
 func (neuron *Neuron) checkRunnable() {

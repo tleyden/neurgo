@@ -22,21 +22,29 @@ type Sensor struct {
 	Cortex         *Cortex
 }
 
-func (sensor *Sensor) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
-		struct {
-			NodeId       *NodeId
-			VectorLength int
-			Outbound     []*OutboundConnection
-		}{
-			NodeId:       sensor.NodeId,
-			VectorLength: sensor.VectorLength,
-			Outbound:     sensor.Outbound,
-		})
-}
+func (sensor *Sensor) Init() {
+	if sensor.Closing == nil {
+		sensor.Closing = make(chan chan bool)
+	}
 
-func (sensor *Sensor) String() string {
-	return JsonString(sensor)
+	if sensor.SyncChan == nil {
+		sensor.SyncChan = make(chan bool)
+	}
+
+	if sensor.SensorFunction == nil {
+		// if there is no SensorFunction, create a default
+		// function which emits a 0-vector
+		sensorFunc := func(syncCounter int) []float64 {
+			return make([]float64, sensor.VectorLength)
+		}
+		sensor.SensorFunction = sensorFunc
+	}
+
+	if sensor.wg == nil {
+		sensor.wg = &sync.WaitGroup{}
+		sensor.wg.Add(1)
+	}
+
 }
 
 func (sensor *Sensor) Run() {
@@ -73,31 +81,6 @@ func (sensor *Sensor) Run() {
 
 }
 
-func (sensor *Sensor) Init() {
-	if sensor.Closing == nil {
-		sensor.Closing = make(chan chan bool)
-	}
-
-	if sensor.SyncChan == nil {
-		sensor.SyncChan = make(chan bool)
-	}
-
-	if sensor.SensorFunction == nil {
-		// if there is no SensorFunction, create a default
-		// function which emits a 0-vector
-		sensorFunc := func(syncCounter int) []float64 {
-			return make([]float64, sensor.VectorLength)
-		}
-		sensor.SensorFunction = sensorFunc
-	}
-
-	if sensor.wg == nil {
-		sensor.wg = &sync.WaitGroup{}
-		sensor.wg.Add(1)
-	}
-
-}
-
 func (sensor *Sensor) Shutdown() {
 
 	closingResponse := make(chan bool)
@@ -111,6 +94,27 @@ func (sensor *Sensor) Shutdown() {
 
 	sensor.wg.Wait()
 	sensor.wg = nil
+}
+
+func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) *OutboundConnection {
+	return ConnectOutbound(s, connectable)
+}
+
+func (sensor *Sensor) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId       *NodeId
+			VectorLength int
+			Outbound     []*OutboundConnection
+		}{
+			NodeId:       sensor.NodeId,
+			VectorLength: sensor.VectorLength,
+			Outbound:     sensor.Outbound,
+		})
+}
+
+func (sensor *Sensor) String() string {
+	return JsonString(sensor)
 }
 
 func (sensor *Sensor) outbound() []*OutboundConnection {
@@ -157,10 +161,6 @@ func (sensor *Sensor) validateOutbound() error {
 		}
 	}
 	return nil
-}
-
-func (s *Sensor) ConnectOutbound(connectable OutboundConnectable) *OutboundConnection {
-	return ConnectOutbound(s, connectable)
 }
 
 func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
