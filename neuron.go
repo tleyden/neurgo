@@ -32,10 +32,10 @@ func (neuron *Neuron) Run() {
 
 	neuron.checkRunnable()
 	neuron.createEmptyWeightedInputs()
-	closed = neuron.sendEmptySignalAllRecurrentOutbound()
+
+	closed = neuron.primeAllRecurrentOutbound()
 	if closed {
-		neuron.Closing = nil
-		neuron.DataChan = nil
+		neuron.closeChannels()
 		return
 	}
 
@@ -54,8 +54,7 @@ func (neuron *Neuron) Run() {
 		}
 
 		if closed {
-			neuron.Closing = nil
-			neuron.DataChan = nil
+			neuron.closeChannels()
 			break
 		}
 
@@ -87,7 +86,7 @@ func (neuron *Neuron) setInbound(newInbound []*InboundConnection) {
 	neuron.Inbound = newInbound
 }
 
-func (neuron *Neuron) sendEmptySignalRecurrentOutbound(cxn *OutboundConnection) (closed bool) {
+func (neuron *Neuron) primeRecurrentOutbound(cxn *OutboundConnection) (closed bool) {
 
 	inputs := []float64{0}
 	dataMessage := &DataMessage{
@@ -134,11 +133,11 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound(cxn *OutboundConnection) 
 // to a neuron in a previous (eg, to the left) layer.  If we didn't do this,
 // that previous neuron would be waiting forever for a signal that will
 // never come, because this neuron wouldn't fire until it got a signal.
-func (neuron *Neuron) sendEmptySignalAllRecurrentOutbound() (closed bool) {
+func (neuron *Neuron) primeAllRecurrentOutbound() (closed bool) {
 	closed = false
 	recurrentConnections := neuron.RecurrentOutboundConnections()
 	for _, recurrentConnection := range recurrentConnections {
-		closed := neuron.sendEmptySignalRecurrentOutbound(recurrentConnection)
+		closed := neuron.primeRecurrentOutbound(recurrentConnection)
 		if closed {
 			break
 		}
@@ -440,6 +439,11 @@ func (neuron *Neuron) logReceivedDataMessage(dataMessage *DataMessage) {
 
 func (neuron *Neuron) createEmptyWeightedInputs() {
 	neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
+}
+
+func (neuron *Neuron) closeChannels() {
+	neuron.Closing = nil
+	neuron.DataChan = nil
 }
 
 func logSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataMessage) {
