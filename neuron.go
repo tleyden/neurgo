@@ -24,38 +24,17 @@ type Neuron struct {
 	weightedInputs     []*weightedInput
 }
 
-func (neuron *Neuron) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
-		struct {
-			NodeId             *NodeId
-			Bias               float64
-			Inbound            []*InboundConnection
-			Outbound           []*OutboundConnection
-			ActivationFunction *EncodableActivation
-		}{
-			NodeId:             neuron.NodeId,
-			Bias:               neuron.Bias,
-			Inbound:            neuron.Inbound,
-			Outbound:           neuron.Outbound,
-			ActivationFunction: neuron.ActivationFunction,
-		})
-}
-
 func (neuron *Neuron) Run() {
 
 	defer neuron.wg.Done()
 
 	neuron.checkRunnable()
-
-	neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
-
+	neuron.createEmptyWeightedInputs()
 	neuron.sendEmptySignalRecurrentOutbound()
 
 	closed := false
 
 	for {
-
-		logg.LogTo("MISC", "Neuron checking for incoming messages: %v", neuron.NodeId.UUID)
 
 		select {
 		case responseChan := <-neuron.Closing:
@@ -63,7 +42,10 @@ func (neuron *Neuron) Run() {
 			responseChan <- true
 			break
 		case dataMessage := <-neuron.DataChan:
-			closed = neuron.receiveDataMessage(dataMessage)
+			neuron.receiveDataMessage(dataMessage)
+			if neuron.receiveBarrierSatisfied() {
+				closed = neuron.feedForward()
+			}
 		}
 
 		if closed {
@@ -74,12 +56,6 @@ func (neuron *Neuron) Run() {
 
 	}
 
-	logg.LogTo("MISC", "Neuron run() finished: %v", neuron.NodeId.UUID)
-
-}
-
-func (neuron *Neuron) String() string {
-	return JsonString(neuron)
 }
 
 func (neuron *Neuron) ConnectOutbound(connectable OutboundConnectable) *OutboundConnection {
@@ -131,10 +107,11 @@ func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
 				neuron.NodeId.UUID, dataMessage)
 			logg.LogTo("NODE_SEND", logmsg)
 
-			closed := neuron.receiveDataMessage(dataMessage)
-			if closed {
-				break
+			neuron.receiveDataMessage(dataMessage)
+			if neuron.receiveBarrierSatisfied() {
+				logg.LogPanic("Receive Barrier not expected to be satisfied yet")
 			}
+
 		} else {
 
 			if recurrentConnection.DataChan == nil {
@@ -191,7 +168,7 @@ func (neuron *Neuron) RecurrentInboundConnections() []*InboundConnection {
 
 // a connection is considered recurrent if it has a connection
 // to itself or to a node in a previous layer.  Previous meaning
-// if you look at a feedforward from left to right, with the input
+// if you look at a feedForward from left to right, with the input
 // layer being on the far left, and output layer on the far right,
 // then any layer to the left is considered previous.
 func (neuron *Neuron) IsConnectionRecurrent(connection *OutboundConnection) bool {
@@ -210,6 +187,22 @@ func (neuron *Neuron) IsInboundConnectionRecurrent(connection *InboundConnection
 	return false
 }
 
+func (neuron *Neuron) feedForward() (closed bool) {
+
+	logg.LogTo("MISC", "receive barrier satisfied %v", neuron.NodeId.UUID)
+	scalarOutput := neuron.computeScalarOutput(neuron.weightedInputs)
+
+	neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
+
+	dataMessage := &DataMessage{
+		SenderId: neuron.NodeId,
+		Inputs:   []float64{scalarOutput},
+	}
+
+	closed = neuron.scatterOutput(dataMessage)
+	return
+}
+
 func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
 
 	closed = false
@@ -223,6 +216,10 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
 			logg.LogTo("NODE_SEND", logmsg)
 
 			neuron.receiveDataMessage(dataMessage)
+			if neuron.receiveBarrierSatisfied() {
+				closed = neuron.feedForward()
+			}
+
 		} else {
 
 			select {
@@ -302,6 +299,27 @@ func (neuron *Neuron) Copy() *Neuron {
 
 	return neuronCopy
 
+}
+
+func (neuron *Neuron) String() string {
+	return JsonString(neuron)
+}
+
+func (neuron *Neuron) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId             *NodeId
+			Bias               float64
+			Inbound            []*InboundConnection
+			Outbound           []*OutboundConnection
+			ActivationFunction *EncodableActivation
+		}{
+			NodeId:             neuron.NodeId,
+			Bias:               neuron.Bias,
+			Inbound:            neuron.Inbound,
+			Outbound:           neuron.Outbound,
+			ActivationFunction: neuron.ActivationFunction,
+		})
 }
 
 func (neuron *Neuron) checkRunnable() {
@@ -405,32 +423,14 @@ func (neuron *Neuron) shutdownOutboundConnections() {
 	}
 }
 
-func (neuron *Neuron) receiveDataMessage(dataMessage *DataMessage) (closed bool) {
+func (neuron *Neuron) receiveBarrierSatisfied() bool {
+	return receiveBarrierSatisfied(neuron.weightedInputs)
+}
 
-	closed = false
+func (neuron *Neuron) receiveDataMessage(dataMessage *DataMessage) {
+
 	neuron.logReceivedDataMessage(dataMessage)
 	recordInput(neuron.weightedInputs, dataMessage)
-
-	if receiveBarrierSatisfied(neuron.weightedInputs) {
-
-		logg.LogTo("MISC", "receive barrier satisfied %v", neuron.NodeId.UUID)
-		scalarOutput := neuron.computeScalarOutput(neuron.weightedInputs)
-
-		neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
-
-		dataMessage := &DataMessage{
-			SenderId: neuron.NodeId,
-			Inputs:   []float64{scalarOutput},
-		}
-
-		closed = neuron.scatterOutput(dataMessage)
-
-	} else {
-		logg.LogTo("MISC", "receive barrier NOT satisfied %v", neuron.NodeId.UUID)
-	}
-
-	return
-
 }
 
 func (neuron *Neuron) logReceivedDataMessage(dataMessage *DataMessage) {
@@ -438,4 +438,8 @@ func (neuron *Neuron) logReceivedDataMessage(dataMessage *DataMessage) {
 	logmsg := fmt.Sprintf("%v -> %v: %v", sender,
 		neuron.NodeId.UUID, dataMessage)
 	logg.LogTo("NODE_RECV", logmsg)
+}
+
+func (neuron *Neuron) createEmptyWeightedInputs() {
+	neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
 }
