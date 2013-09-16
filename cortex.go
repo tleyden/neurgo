@@ -296,7 +296,7 @@ func (cortex *Cortex) Verify(samples []*TrainingSample) bool {
 
 func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
-	cortex.Init() // TODO: I think this is redundant
+	cortex.Init()
 
 	errorAccumulated := float64(0)
 
