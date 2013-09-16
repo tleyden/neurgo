@@ -28,11 +28,16 @@ func (neuron *Neuron) Run() {
 
 	defer neuron.wg.Done()
 
+	closed := false
+
 	neuron.checkRunnable()
 	neuron.createEmptyWeightedInputs()
-	neuron.sendEmptySignalRecurrentOutbound()
-
-	closed := false
+	closed = neuron.sendEmptySignalAllRecurrentOutbound()
+	if closed {
+		neuron.Closing = nil
+		neuron.DataChan = nil
+		return
+	}
 
 	for {
 
@@ -82,65 +87,63 @@ func (neuron *Neuron) setInbound(newInbound []*InboundConnection) {
 	neuron.Inbound = newInbound
 }
 
+func (neuron *Neuron) sendEmptySignalRecurrentOutbound(cxn *OutboundConnection) (closed bool) {
+
+	inputs := []float64{0}
+	dataMessage := &DataMessage{
+		SenderId: neuron.NodeId,
+		Inputs:   inputs,
+	}
+
+	if cxn.NodeId.UUID == neuron.NodeId.UUID {
+
+		// we are sending to ourselves, so short-circuit the
+		// channel based messaging so we can use unbuffered channels
+		logSend(neuron.NodeId, cxn.NodeId, dataMessage)
+		neuron.receiveDataMessage(dataMessage)
+		if neuron.receiveBarrierSatisfied() {
+			msg := "Receive Barrier not expected to be satisfied yet"
+			logg.LogPanic(msg)
+		}
+
+	} else {
+
+		if cxn.DataChan == nil {
+			log.Panicf("DataChan is nil for connection: %v", cxn)
+		}
+
+		select {
+		case cxn.DataChan <- dataMessage:
+		case <-time.After(time.Second):
+			log.Panicf("Timeout sending to %v", cxn)
+		case responseChan := <-neuron.Closing:
+			closed = true
+			responseChan <- true
+		}
+
+		logSend(neuron.NodeId, cxn.NodeId, dataMessage)
+	}
+
+	return
+
+}
+
 // In order to prevent deadlock, any neurons we have recurrent outbound
 // connections to must be "primed" by sending an empty signal.  A recurrent
 // outbound connection simply means that it's a connection to ourself or
 // to a neuron in a previous (eg, to the left) layer.  If we didn't do this,
 // that previous neuron would be waiting forever for a signal that will
 // never come, because this neuron wouldn't fire until it got a signal.
-func (neuron *Neuron) sendEmptySignalRecurrentOutbound() {
-
+func (neuron *Neuron) sendEmptySignalAllRecurrentOutbound() (closed bool) {
+	closed = false
 	recurrentConnections := neuron.RecurrentOutboundConnections()
-
 	for _, recurrentConnection := range recurrentConnections {
-
-		inputs := []float64{0}
-		dataMessage := &DataMessage{
-			SenderId: neuron.NodeId,
-			Inputs:   inputs,
+		closed := neuron.sendEmptySignalRecurrentOutbound(recurrentConnection)
+		if closed {
+			break
 		}
-
-		if recurrentConnection.NodeId.UUID == neuron.NodeId.UUID {
-			// we are sending to ourselves, so short-circuit the
-			// channel based messaging so we can use unbuffered channels
-			logmsg := fmt.Sprintf("**** %v -> %v: %v", neuron.NodeId.UUID,
-				neuron.NodeId.UUID, dataMessage)
-			logg.LogTo("NODE_SEND", logmsg)
-
-			neuron.receiveDataMessage(dataMessage)
-			if neuron.receiveBarrierSatisfied() {
-				logg.LogPanic("Receive Barrier not expected to be satisfied yet")
-			}
-
-		} else {
-
-			if recurrentConnection.DataChan == nil {
-				log.Panicf("Can't sendEmptySignalRecurrentOutbound to %v, DataChan is nil", recurrentConnection)
-			}
-
-			closed := false
-
-			select {
-			case recurrentConnection.DataChan <- dataMessage:
-			case <-time.After(time.Second):
-				log.Panicf("Timeout sendEmptySignalRecurrentOutbound to %v", recurrentConnection)
-			case responseChan := <-neuron.Closing:
-				closed = true
-				responseChan <- true
-			}
-
-			if closed {
-				break
-			}
-
-			logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
-				neuron.NodeId.UUID, dataMessage)
-			logg.LogTo("NODE_SEND", logmsg)
-
-		}
-
 	}
-
+	return
 }
 
 // Find the subset of outbound connections which are "recurrent" - meaning
@@ -211,10 +214,7 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
 
 		if outboundConnection.NodeId.UUID == neuron.NodeId.UUID {
 
-			logmsg := fmt.Sprintf("*** %v -> %v: %v", neuron.NodeId.UUID,
-				outboundConnection.NodeId.UUID, dataMessage)
-			logg.LogTo("NODE_SEND", logmsg)
-
+			logSend(neuron.NodeId, outboundConnection.NodeId, dataMessage)
 			neuron.receiveDataMessage(dataMessage)
 			if neuron.receiveBarrierSatisfied() {
 				closed = neuron.feedForward()
@@ -228,10 +228,8 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
 				responseChan <- true
 				break
 			case outboundConnection.DataChan <- dataMessage:
-				logmsg := fmt.Sprintf("%v -> %v: %v", neuron.NodeId.UUID,
-					outboundConnection.NodeId.UUID, dataMessage)
-				logg.LogTo("NODE_SEND", logmsg)
-
+				logSend(neuron.NodeId,
+					outboundConnection.NodeId, dataMessage)
 			}
 
 		}
@@ -442,4 +440,10 @@ func (neuron *Neuron) logReceivedDataMessage(dataMessage *DataMessage) {
 
 func (neuron *Neuron) createEmptyWeightedInputs() {
 	neuron.weightedInputs = createEmptyWeightedInputs(neuron.Inbound)
+}
+
+func logSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataMessage) {
+	logmsg := fmt.Sprintf("*** %v -> %v: %v", senderNodeId.UUID,
+		receiverNodeId.UUID, dataMessage)
+	logg.LogTo("NODE_SEND", logmsg)
 }
