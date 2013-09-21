@@ -93,7 +93,11 @@ func TestNormalizeInRange(t *testing.T) {
 		TargetRangeEnd:   1.0,
 	}
 
-	testPairs := [][]float64{[]float64{0.0, -1.0}, []float64{31.0, 1.0}}
+	testPairs := [][]float64{
+		[]float64{0.0, -1.0},
+		[]float64{31.0, 1.0},
+		[]float64{15.5, 0.0},
+	}
 
 	for _, testPair := range testPairs {
 		origValue := testPair[0]
