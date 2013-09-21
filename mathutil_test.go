@@ -2,6 +2,7 @@ package neurgo
 
 import (
 	"github.com/couchbaselabs/go.assert"
+	"github.com/couchbaselabs/logg"
 	"math"
 	"testing"
 )
@@ -80,4 +81,27 @@ func TestRandomIntInRange(t *testing.T) {
 func TestIntModuleProper(t *testing.T) {
 	assert.False(t, IntModuloProper(0, 100))
 	assert.True(t, IntModuloProper(500, 100))
+}
+
+func TestNormalizeInRange(t *testing.T) {
+
+	logg.LogKeys["TEST"] = true
+	params := NormalizeParams{
+		SourceRangeStart: 0.0,
+		SourceRangeEnd:   31.0,
+		TargetRangeStart: -1.0,
+		TargetRangeEnd:   1.0,
+	}
+
+	testPairs := [][]float64{[]float64{0.0, -1.0}, []float64{31.0, 1.0}}
+
+	for _, testPair := range testPairs {
+		origValue := testPair[0]
+		expectedValue := testPair[1]
+		actualValue := NormalizeInRange(params, origValue)
+		delta := 0.01
+		logg.LogTo("TEST", "actual: %v, expected: %v", actualValue, expectedValue)
+		assert.True(t, EqualsWithMaxDelta(actualValue, expectedValue, delta))
+	}
+
 }

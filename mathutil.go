@@ -8,6 +8,36 @@ import (
 	"time"
 )
 
+type NormalizeParams struct {
+	SourceRangeStart float64
+	SourceRangeEnd   float64
+	TargetRangeStart float64
+	TargetRangeEnd   float64
+}
+
+func NormalizeInRange(params NormalizeParams, value float64) float64 {
+
+	// Warning: this function makes a lot of assumpts about the
+	// values being passed, and will only work for those values
+	// or values that are very similar.
+
+	// shift the value to the left, so that instead of having a
+	// range between 0 and 31 (for example), it will have a range
+	// of -15.5 - 15.5
+	sourceRangeDelta := params.SourceRangeEnd - params.SourceRangeStart
+	halfDelta := sourceRangeDelta / 2.0
+	value = value - halfDelta
+
+	// now figure out the scaling factor between the source and target range
+	targetRangeDelta := params.TargetRangeEnd - params.TargetRangeStart
+	scalingFactor := targetRangeDelta / sourceRangeDelta
+
+	// and scale the value by that scaling factor
+	value = value * scalingFactor
+
+	return value
+}
+
 func SafeScalarInverse(x float64) float64 {
 	if x == 0 {
 		x += 0.000000001
