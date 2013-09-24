@@ -14,6 +14,10 @@ For a more detailed architecture diagram, see the [Neurgo Architecture Prezi](ht
 * 100% test coverage
 * Complete documentation & examples
 
+Example applications:
+
+* [Checkerlution - Checkers Bot](https://github.com/tleyden/checkerlution)
+
 # Example code
 
 (note: out of date!)
