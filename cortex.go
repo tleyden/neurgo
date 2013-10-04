@@ -15,7 +15,7 @@ type Cortex struct {
 	Sensors   []*Sensor
 	Neurons   []*Neuron
 	Actuators []*Actuator
-	SyncChan  chan *NodeId
+	SyncChan  chan *NodeId // TODO: rename to ActuatorBarrier
 }
 
 type ActuatorBarrier map[*NodeId]bool // TODO: fixme!! totally broken
