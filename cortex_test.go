@@ -12,9 +12,22 @@ func TestCortexCopy(t *testing.T) {
 
 	logg.LogKeys["DEBUG"] = true
 
+	// create original cortex
 	xnorCortex := XnorCortex()
+
+	// add a sensor function to the sensor
+	sensorFunc := func(syncCounter int) []float64 {
+		return []float64{1.0}
+	}
+	xnorCortex.Sensors[0].SensorFunction = sensorFunc
+
+	// copy the cortex
 	xnorCortexCopy := xnorCortex.Copy()
 
+	// make sure the sensor function got copied over
+	assert.True(t, xnorCortexCopy.Sensors[0].SensorFunction != nil)
+
+	// make sure each neuron is associated with a cortex
 	for _, neuron := range xnorCortex.Neurons {
 		assert.False(t, neuron.Cortex == nil)
 	}
