@@ -68,6 +68,16 @@ func (cortex *Cortex) Copy() *Cortex {
 		log.Fatal(err)
 	}
 
+	// copy sensor and actuator functions
+	for _, sensor := range cortex.Sensors {
+		sensorCopy := cortexCopy.FindSensor(sensor.NodeId)
+		sensorCopy.SensorFunction = sensor.SensorFunction
+	}
+	for _, actuator := range cortex.Actuators {
+		actuatorCopy := cortexCopy.FindActuator(actuator.NodeId)
+		actuatorCopy.ActuatorFunction = actuator.ActuatorFunction
+	}
+
 	return cortexCopy
 
 }
