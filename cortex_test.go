@@ -8,9 +8,19 @@ import (
 	"testing"
 )
 
-func TestCortexCopy(t *testing.T) {
-
+func init() {
+	logg.LogKeys["NODE_PRE_SEND"] = true
+	logg.LogKeys["NODE_POST_SEND"] = true
+	logg.LogKeys["NODE_POST_RECV"] = true
+	logg.LogKeys["MISC"] = true
+	logg.LogKeys["MAIN"] = true
 	logg.LogKeys["DEBUG"] = true
+	logg.LogKeys["SENSOR_SYNC"] = true
+	logg.LogKeys["ACTUATOR_SYNC"] = true
+
+}
+
+func TestCortexCopy(t *testing.T) {
 
 	// create original cortex
 	xnorCortex := XnorCortex()
@@ -21,8 +31,21 @@ func TestCortexCopy(t *testing.T) {
 	}
 	xnorCortex.Sensors[0].SensorFunction = sensorFunc
 
+	// get the fitness
+	examples := XnorTrainingSamples()
+	fitness := xnorCortex.Fitness(examples)
+	assert.True(t, fitness >= FITNESS_THRESHOLD)
+	logg.LogTo("DEBUG", "Original cortex has fitness: %v", fitness)
+
 	// copy the cortex
 	xnorCortexCopy := xnorCortex.Copy()
+
+	// validate the copy
+	assert.True(t, xnorCortexCopy.Validate())
+
+	// make sure actuator has reference to cortex in both orig and copy
+	assert.True(t, xnorCortex.Actuators[0].Cortex != nil)
+	assert.True(t, xnorCortexCopy.Actuators[0].Cortex != nil)
 
 	// make sure the sensor function got copied over
 	assert.True(t, xnorCortexCopy.Sensors[0].SensorFunction != nil)
@@ -32,12 +55,8 @@ func TestCortexCopy(t *testing.T) {
 		assert.False(t, neuron.Cortex == nil)
 	}
 
-	// inputs + expected outputs
-	examples := XnorTrainingSamples()
-
-	// get the fitness
-	fitness := xnorCortexCopy.Fitness(examples)
-
+	// get the fitness of the copied cortex
+	fitness = xnorCortexCopy.Fitness(examples)
 	assert.True(t, fitness >= FITNESS_THRESHOLD)
 
 }
@@ -116,10 +135,6 @@ func TestRecurrentCortex(t *testing.T) {
 
 	jsonString := `{"NodeId":{"UUID":"cortex","NodeType":"CORTEX","LayerIndex":0},"Sensors":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"VectorLength":2,"Outbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25}}]}],"Neurons":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Bias":-30,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[20,20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Bias":10,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[-20,-20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Bias":-10,"Inbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":[0.0955837638877588]}],"Outbound":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}}],"Actuators":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5},"VectorLength":1,"Inbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":null}]}]}`
 
-	logg.LogKeys["NODE_SEND"] = true
-	logg.LogKeys["NODE_RECV"] = true
-	logg.LogKeys["MISC"] = true
-
 	jsonBytes := []byte(jsonString)
 
 	cortex := &Cortex{}
@@ -131,6 +146,8 @@ func TestRecurrentCortex(t *testing.T) {
 
 	examples := XnorTrainingSamples()
 	logg.LogTo("MISC", "training samples: %v", examples)
+
+	cortex.LinkNodesToCortex()
 
 	fitness := cortex.Fitness(examples)
 	assert.True(t, fitness >= 0)

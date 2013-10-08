@@ -68,11 +68,17 @@ func (cortex *Cortex) Copy() *Cortex {
 		log.Fatal(err)
 	}
 
+	// add back references back to cortex
+	cortexCopy.LinkNodesToCortex()
+
 	// copy sensor and actuator functions
 	for _, sensor := range cortex.Sensors {
 		sensorCopy := cortexCopy.FindSensor(sensor.NodeId)
 		sensorCopy.SensorFunction = sensor.SensorFunction
 	}
+
+	// BUG: if the actuator function has a closure that wraps
+	// the original cortex, this function will now be broken!
 	for _, actuator := range cortex.Actuators {
 		actuatorCopy := cortexCopy.FindActuator(actuator.NodeId)
 		actuatorCopy.ActuatorFunction = actuator.ActuatorFunction
@@ -335,7 +341,7 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 		error := SumOfSquaresError(expected, outputs)
 		errorAccumulated += error
 		numTimesFuncCalled += 1
-		cortex.SyncChan <- actuator.NodeId
+		// cortex.SyncChan <- actuator.NodeId <-- moved to actuator itself
 	}
 	actuator.ActuatorFunction = actuatorFunc
 
@@ -449,14 +455,44 @@ func (cortex *Cortex) Validate() bool {
 			return false
 		}
 	}
+
+	for _, sensor := range cortex.Sensors {
+		if sensor.Cortex == nil {
+			logg.LogWarn("Sensor: %v has no cortex", sensor)
+			return false
+		}
+	}
+
+	for _, actuator := range cortex.Actuators {
+		if actuator.Cortex == nil {
+			logg.LogWarn("Actuator: %v has no cortex", actuator)
+			return false
+		}
+
+	}
+
 	return true
 }
 
 func (cortex *Cortex) Repair() {
+	cortex.LinkNodesToCortex()
+}
 
+func (cortex *Cortex) LinkNodesToCortex() {
+
+	for _, sensor := range cortex.Sensors {
+		if sensor.Cortex == nil {
+			sensor.Cortex = cortex
+		}
+	}
 	for _, neuron := range cortex.Neurons {
 		if neuron.Cortex == nil {
 			neuron.Cortex = cortex
+		}
+	}
+	for _, actuator := range cortex.Actuators {
+		if actuator.Cortex == nil {
+			actuator.Cortex = cortex
 		}
 	}
 

@@ -62,9 +62,9 @@ func (actuator *Actuator) Run() {
 		case responseChan := <-actuator.Closing:
 			closed = true
 			responseChan <- true
-			break // TODO: do we need this for anything??
+			break
 		case dataMessage := <-actuator.DataChan:
-			actuator.logDataReceive(dataMessage)
+			actuator.logPostDataReceive(dataMessage)
 			recordInput(weightedInputs, dataMessage)
 		}
 
@@ -77,9 +77,16 @@ func (actuator *Actuator) Run() {
 		if receiveBarrierSatisfied(weightedInputs) {
 
 			scalarOutput := actuator.computeScalarOutput(weightedInputs)
-
 			actuator.ActuatorFunction(scalarOutput)
 
+			if actuator.Cortex != nil && actuator.Cortex.SyncChan != nil {
+				logmsg := fmt.Sprintf("%v -> %v", actuator.NodeId.UUID, actuator.Cortex.NodeId.UUID)
+				logg.LogTo("ACTUATOR_SYNC", logmsg)
+
+				actuator.Cortex.SyncChan <- actuator.NodeId
+			} else {
+				logg.LogTo("MAIN", "Could not sync actuator: %v", actuator)
+			}
 			weightedInputs = createEmptyWeightedInputs(actuator.Inbound)
 
 		}
@@ -194,9 +201,13 @@ func (actuator *Actuator) nodeId() *NodeId {
 	return actuator.NodeId
 }
 
-func (actuator *Actuator) logDataReceive(dataMessage *DataMessage) {
+func (actuator *Actuator) logPostDataReceive(dataMessage *DataMessage) {
+	actuator.logDataReceive(dataMessage, "NODE_POST_RECV")
+}
+
+func (actuator *Actuator) logDataReceive(dataMessage *DataMessage, logDest string) {
 	sender := dataMessage.SenderId.UUID
 	logmsg := fmt.Sprintf("%v -> %v: %v", sender,
 		actuator.NodeId.UUID, dataMessage)
-	logg.LogTo("NODE_RECV", logmsg)
+	logg.LogTo(logDest, logmsg)
 }
