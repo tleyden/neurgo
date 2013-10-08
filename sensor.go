@@ -63,6 +63,8 @@ func (sensor *Sensor) Run() {
 			responseChan <- true
 			break // TODO: do we need this for anything??
 		case _ = <-sensor.SyncChan:
+			logmsg := fmt.Sprintf("%v", sensor.NodeId.UUID)
+			logg.LogTo("SENSOR_SYNC", logmsg)
 			input := sensor.SensorFunction(syncCounter)
 			syncCounter += 1
 			dataMessage := &DataMessage{
@@ -165,11 +167,12 @@ func (sensor *Sensor) validateOutbound() error {
 
 func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
 	for _, outboundConnection := range sensor.Outbound {
-		dataChan := outboundConnection.DataChan
-		dataChan <- dataMessage
 		logmsg := fmt.Sprintf("%v -> %v: %v", sensor.NodeId.UUID,
 			outboundConnection.NodeId.UUID, dataMessage)
-		logg.LogTo("NODE_SEND", logmsg)
+		logg.LogTo("NODE_PRE_SEND", logmsg)
+		dataChan := outboundConnection.DataChan
+		dataChan <- dataMessage
+		logg.LogTo("NODE_POST_SEND", logmsg)
 	}
 }
 

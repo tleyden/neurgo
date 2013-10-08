@@ -55,7 +55,6 @@ func (neuron *Neuron) Run() {
 	}
 
 	for {
-
 		select {
 		case responseChan := <-neuron.Closing:
 			closed = true
@@ -63,6 +62,7 @@ func (neuron *Neuron) Run() {
 			break
 		case dataMessage := <-neuron.DataChan:
 			neuron.receiveDataMessage(dataMessage)
+			neuron.logPostReceivedDataMessage(dataMessage)
 			if neuron.receiveBarrierSatisfied() {
 				closed = neuron.feedForward()
 			}
@@ -216,14 +216,17 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
 	for _, outboundConnection := range neuron.Outbound {
 
 		if outboundConnection.NodeId.UUID == neuron.NodeId.UUID {
+			// if we are sending to ourselves, short-circuit
+			// channel and just call function directly.
 
-			logSend(neuron.NodeId, outboundConnection.NodeId, dataMessage)
-			neuron.receiveDataMessage(dataMessage)
+			neuron.receiveRecurrentDataMessage(dataMessage)
 			if neuron.receiveBarrierSatisfied() {
 				closed = neuron.feedForward()
 			}
 
 		} else {
+			logPreSend(neuron.NodeId,
+				outboundConnection.NodeId, dataMessage)
 
 			select {
 			case responseChan := <-neuron.Closing:
@@ -231,7 +234,7 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
 				responseChan <- true
 				break
 			case outboundConnection.DataChan <- dataMessage:
-				logSend(neuron.NodeId,
+				logPostSend(neuron.NodeId,
 					outboundConnection.NodeId, dataMessage)
 			}
 
@@ -267,17 +270,17 @@ func (neuron *Neuron) primeRecurrentOutbound(cxn *OutboundConnection) (closed bo
 	}
 
 	if cxn.NodeId.UUID == neuron.NodeId.UUID {
-
 		// we are sending to ourselves, so short-circuit the
 		// channel based messaging so we can use unbuffered channels
-		logSend(neuron.NodeId, cxn.NodeId, dataMessage)
-		neuron.receiveDataMessage(dataMessage)
+		neuron.receiveRecurrentDataMessage(dataMessage)
 		if neuron.receiveBarrierSatisfied() {
 			msg := "Receive Barrier not expected to be satisfied yet"
 			logg.LogPanic(msg)
 		}
 
 	} else {
+
+		logPreSend(neuron.NodeId, cxn.NodeId, dataMessage)
 
 		if cxn.DataChan == nil {
 			log.Panicf("DataChan is nil for connection: %v", cxn)
@@ -292,7 +295,7 @@ func (neuron *Neuron) primeRecurrentOutbound(cxn *OutboundConnection) (closed bo
 			responseChan <- true
 		}
 
-		logSend(neuron.NodeId, cxn.NodeId, dataMessage)
+		logPostSend(neuron.NodeId, cxn.NodeId, dataMessage)
 	}
 
 	return
@@ -424,15 +427,24 @@ func (neuron *Neuron) receiveBarrierSatisfied() bool {
 
 func (neuron *Neuron) receiveDataMessage(dataMessage *DataMessage) {
 
-	neuron.logReceivedDataMessage(dataMessage)
 	recordInput(neuron.weightedInputs, dataMessage)
 }
 
-func (neuron *Neuron) logReceivedDataMessage(dataMessage *DataMessage) {
+func (neuron *Neuron) receiveRecurrentDataMessage(dataMessage *DataMessage) {
+	logRecurrentSend(neuron.NodeId, dataMessage)
+	neuron.receiveDataMessage(dataMessage)
+	logRecurrentRecv(neuron.NodeId, dataMessage)
+}
+
+func (neuron *Neuron) logPostReceivedDataMessage(dataMessage *DataMessage) {
+	neuron.logReceivedDataMessage(dataMessage, "NODE_POST_RECV")
+}
+
+func (neuron *Neuron) logReceivedDataMessage(dataMessage *DataMessage, logDest string) {
 	sender := dataMessage.SenderId.UUID
 	logmsg := fmt.Sprintf("%v -> %v: %v", sender,
 		neuron.NodeId.UUID, dataMessage)
-	logg.LogTo("NODE_RECV", logmsg)
+	logg.LogTo(logDest, logmsg)
 }
 
 func (neuron *Neuron) createEmptyWeightedInputs() {
@@ -444,8 +456,28 @@ func (neuron *Neuron) closeChannels() {
 	neuron.DataChan = nil
 }
 
-func logSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataMessage) {
-	logmsg := fmt.Sprintf("*** %v -> %v: %v", senderNodeId.UUID,
+func logPreSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataMessage) {
+	logSend(senderNodeId, receiverNodeId, dataMessage, "NODE_PRE_SEND")
+}
+
+func logPostSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataMessage) {
+	logSend(senderNodeId, receiverNodeId, dataMessage, "NODE_POST_SEND")
+}
+
+func logSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataMessage, logDest string) {
+	logmsg := fmt.Sprintf("%v -> %v: %v", senderNodeId.UUID,
 		receiverNodeId.UUID, dataMessage)
-	logg.LogTo("NODE_SEND", logmsg)
+	logg.LogTo(logDest, logmsg)
+}
+
+func logRecurrentSend(neuronNodeId *NodeId, dataMessage *DataMessage) {
+	logmsg := fmt.Sprintf("%v -> %v (recurrent send): %v", neuronNodeId.UUID,
+		neuronNodeId.UUID, dataMessage)
+	logg.LogTo("NODE_PRE_SEND", logmsg)
+}
+
+func logRecurrentRecv(neuronNodeId *NodeId, dataMessage *DataMessage) {
+	logmsg := fmt.Sprintf("%v -> %v (recurrent recv): %v", neuronNodeId.UUID,
+		neuronNodeId.UUID, dataMessage)
+	logg.LogTo("NODE_POST_RECV", logmsg)
 }
