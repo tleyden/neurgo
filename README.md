@@ -5,7 +5,7 @@
 A library for constructing Neural Networks in [Go](http://golang.org/) where Neurons are goroutines that communicate with each other via channels.
 
 
-![architecture_diagram.png](https://drone.io/github.com/tleyden/neurgo/files/xnor.svg)
+![architecture_diagram.png](http://cl.ly/image/0a1Y0e0B0P1m/Screen%20Shot%202013-10-09%20at%209.22.11%20PM.png)
 
 ## What it can do
 
@@ -16,7 +16,9 @@ A library for constructing Neural Networks in [Go](http://golang.org/) where Neu
 
 ## Learning mechanism
 
-Neurgo does not contain any code for learning/training.  The idea is to have a separation of concerns and the code that does the training will live in it's own repo.  Currently, there is only one training module:
+Neurgo does _not_ contain any code for learning/training.  
+
+The idea is to have a separation of concerns and the code that does the training will live in it's own repo.  Currently, there is only one training module:
 
 * [neurvolve](https://github.com/tleyden/neurvolve) - An evolution based trainer that is essentially a port of [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang).
 
