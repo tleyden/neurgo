@@ -2,7 +2,7 @@
 
 [![Build Status](https://drone.io/github.com/tleyden/neurgo/status.png)](https://drone.io/github.com/tleyden/neurgo/latest)
 
-A library for constructing Neural Networks in [Go](http://golang.org/) where Neurons are goroutines that communicate with each other via channels.
+A library for constructing Neural Networks in [Go](http://golang.org/), where Neurons are goroutines that communicate with each other via channels.
 
 
 ![architecture_diagram.png](http://cl.ly/image/0a1Y0e0B0P1m/Screen%20Shot%202013-10-09%20at%209.22.11%20PM.png)
@@ -12,13 +12,13 @@ A library for constructing Neural Networks in [Go](http://golang.org/) where Neu
 * Feedforward networks
 * Recurrent networks
 * JSON Marshal/Unmarshal ([example json](https://drone.io/github.com/tleyden/neurgo/files/xnor.json))
-* SVG Visualization ([example svg](https://drone.io/github.com/tleyden/neurgo/files/xnor.svg))
+* Visualization network topology in SVG ([example svg](https://drone.io/github.com/tleyden/neurgo/files/xnor.svg))
 
 ## Learning mechanism
 
 Neurgo does _not_ contain any code for learning/training.  
 
-The idea is to have a separation of concerns and the code that does the training will live in it's own repo.  Currently, there is only one training module:
+The idea is to have a separation of concerns such that the code that does the training will live in it's own repo.  Currently, there is only one training module:
 
 * [neurvolve](https://github.com/tleyden/neurvolve) - An evolution based trainer that is essentially a port of [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang).
 
@@ -32,6 +32,8 @@ The idea is to have a separation of concerns and the code that does the training
 * [Checkerlution - A Checkers Bot](https://github.com/tleyden/checkerlution)
 
 ## Example code
+
+The following code creates a neural net with [this topology](https://drone.io/github.com/tleyden/neurgo/files/xnor.svg).  It does not actually run the network (eg, feed inputs), so for a more complete example see `cortex_test.go`.
 
 ```go
 sensor := &Sensor{
