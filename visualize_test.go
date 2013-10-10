@@ -9,7 +9,7 @@ import (
 
 func TestRenderSVG(t *testing.T) {
 
-	filename := "out.svg"
+	filename := "xnor.svg"
 	outfile, err := os.Create(filename)
 	if err != nil {
 		panic(err)
@@ -24,7 +24,7 @@ func TestRenderSVG(t *testing.T) {
 	xnorCortex.RenderSVG(outfile)
 
 	content, err2 := ioutil.ReadFile(filename)
-	if err != nil {
+	if err2 != nil {
 		panic(err2)
 	}
 

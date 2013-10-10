@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/couchbaselabs/go.assert"
 	"github.com/couchbaselabs/logg"
+	"io/ioutil"
 	"log"
 	"testing"
 )
@@ -179,4 +180,18 @@ func TestNeuronLayerMap(t *testing.T) {
 	assert.Equals(t, len(hiddenNeurons), 2)
 	outputNeurons := layerToNeuronMap[0.35]
 	assert.Equals(t, len(outputNeurons), 1)
+}
+
+func TestMarshalJsonToFile(t *testing.T) {
+
+	filename := "xnor.json"
+	xnorCortex := XnorCortex()
+	xnorCortex.MarshalJSONToFile(filename)
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	contentStr := string(content)
+	assert.True(t, len(contentStr) > 0)
+
 }

@@ -42,7 +42,6 @@ func (cortex *Cortex) MarshalJSONToFile(filename string) error {
 		return err
 	}
 	jsonString := fmt.Sprintf("%s", json)
-	logg.Log("%v", jsonString)
 	WriteStringToFile(jsonString, filename)
 	return nil
 }
