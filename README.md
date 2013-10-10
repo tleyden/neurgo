@@ -2,60 +2,88 @@
 
 [![Build Status](https://drone.io/github.com/tleyden/neurgo/status.png)](https://drone.io/github.com/tleyden/neurgo/latest)
 
-A library for constructing Neural Networks in [Go](http://golang.org/)
+A library for constructing Neural Networks in [Go](http://golang.org/) where Neurons are goroutines that communicate with each other via channels.
 
-![architecture_diagram.png](http://cl.ly/image/143P2G2i3i1a/neurgo.png)
 
-For a more detailed architecture diagram, see the [Neurgo Architecture Prezi](http://prezi.com/cldumvoxwsxj/?utm_campaign=share&utm_medium=copy)
+![architecture_diagram.png](https://drone.io/github.com/tleyden/neurgo/files/xnor.svg)
 
-# Project Goals:
+## What it can do
 
-* Feature parity with [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang)
-* 100% test coverage
-* Complete documentation & examples
+* Feedforward networks
+* Recurrent networks
+* JSON Marshal/Unmarshal ([example json](https://drone.io/github.com/tleyden/neurgo/files/xnor.json))
+* SVG Visualization ([example svg](https://drone.io/github.com/tleyden/neurgo/files/xnor.svg))
 
-Example applications:
+## Learning mechanism
 
-* [Checkerlution - Checkers Bot](https://github.com/tleyden/checkerlution)
+Neurgo does not contain any code for learning/training.  The idea is to have a separation of concerns and the code that does the training will live in it's own repo.  Currently, there is only one training module:
 
-# Example code
+* [neurvolve](https://github.com/tleyden/neurvolve) - An evolution based trainer that is essentially a port of [DXNN2](https://github.com/CorticalComputer/DXNN2) (a Topology & Parameter Evolving Universal Learning Network in Erlang).
 
-(note: out of date!)
+## Roadmap
 
+* Training module for Backpropagation based learning (contributions welcome!)
+* Stress testing / benchmarks
+
+## Example applications
+
+* [Checkerlution - A Checkers Bot](https://github.com/tleyden/checkerlution)
+
+## Example code
+
+```go
+sensor := &Sensor{
+	NodeId:       NewSensorId("sensor", 0.0),
+	VectorLength: 2,
+}
+sensor.Init()
+hiddenNeuron1 := &Neuron{
+	ActivationFunction: EncodableSigmoid(),
+	NodeId:             NewNeuronId("hidden-neuron1", 0.25),
+	Bias:               -30,
+}
+hiddenNeuron1.Init()
+hiddenNeuron2 := &Neuron{
+	ActivationFunction: EncodableSigmoid(),
+	NodeId:             NewNeuronId("hidden-neuron2", 0.25),
+	Bias:               10,
+}
+hiddenNeuron2.Init()
+outputNeuron := &Neuron{
+	ActivationFunction: EncodableSigmoid(),
+	NodeId:             NewNeuronId("output-neuron", 0.35),
+	Bias:               -10,
+}
+outputNeuron.Init()
+actuator := &Actuator{
+	NodeId:       NewActuatorId("actuator", 0.5),
+	VectorLength: 1,
+}
+actuator.Init()
+
+// wire up connections
+sensor.ConnectOutbound(hiddenNeuron1)
+hiddenNeuron1.ConnectInboundWeighted(sensor, []float64{20, 20})
+sensor.ConnectOutbound(hiddenNeuron2)
+hiddenNeuron2.ConnectInboundWeighted(sensor, []float64{-20, -20})
+hiddenNeuron1.ConnectOutbound(outputNeuron)
+outputNeuron.ConnectInboundWeighted(hiddenNeuron1, []float64{20})
+hiddenNeuron2.ConnectOutbound(outputNeuron)
+outputNeuron.ConnectInboundWeighted(hiddenNeuron2, []float64{20})
+outputNeuron.ConnectOutbound(actuator)
+actuator.ConnectInbound(outputNeuron)
+
+// create cortex
+nodeId := NewCortexId("cortex")
+cortex := &Cortex{
+	NodeId: nodeId,
+}
+cortex.SetSensors([]*Sensor{sensor})
+cortex.SetNeurons([]*Neuron{hiddenNeuron1, hiddenNeuron2, outputNeuron})
+cortex.SetActuators([]*Actuator{actuator})
 ```
-// create network nodes
-neuronProcessor1 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
-neuronProcessor2 := &Neuron{Bias: 10, ActivationFunction: identity_activation}
-neuron1 := &Node{Name: "neuron1", processor: neuronProcessor1}
-neuron2 := &Node{Name: "neuron2", processor: neuronProcessor2}
-sensor := &Node{Name: "sensor", processor: &Sensor{}}
-actuator := &Node{Name: "actuator", processor: &Actuator{}}
 
-// connect nodes together
-weights := []float64{20, 20, 20, 20, 20}
-sensor.ConnectBidirectionalWeighted(neuron1, weights)
-sensor.ConnectBidirectionalWeighted(neuron2, weights)
-neuron1.ConnectBidirectional(actuator)
-neuron2.ConnectBidirectional(actuator)
-
-// create neural network
-sensors := []*Node{sensor}
-actuators := []*Node{actuator}
-neuralNet := &NeuralNetwork{sensors: sensors, actuators: actuators}
-
-// spin up node goroutines
-neuralNet.Run()
-
-// inputs + expected outputs
-examples := []*TrainingSample{{sampleInputs: [][]float64{[]float64{1, 1, 1, 1, 1}}, expectedOutputs: [][]float64{[]float64{110, 110}}}}
-
-// verify neural network
-verified := neuralNet.Verify(examples)
-assert.True(t, verified)
-        
-```
-
-# Getting Started
+## Getting Started
 
 * [Install Go](http://golang.org/doc/install)
 
@@ -65,36 +93,23 @@ assert.True(t, verified)
 
 * To write code that uses neurgo, your code will need `import "github.com/tleyden/neurgo"` as described in the [API documentation](http://godoc.org/github.com/tleyden/neurgo)
 
-# Documentation
+## Documentation
 
 * This README file
 
 * [API documentation](http://godoc.org/github.com/tleyden/neurgo)
 
 
-# Status
-
-* Feedforward networks completed
-* Recurrent networks completed
-* Learning via Stochastic Hill Climbing works (see [neurvolve](https://github.com/tleyden/neurvolve))
-* Topological mutatation operators implemented (see [neurvolve](https://github.com/tleyden/neurvolve))
-* Example which evolves a network capable of sovling XOR (see [neurvolve](https://github.com/tleyden/neurvolve))
-
-# TODO
-
-* Visualize networks
-* Backpropagation based learning (contributions welcome)
-
-# Libraries that build on Neurgo
+## Libraries that build on Neurgo
 
 * [neurvolve](https://github.com/tleyden/neurvolve) builds on this library to support evolution-based learning.
 
-# Related Work
+## Related Work
 
 [DXNN2](https://github.com/CorticalComputer/DXNN2) - Pure Erlang TPEULN (Topology & Parameter Evolving Universal Learning Network).  
 
 
-# Related Publications
+## Related Publications
 
 [Handbook of Neuroevolution Through Erlang](http://www.amazon.com/Handbook-Neuroevolution-Through-Erlang-Gene/dp/1461444624) _by Gene Sher_.
 
