@@ -46,8 +46,23 @@ func TestSafeScalarInverse(t *testing.T) {
 }
 
 func TestRandomInRange(t *testing.T) {
+	SeedRandom()
 	assert.True(t, RandomInRange(-1*math.Pi, math.Pi) <= math.Pi)
 	assert.True(t, RandomInRange(-1*math.Pi, math.Pi) >= -1*math.Pi)
+
+	foundLessThanZero := false
+	foundGreaterThanZero := false
+	for i := 0; i < 1000; i++ {
+		randFloat := RandomInRange(-1*math.Pi, math.Pi)
+		if randFloat > 0 {
+			foundGreaterThanZero = true
+		} else if randFloat < 0 {
+			foundLessThanZero = true
+		}
+	}
+	assert.True(t, foundLessThanZero)
+	assert.True(t, foundGreaterThanZero)
+
 }
 
 func TestRandomIntInRange(t *testing.T) {
