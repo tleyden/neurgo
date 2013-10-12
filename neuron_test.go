@@ -318,6 +318,7 @@ func TestComputeScalarOutput(t *testing.T) {
 	neuron := &Neuron{
 		ActivationFunction: activation,
 		Bias:               0,
+		NodeId:             NewNeuronId("neuron", 0.0),
 	}
 
 	inputs_1 := []float64{20, 20, 20, 20, 20}

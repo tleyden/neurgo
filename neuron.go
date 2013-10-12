@@ -234,6 +234,7 @@ func (neuron *Neuron) scatterOutput(dataMessage *DataMessage) (closed bool) {
 				responseChan <- true
 				break
 			case outboundConnection.DataChan <- dataMessage:
+				logWeights(neuron)
 				logPostSend(neuron.NodeId,
 					outboundConnection.NodeId, dataMessage)
 			}
@@ -294,7 +295,7 @@ func (neuron *Neuron) primeRecurrentOutbound(cxn *OutboundConnection) (closed bo
 			closed = true
 			responseChan <- true
 		}
-
+		logWeights(neuron)
 		logPostSend(neuron.NodeId, cxn.NodeId, dataMessage)
 	}
 
@@ -366,7 +367,11 @@ func (neuron *Neuron) validateOutbound() error {
 
 func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float64 {
 	output := neuron.weightedInputDotProductSum(weightedInputs)
+	logmsg := fmt.Sprintf("%v raw output: %v", neuron.NodeId.UUID, output)
+	logg.LogTo("NODE_STATE", logmsg)
 	output += neuron.Bias
+	logmsg = fmt.Sprintf("%v raw output + bias %v", neuron.NodeId.UUID, output)
+	logg.LogTo("NODE_STATE", logmsg)
 	output = neuron.ActivationFunction.ActivationFunction(output)
 	return output
 }
@@ -462,6 +467,15 @@ func logPreSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataM
 
 func logPostSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataMessage) {
 	logSend(senderNodeId, receiverNodeId, dataMessage, "NODE_POST_SEND")
+}
+
+func logWeights(neuron *Neuron) {
+	for _, inboundConnection := range neuron.Inbound {
+		logmsg := fmt.Sprintf("%v -> %v weights: %v", inboundConnection.NodeId.UUID, neuron.NodeId.UUID, inboundConnection.Weights)
+		logg.LogTo("NODE_STATE", logmsg)
+		logmsg = fmt.Sprintf("%v bias: %v", neuron.NodeId.UUID, neuron.Bias)
+		logg.LogTo("NODE_STATE", logmsg)
+	}
 }
 
 func logSend(senderNodeId *NodeId, receiverNodeId *NodeId, dataMessage *DataMessage, logDest string) {

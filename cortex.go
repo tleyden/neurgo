@@ -312,6 +312,11 @@ func (cortex *Cortex) Verify(samples []*TrainingSample) bool {
 func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 
 	cortex.Init()
+	cortex.LinkNodesToCortex()
+
+	if ok := cortex.Validate(); !ok {
+		log.Panicf("Cortex did not Validate()")
+	}
 
 	errorAccumulated := float64(0)
 
