@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/couchbaselabs/logg"
 	"log"
+	"os"
 	"time"
 )
 
@@ -20,72 +21,6 @@ type Cortex struct {
 
 type ActuatorBarrier map[*NodeId]bool // TODO: fixme!! totally broken
 type UUIDToNeuronMap map[string]*Neuron
-
-func (cortex *Cortex) MarshalJSON() ([]byte, error) {
-	return json.Marshal(
-		struct {
-			NodeId    *NodeId
-			Sensors   []*Sensor
-			Neurons   []*Neuron
-			Actuators []*Actuator
-		}{
-			NodeId:    cortex.NodeId,
-			Sensors:   cortex.Sensors,
-			Neurons:   cortex.Neurons,
-			Actuators: cortex.Actuators,
-		})
-}
-
-func (cortex *Cortex) MarshalJSONToFile(filename string) error {
-	json, err := json.Marshal(cortex)
-	if err != nil {
-		return err
-	}
-	jsonString := fmt.Sprintf("%s", json)
-	WriteStringToFile(jsonString, filename)
-	return nil
-}
-
-func (cortex *Cortex) String() string {
-	return JsonString(cortex)
-}
-
-func (cortex *Cortex) Copy() *Cortex {
-
-	// serialize to json
-	jsonBytes, err := json.Marshal(cortex)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// new cortex
-	cortexCopy := &Cortex{}
-
-	// deserialize json into new cortex
-	err = json.Unmarshal(jsonBytes, cortexCopy)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// add back references back to cortex
-	cortexCopy.LinkNodesToCortex()
-
-	// copy sensor and actuator functions
-	for _, sensor := range cortex.Sensors {
-		sensorCopy := cortexCopy.FindSensor(sensor.NodeId)
-		sensorCopy.SensorFunction = sensor.SensorFunction
-	}
-
-	// BUG: if the actuator function has a closure that wraps
-	// the original cortex, this function will now be broken!
-	for _, actuator := range cortex.Actuators {
-		actuatorCopy := cortexCopy.FindActuator(actuator.NodeId)
-		actuatorCopy.ActuatorFunction = actuator.ActuatorFunction
-	}
-
-	return cortexCopy
-
-}
 
 func (cortex *Cortex) Run() {
 
@@ -271,6 +206,72 @@ func (cortex *Cortex) InitOutboundConnections() {
 	for _, neuron := range cortex.Neurons {
 		neuron.initOutboundConnections(nodeIdToDataMsg)
 	}
+
+}
+
+func (cortex *Cortex) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		struct {
+			NodeId    *NodeId
+			Sensors   []*Sensor
+			Neurons   []*Neuron
+			Actuators []*Actuator
+		}{
+			NodeId:    cortex.NodeId,
+			Sensors:   cortex.Sensors,
+			Neurons:   cortex.Neurons,
+			Actuators: cortex.Actuators,
+		})
+}
+
+func (cortex *Cortex) MarshalJSONToFile(filename string) error {
+	json, err := json.Marshal(cortex)
+	if err != nil {
+		return err
+	}
+	jsonString := fmt.Sprintf("%s", json)
+	WriteStringToFile(jsonString, filename)
+	return nil
+}
+
+func (cortex *Cortex) String() string {
+	return JsonString(cortex)
+}
+
+func (cortex *Cortex) Copy() *Cortex {
+
+	// serialize to json
+	jsonBytes, err := json.Marshal(cortex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// new cortex
+	cortexCopy := &Cortex{}
+
+	// deserialize json into new cortex
+	err = json.Unmarshal(jsonBytes, cortexCopy)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// add back references back to cortex
+	cortexCopy.LinkNodesToCortex()
+
+	// copy sensor and actuator functions
+	for _, sensor := range cortex.Sensors {
+		sensorCopy := cortexCopy.FindSensor(sensor.NodeId)
+		sensorCopy.SensorFunction = sensor.SensorFunction
+	}
+
+	// BUG: if the actuator function has a closure that wraps
+	// the original cortex, this function will now be broken!
+	for _, actuator := range cortex.Actuators {
+		actuatorCopy := cortexCopy.FindActuator(actuator.NodeId)
+		actuatorCopy.ActuatorFunction = actuator.ActuatorFunction
+	}
+
+	return cortexCopy
 
 }
 
@@ -521,4 +522,20 @@ func (cortex *Cortex) isBarrierSatisfied(barrier ActuatorBarrier) bool {
 		}
 	}
 	return true
+}
+
+func NewCortexFromJSONFile(filename string) (cortex *Cortex, err error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		logg.Warn("Unable to open file: %v. Error: %v", filename, err)
+		return
+	}
+	cortex = &Cortex{}
+	jsonParser := json.NewDecoder(file)
+	if err = jsonParser.Decode(cortex); err != nil {
+		logg.Warn("Unable to parse file: %v.  Error: %v", filename, err)
+		return
+	}
+	cortex.LinkNodesToCortex()
+	return
 }
