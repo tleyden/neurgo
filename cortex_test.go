@@ -98,6 +98,7 @@ func TestCortexInit(t *testing.T) {
 	assert.True(t, err == nil)
 
 	cortex.Init()
+	cortex.LinkNodesToCortex()
 
 	neuron := cortex.Neurons[0]
 	assert.True(t, neuron.DataChan != nil)

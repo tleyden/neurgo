@@ -302,6 +302,10 @@ func (cortex *Cortex) checkRunnable() {
 	if cortex.SyncChan == nil {
 		log.Panicf("cortex.SyncChan is nil")
 	}
+	if validated := cortex.Validate(); !validated {
+		log.Panicf("cortex.Validate failed")
+	}
+
 }
 
 func (cortex *Cortex) Verify(samples []*TrainingSample) bool {
@@ -455,21 +459,21 @@ func (cortex *Cortex) Validate() bool {
 
 	for _, neuron := range cortex.Neurons {
 		if neuron.Cortex == nil {
-			logg.LogWarn("Neuron: %v has no cortex", neuron)
+			logg.LogWarn("Neuron: %v has no cortex", neuron.NodeId)
 			return false
 		}
 	}
 
 	for _, sensor := range cortex.Sensors {
 		if sensor.Cortex == nil {
-			logg.LogWarn("Sensor: %v has no cortex", sensor)
+			logg.LogWarn("Sensor: %v has no cortex", sensor.NodeId)
 			return false
 		}
 	}
 
 	for _, actuator := range cortex.Actuators {
 		if actuator.Cortex == nil {
-			logg.LogWarn("Actuator: %v has no cortex", actuator)
+			logg.LogWarn("Actuator: %v has no cortex", actuator.NodeId)
 			return false
 		}
 
