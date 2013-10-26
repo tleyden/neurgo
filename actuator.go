@@ -85,7 +85,7 @@ func (actuator *Actuator) Run() {
 
 				actuator.Cortex.SyncChan <- actuator.NodeId
 			} else {
-				logg.LogTo("MAIN", "Could not sync actuator: %v", actuator)
+				logg.LogTo("ACTUATOR_SYNC", "Could not sync actuator: %v", actuator)
 			}
 			weightedInputs = createEmptyWeightedInputs(actuator.Inbound)
 

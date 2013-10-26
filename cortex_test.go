@@ -147,7 +147,6 @@ func TestRecurrentCortex(t *testing.T) {
 	assert.True(t, err == nil)
 
 	examples := XnorTrainingSamples()
-	logg.LogTo("MISC", "training samples: %v", examples)
 
 	cortex.LinkNodesToCortex()
 
