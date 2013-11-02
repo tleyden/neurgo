@@ -166,6 +166,11 @@ func (sensor *Sensor) validateOutbound() error {
 }
 
 func (sensor *Sensor) scatterOutput(dataMessage *DataMessage) {
+
+	if len(dataMessage.Inputs) == 0 {
+		logg.LogPanic("cannot scatter empty data message")
+	}
+
 	for _, outboundConnection := range sensor.Outbound {
 		logmsg := fmt.Sprintf("%v -> %v: %v", sensor.NodeId.UUID,
 			outboundConnection.NodeId.UUID, dataMessage)
