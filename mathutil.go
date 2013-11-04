@@ -80,6 +80,16 @@ func vectorEqualsWithMaxDelta(xValues, yValues []float64, maxDelta float64) bool
 	return equals
 }
 
+func VectorEquals(xValues, yValues []float64) bool {
+	for i, x := range xValues {
+		y := yValues[i]
+		if x != y {
+			return false
+		}
+	}
+	return true
+}
+
 func IntModuloProper(x, y int) bool {
 	if x > 0 && math.Mod(float64(x), float64(y)) == 0 {
 		return true
