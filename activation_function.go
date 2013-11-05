@@ -42,6 +42,8 @@ func (activation *EncodableActivation) UnmarshalJSON(bytes []byte) error {
 		activation.ActivationFunction = Sigmoid
 	case "tanh":
 		activation.ActivationFunction = math.Tanh
+	case "identity":
+		activation.ActivationFunction = Identity
 	default:
 		log.Panicf("Unknown activation function: %v", activation.Name)
 	}
@@ -61,6 +63,17 @@ func EncodableSigmoid() *EncodableActivation {
 	return &EncodableActivation{
 		Name:               "sigmoid",
 		ActivationFunction: Sigmoid,
+	}
+}
+
+func Identity(x float64) float64 {
+	return x
+}
+
+func EncodableIdentity() *EncodableActivation {
+	return &EncodableActivation{
+		Name:               "identity",
+		ActivationFunction: Identity,
 	}
 }
 
