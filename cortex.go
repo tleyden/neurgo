@@ -235,7 +235,18 @@ func (cortex *Cortex) MarshalJSONToFile(filename string) error {
 }
 
 func (cortex *Cortex) String() string {
-	return JsonString(cortex)
+	// return JsonString(cortex)
+
+	description := fmt.Sprintf("%v\n", cortex.NodeId.UUID)
+
+	for _, neuron := range cortex.Neurons {
+		description = fmt.Sprintf("\t%v neuron %v bias %v\n", description, neuron.NodeId.UUID, neuron.Bias)
+		for _, inbound := range neuron.Inbound {
+			description = fmt.Sprintf("%v weights: %v \n", description, inbound.Weights)
+		}
+	}
+	return description
+
 }
 
 func (cortex *Cortex) Copy() *Cortex {
@@ -348,6 +359,7 @@ func (cortex *Cortex) Fitness(samples []*TrainingSample) float64 {
 	actuatorFunc := func(outputs []float64) {
 		expected := samples[numTimesFuncCalled].ExpectedOutputs[0]
 		error := SumOfSquaresError(expected, outputs)
+		logg.LogTo("DEBUG", "expected: %v actual: %v error: %v", expected, outputs, error)
 		errorAccumulated += error
 		numTimesFuncCalled += 1
 		// cortex.SyncChan <- actuator.NodeId <-- moved to actuator itself
