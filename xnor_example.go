@@ -1,5 +1,9 @@
 package neurgo
 
+import (
+	"fmt"
+)
+
 func XnorCortex() *Cortex {
 
 	// create network nodes
@@ -55,8 +59,9 @@ func XnorCortex() *Cortex {
 	actuator.ConnectInbound(outputNeuron)
 
 	// create cortex
-
-	nodeId := NewCortexId("cortex")
+	uuid := NewUuid()
+	cortexUuid := fmt.Sprintf("cortex-%s", uuid)
+	nodeId := NewCortexId(cortexUuid)
 
 	cortex := &Cortex{
 		NodeId: nodeId,
@@ -126,7 +131,9 @@ func XnorCortexUntrained() *Cortex {
 	outputNeuron.ConnectOutbound(actuator)
 	actuator.ConnectInbound(outputNeuron)
 
-	nodeId := NewCortexId("cortex")
+	uuid := NewUuid()
+	cortexUuid := fmt.Sprintf("cortex-%s", uuid)
+	nodeId := NewCortexId(cortexUuid)
 
 	cortex := &Cortex{
 		NodeId:    nodeId,
