@@ -235,7 +235,10 @@ func (cortex *Cortex) MarshalJSONToFile(filename string) error {
 }
 
 func (cortex *Cortex) String() string {
-	// return JsonString(cortex)
+	return JsonString(cortex)
+}
+
+func (cortex *Cortex) StringCompact() string {
 
 	description := fmt.Sprintf("%v\n", cortex.NodeId.UUID)
 
