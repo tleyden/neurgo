@@ -370,9 +370,11 @@ func (neuron *Neuron) computeScalarOutput(weightedInputs []*weightedInput) float
 	logmsg := fmt.Sprintf("%v raw output: %v", neuron.NodeId.UUID, output)
 	logg.LogTo("NODE_STATE", logmsg)
 	output += neuron.Bias
-	logmsg = fmt.Sprintf("%v raw output + bias %v", neuron.NodeId.UUID, output)
+	logmsg = fmt.Sprintf("%v raw output + bias: %v", neuron.NodeId.UUID, output)
 	logg.LogTo("NODE_STATE", logmsg)
 	output = neuron.ActivationFunction.ActivationFunction(output)
+	logmsg = fmt.Sprintf("%v after activation: %v", neuron.NodeId.UUID, output)
+	logg.LogTo("NODE_STATE", logmsg)
 	return output
 }
 
