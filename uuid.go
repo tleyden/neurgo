@@ -2,10 +2,14 @@ package neurgo
 
 import (
 	"fmt"
+	"github.com/couchbaselabs/logg"
+	"github.com/nu7hatch/gouuid"
 )
 
 func NewUuid() string {
-	// TODO: do a real uuid - https://github.com/nu7hatch/gouuid
-	randInt := RandomIntInRange(0, 10000000000)
-	return fmt.Sprintf("%d", randInt)
+	u4, err := uuid.NewV4()
+	if err != nil {
+		logg.LogPanic("Error generating uuid", err)
+	}
+	return fmt.Sprintf("%s", u4)
 }
