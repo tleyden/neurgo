@@ -1,6 +1,7 @@
 package neurgo
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/couchbaselabs/logg"
@@ -249,6 +250,21 @@ func (cortex *Cortex) StringCompact() string {
 		}
 	}
 	return description
+
+}
+
+func (cortex *Cortex) ExtraCompact() string {
+
+	buffer := &bytes.Buffer{}
+	buffer.WriteString(fmt.Sprintf("c: %v: ", cortex.NodeId.UUID))
+
+	for _, neuron := range cortex.Neurons {
+		buffer.WriteString(fmt.Sprintf(" b: %v", neuron.Bias))
+		for _, inbound := range neuron.Inbound {
+			buffer.WriteString(fmt.Sprintf(" w: %v", inbound.Weights))
+		}
+	}
+	return buffer.String()
 
 }
 
