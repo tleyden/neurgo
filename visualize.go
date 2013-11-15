@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ajstarks/svgo"
 	"io"
-	"log"
 	"os"
 )
 
@@ -100,7 +99,6 @@ func addConnectionsToSVG(cortex *Cortex, canvas *svg.SVG, nodeUUIDToCircleSVG No
 
 		// loop over all nodes
 		for _, nodeId := range nodeIds {
-			log.Printf("nodeId: %v", nodeId)
 
 			// lookup node (assuming it is an OutboundConnector)
 			node := cortex.FindConnector(nodeId)
@@ -172,8 +170,6 @@ func midpoint(p1 Point, p2 Point) Point {
 
 func forwardConnectNodesSVG(canvas *svg.SVG, src NodeCircleSVG, tgt NodeCircleSVG) {
 	linestyle := []string{`stroke="black"`, `stroke-linecap="round"`, `stroke-width="5"`}
-
-	log.Printf("line: src.x %v, src.y: %v tgt.x: %v tgt.y: %v", src.x, src.y, tgt.x, tgt.y)
 
 	canvas.Line(src.x, src.y, tgt.x, tgt.y, linestyle[0], linestyle[1], linestyle[2])
 
