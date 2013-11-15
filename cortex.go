@@ -555,6 +555,7 @@ func (cortex *Cortex) isBarrierSatisfied(barrier ActuatorBarrier) bool {
 	return true
 }
 
+// TODO: rename to have "unmarshal" in the name
 func NewCortexFromJSONFile(filename string) (cortex *Cortex, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
