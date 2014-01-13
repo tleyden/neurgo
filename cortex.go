@@ -226,7 +226,8 @@ func (cortex *Cortex) MarshalJSON() ([]byte, error) {
 }
 
 func (cortex *Cortex) MarshalJSONToFile(filename string) error {
-	json, err := json.Marshal(cortex)
+
+	json, err := json.MarshalIndent(cortex, "", "    ")
 	if err != nil {
 		return err
 	}
