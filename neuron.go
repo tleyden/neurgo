@@ -329,7 +329,7 @@ func (neuron *Neuron) checkRunnable() {
 	}
 
 	if neuron.Inbound == nil {
-		msg := fmt.Sprintf("not expecting neuron.Inbound to be nil")
+		msg := fmt.Sprintf("not expecting neuron.Inbound to be nil.  neuron: %v", neuron)
 		panic(msg)
 	}
 
