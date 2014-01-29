@@ -133,6 +133,14 @@ func RandomWeights(length int) []float64 {
 	return weights
 }
 
+func FixedWeights(length int, weight float64) []float64 {
+	weights := []float64{}
+	for i := 0; i < length; i++ {
+		weights = append(weights, weight)
+	}
+	return weights
+}
+
 func Saturate(parameter, lowerBound, upperBound float64) float64 {
 	if parameter < lowerBound {
 		return lowerBound
