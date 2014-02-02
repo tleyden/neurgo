@@ -68,11 +68,15 @@ func TestCortexJsonMarshal(t *testing.T) {
 	// TODO: add some assertions about this  (try reading file back in)
 }
 
+func exampleCortexJson() string {
+	jsonString := `{"NodeId":{"UUID":"cortex","NodeType":"CORTEX","LayerIndex":0},"Sensors":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"VectorLength":2,"Outbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25}}]}],"Neurons":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Bias":-30,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[20,20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Bias":10,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[-20,-20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Bias":-10,"Inbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]}],"Outbound":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5}}],"ActivationFunction":{"Name":"sigmoid"}}],"Actuators":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5},"VectorLength":1,"Inbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":null}]}]}`
+	return jsonString
+
+}
+
 func TestCortexJsonUnmarshal(t *testing.T) {
 
-	jsonString := `{"NodeId":{"UUID":"cortex","NodeType":"CORTEX","LayerIndex":0},"Sensors":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"VectorLength":2,"Outbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25}}]}],"Neurons":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Bias":-30,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[20,20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Bias":10,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[-20,-20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Bias":-10,"Inbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]}],"Outbound":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5}}],"ActivationFunction":{"Name":"sigmoid"}}],"Actuators":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5},"VectorLength":1,"Inbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":null}]}]}`
-
-	jsonBytes := []byte(jsonString)
+	jsonBytes := []byte(exampleCortexJson())
 
 	cortex := &Cortex{}
 	err := json.Unmarshal(jsonBytes, cortex)
@@ -86,9 +90,7 @@ func TestCortexJsonUnmarshal(t *testing.T) {
 
 func TestCortexInit(t *testing.T) {
 
-	jsonString := `{"NodeId":{"UUID":"cortex","NodeType":"CORTEX","LayerIndex":0},"Sensors":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"VectorLength":2,"Outbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25}}]}],"Neurons":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Bias":-30,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[20,20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Bias":10,"Inbound":[{"NodeId":{"UUID":"sensor","NodeType":"SENSOR","LayerIndex":0},"Weights":[-20,-20]}],"Outbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35}}],"ActivationFunction":{"Name":"sigmoid"}},{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Bias":-10,"Inbound":[{"NodeId":{"UUID":"hidden-neuron1","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]},{"NodeId":{"UUID":"hidden-neuron2","NodeType":"NEURON","LayerIndex":0.25},"Weights":[20]}],"Outbound":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5}}],"ActivationFunction":{"Name":"sigmoid"}}],"Actuators":[{"NodeId":{"UUID":"actuator","NodeType":"ACTUATOR","LayerIndex":0.5},"VectorLength":1,"Inbound":[{"NodeId":{"UUID":"output-neuron","NodeType":"NEURON","LayerIndex":0.35},"Weights":null}]}]}`
-
-	jsonBytes := []byte(jsonString)
+	jsonBytes := []byte(exampleCortexJson())
 
 	cortex := &Cortex{}
 	err := json.Unmarshal(jsonBytes, cortex)
@@ -194,4 +196,10 @@ func TestMarshalJsonToFile(t *testing.T) {
 	contentStr := string(content)
 	assert.True(t, len(contentStr) > 0)
 
+}
+
+func TestNewCortexFromJSONString(t *testing.T) {
+	cortex, err := NewCortexFromJSONString(exampleCortexJson())
+	assert.True(t, err == nil)
+	assert.True(t, cortex != nil)
 }
