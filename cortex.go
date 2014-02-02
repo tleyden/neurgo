@@ -574,11 +574,15 @@ func NewCortexFromJSONFile(filename string) (cortex *Cortex, err error) {
 }
 
 func NewCortexFromJSONString(jsonString string) (cortex *Cortex, err error) {
+	return NewCortexFromJSONSBytes([]byte(jsonString))
+}
+
+func NewCortexFromJSONSBytes(jsonBytes []byte) (cortex *Cortex, err error) {
 
 	cortex = &Cortex{}
 
 	// deserialize json into new cortex
-	err = json.Unmarshal([]byte(jsonString), cortex)
+	err = json.Unmarshal(jsonBytes, cortex)
 	if err == nil {
 		cortex.LinkNodesToCortex()
 	}
