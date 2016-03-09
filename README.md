@@ -1,6 +1,6 @@
 # Neurgo
 
-[![Build Status](https://drone.io/github.com/tleyden/neurgo/status.png)](https://drone.io/github.com/tleyden/neurgo/latest)
+[![Build Status](https://drone.io/github.com/tleyden/neurgo/status.png)](https://drone.io/github.com/tleyden/neurgo/latest) [![GoDoc](https://godoc.org/github.com/tleyden/neurgo?status.png)](https://godoc.org/github.com/tleyden/neurgo)
 
 A library for constructing Neural Networks in [Go](http://golang.org/), where Neurons are goroutines that communicate with each other via channels.
 
